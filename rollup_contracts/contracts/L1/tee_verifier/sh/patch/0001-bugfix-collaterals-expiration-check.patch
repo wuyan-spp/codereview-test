@@ -1,0 +1,25 @@
+From 9586a39e99dabb7bcf3416497f748ab0361a0eaa Mon Sep 17 00:00:00 2001
+From: "changmu.zj" <changmu.zj@antgroup.com>
+Date: Wed, 25 Jun 2025 11:12:22 +0800
+Subject: [PATCH] bugfix collaterals expiration check
+
+---
+ evm/contracts/PCCSRouter.sol | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/evm/contracts/PCCSRouter.sol b/evm/contracts/PCCSRouter.sol
+index eb8ed43..e53da83 100644
+--- a/evm/contracts/PCCSRouter.sol
++++ b/evm/contracts/PCCSRouter.sol
+@@ -312,7 +312,7 @@ contract PCCSRouter is IPCCSRouter, Ownable {
+         require(success, "Failed to determine collateral validity");
+         if (ret.length > 0) {
+             (uint64 issuedAt, uint64 expiredAt) = abi.decode(ret, (uint64, uint64));
+-            valid = timestamp >= issuedAt || timestamp <= expiredAt;
++            valid = timestamp >= issuedAt && timestamp <= expiredAt;
+         }
+     }
+ }
+-- 
+2.39.3 (Apple Git-146)
+

@@ -1,0 +1,4 @@
+forge-std/=lib/forge-std/src/
+node_modules/@openzeppelin/contracts-upgradeable=node_modules/@openzeppelin/contracts-upgradeable
+hardhat=node_modules/hardhat
+src=contracts

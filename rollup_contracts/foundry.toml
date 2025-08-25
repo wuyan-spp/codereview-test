@@ -1,0 +1,11 @@
+[profile.default]
+src = "contracts"
+out = "out"
+libs = ["lib", "node_modules"]
+script = 'scripts'                                      # the script directory
+skip = ["contracts/L1/tee_verifier/*"]
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+[dependencies] # <= Dependencies will be added under this config
+"@openzeppelin-contracts" = { version = "4.9.3" }
+"@openzeppelin-contracts-upgradeable" = { version = "4.9.3" }

@@ -1,0 +1,12 @@
+[submodule "rollup_contracts/lib/forge-std"]
+	path = rollup_contracts/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std.git
+[submodule "rollup_contracts/contracts/L1/tee_verifier/lib/automata-dcap-attestation"]
+	path = rollup_contracts/contracts/L1/tee_verifier/lib/automata-dcap-attestation
+	url = https://github.com/automata-network/automata-dcap-attestation.git
+[submodule "rollup_contracts/contracts/L1/tee_verifier/lib/forge-std"]
+	path = rollup_contracts/contracts/L1/tee_verifier/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std.git
+[submodule "rollup_contracts/contracts/L1/tee_verifier/lib/solady"]
+	path = rollup_contracts/contracts/L1/tee_verifier/lib/solady
+	url = https://github.com/vectorized/solady.git

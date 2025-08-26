@@ -11,22 +11,6 @@ The scope of this security audit encompasses smart contracts from two primary re
 
 A detailed breakdown of the specific directories and their respective lines of code is provided below.
 
-| Module | Contents | File Count | Pure Code Lines | Blank Lines | Comment Lines |
-| --- | --- | --- | --- | --- | --- |
-| **jovay-sequencer** | sequencer_contracts/sys_contract/artifact_src/solidity/permission_control.sol | 1 | 69 | 17 | 4 |
-| **jovay-sequencer** | sequencer_contracts/sys_contract/artifact_src/solidity/rule_mng.sol | 1 | 318 | 68 | 23 |
-| **jovay-sequencer** | sequencer_contracts/sys_contract/artifact_src/solidity/sys_chaincfg.sol | 1 | 87 | 18 | 1 |
-| **jovay-sequencer** | sequencer_contracts/sys_contract/artifact_src/solidity/sys_staking.sol | 1 | 1,339 | 274 | 1,147 |
-| **rollup** | rollup_contracts/contracts/common/ | 9 | 258 | 84 | 82 |
-| **rollup** | rollup_contracts/contracts/L1/bridge/ | 6 | 121 | 38 | 91 |
-| **rollup** | rollup_contracts/contracts/L1/core/ | 2 | 354 | 85 | 130 |
-| **rollup** | rollup_contracts/contracts/L1/interfaces/ | 3 | 48 | 21 | 51 |
-| **rollup** | rollup_contracts/contracts/L1/libraries/ | 4 | 113 | 27 | 101 |
-| **rollup** | rollup_contracts/contracts/L1/tee_verifier/src/ | 5 | 568 | 85 | 51 |
-| **rollup** | rollup_contracts/contracts/L2/ | 8 | 218 | 63 | 168 |
-| **Total** | **-** | **41** | **3,493** | **780** | **1,849** |
-
-# Details
 
 https://github.com/jovaynetwork/jovay-contracts/
 

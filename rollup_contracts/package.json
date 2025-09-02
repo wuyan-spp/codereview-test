@@ -12,6 +12,7 @@
   "dependencies": {
     "@openzeppelin/contracts-upgradeable": "^4.9.3",
     "ethers": "^6.13.5",
+    "solidity-bytes-utils": "^0.8.4",
     "web3": "^4.16.0"
   }
 }

@@ -10,6 +10,8 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
     /// @notice The address of L1MailBox contract.
     address public l1MailBox;
 
+    mapping(bytes32 => bool) public isReceiveMsgStatus;
+
     constructor(){
         _disableInitializers();
     }
@@ -91,13 +93,30 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         require(_msgSender() == l1MailBox, "Caller is not L1Mailbox");
 
         bytes32 hash_ = keccak256(_encodeCall(sender_, target_, value_, nonce_, msg_));
-
-        (bool success,) = target_.call{value : value_}(msg_);
-        require(success, "RelayMsg Failed");
-        _receiveMsgCheck(hash_);
         bytes32 rollinghash = _getRollingHash(hash_);
         emit RollingHash(rollinghash);
+
+        (bool success,) = target_.call{value : value_}(msg_);
+        if (success) {
+            _receiveMsgFailed(hash_);
+        } else {
+            _receiveMsgSuccess(hash_);
+        }
         emit RelayedMsg(hash_, nonce_);
+    }
+
+    function claimAmount(
+        address refundAddress_,
+        uint256 amount_,
+        uint256 nonce_,
+        bytes32 msgHash_
+    ) external override onlyBridge whenNotPaused nonReentrant {
+        _checkMsgClaimValid(msgHash_);
+        (bool success,) = refundAddress_.call{value : amount_}("");
+        require(success, "claim amount failed when transfer to refund");
+        _finalizeClaimMsg(msgHash_);
+
+        emit ClaimMsg(msgHash_, nonce_);
     }
 
     /**
@@ -112,4 +131,26 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
     function msgRoot() external view returns (bytes32) {
         return _msgRoot;
     }
+
+    function _receiveMsgFailed(bytes32 hash_) internal {
+        _receiveMsgCheck(hash_);
+        isReceiveMsgStatus[hash_] = false;
+    }
+
+    function _receiveMsgSuccess(bytes32 hash_) internal {
+        _receiveMsgCheck(hash_);
+        isReceiveMsgStatus[hash_] = true;
+    }
+
+    function _checkMsgClaimValid(bytes32 hash_) internal view {
+        _msgExistCheck(hash_);
+        require(!isReceiveMsgStatus[hash_], "ClaimMsg : L2 msg must exec failed before");
+    }
+
+    function _finalizeClaimMsg(bytes32 hash_) internal {
+        _msgExistCheck(hash_);
+        require(!isReceiveMsgStatus[hash_], "ClaimMsg : L2 msg must exec failed before");
+        isReceiveMsgStatus[hash_] = true;
+    }
+
 }

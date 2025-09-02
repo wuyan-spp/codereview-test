@@ -19,4 +19,11 @@ interface IL2Mailbox is IMailBoxBase {
         uint256 nonce_,
         bytes calldata msg_
     ) external;
+
+    function claimAmount(
+        address refundAddress,
+        uint256 amount,
+        uint256 nonce_,
+        bytes32 msgHash_
+    ) external;
 }

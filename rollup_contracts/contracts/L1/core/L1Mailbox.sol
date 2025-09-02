@@ -13,6 +13,8 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
 
     event SetL2GasLimit(uint256 oldGasLimit, uint256 newGasLimit);
 
+    event SetL2FinalizeDepositGasUsed(uint256 oldL2FinalizeDepositGasUsed, uint256 newL2FinalizeDepositGasUsed);
+
     // double ended msg queue
     // begin is next finalize msg
     // end + 1 is next append msg
@@ -32,8 +34,19 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
     /// @notice The gaslimit of L2, deposit gas limit must less than this value.
     uint256 public l2GasLimit;
 
+    uint256 public feeBalance;
+
+    address public withdrawer;
+
+    uint256 public l2FinalizeDepositGasUsed;
+
     modifier onlyRollup() {
         require(msg.sender == rollup, "Only callable by the Rollup");
+        _;
+    }
+
+    modifier onlyWithdrawer() {
+        require(msg.sender == withdrawer, "Only callable by the withdrawer");
         _;
     }
 
@@ -47,7 +60,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
      * @param owner_ contract owner address
      * @param baseFee_ base fee
      */
-    function initialize(address rollup_, address owner_, uint256 baseFee_, uint256 _l2GasLimit) external initializer {
+    function initialize(address rollup_, address owner_, uint256 baseFee_, uint256 _l2GasLimit, uint256 _l2FinalizeDepositGasUsed) external initializer {
         if (rollup_ == address(0) || owner_ == address(0)) {
             revert InvalidInitAddress();
         }
@@ -56,12 +69,18 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         rollup = rollup_;
         baseFee = baseFee_;
         l2GasLimit = _l2GasLimit;
+        l2FinalizeDepositGasUsed = _l2FinalizeDepositGasUsed;
         _transferOwnership(owner_);
     }
 
     function setRollup(address rollup_) external onlyOwner {
         require(rollup_ != address(0), "Invalid rollup address");
         rollup = rollup_;
+    }
+
+    function setWithdrawer(address _withdrawer) external onlyOwner {
+        require(_withdrawer != address(0), "Invalid withdrawer address");
+        withdrawer = _withdrawer;
     }
 
     function sendMsg(
@@ -78,6 +97,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         // Calculate the fee and leave it in the MailBox contract
         uint256 fee_ = estimateMsgFee(gasLimit_);
         require(gasLimit_ < l2GasLimit, "gasLimit must less than L2 config");
+        require(gasLimit_ > l2FinalizeDepositGasUsed, "gas limit must be bigger than the tx_fee of finalize deposit on Jovay");
         require(msg.value >= fee_ + value_, "Insufficient msg.value");
 
         bytes32 hash_ = keccak256(data_);
@@ -97,6 +117,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
                 require(success_, "Failed to refund the fee");
             }
         }
+        feeBalance += fee_;
     }
 
     /**
@@ -132,6 +153,14 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         emit RelayedMsg(hash_, nonce_);
     }
 
+    function withdrawDepositFee(address _target, uint256 _amount) external onlyWithdrawer {
+        require(_target.code.length == 0, "INVALID_PARAMETER: withdraw target must be eoa");
+        require(_amount <= feeBalance, "INVALID_PARAMETER : withdraw amount must smaller than or equal to fee in mailbox");
+        (bool success,) = _target.call{value : _amount}("");
+        require(success, "INTERNAL_ERROR : withdraw fee Failed");
+        feeBalance -= _amount;
+    }
+
     /**
      * @notice Set new L2 Gas limit for deposit
      */
@@ -139,6 +168,15 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         uint256 oldL2GasLimit = l2GasLimit;
         l2GasLimit = _l2GasLimit;
         emit SetL2GasLimit(oldL2GasLimit, _l2GasLimit);
+    }
+
+    /**
+     * @notice Set new L2 Gas used for finalize deposit
+     */
+    function setL2FinalizeDepositGasUsed(uint256 _l2FinalizeDepositGasUsed) external onlyOwner {
+        uint256 oldL2FinalizeDepositGasUsed = l2FinalizeDepositGasUsed;
+        l2FinalizeDepositGasUsed = _l2FinalizeDepositGasUsed;
+        emit SetL2FinalizeDepositGasUsed(oldL2FinalizeDepositGasUsed, _l2FinalizeDepositGasUsed);
     }
 
     /**

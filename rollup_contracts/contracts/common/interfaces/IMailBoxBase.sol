@@ -34,6 +34,9 @@ interface IMailBoxBase {
     /// @notice Emitted when a cross domain message is relayed successfully.
     event RelayedMsg(bytes32 indexed hash, uint256 nonce);
 
+    /// @notice Emitted when a cross domain message is relayed successfully.
+    event ClaimMsg(bytes32 indexed hash, uint256 nonce);
+
     /// @notice Emitted when a cross domain message is failed to relay.
     event RelayedMsgFailed(bytes32 indexed hash, uint256 nonce);
 

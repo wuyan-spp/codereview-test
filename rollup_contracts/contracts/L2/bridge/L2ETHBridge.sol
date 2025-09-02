@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import "./interfaces/IL2ETHBridge.sol";
+import "../../L1/bridge/interfaces/IL1ETHBridge.sol";
 import "../../common/BridgeBase.sol";
 import "../interfaces/IL2Mailbox.sol";
-import "../../L1/bridge/interfaces/IL1ETHBridge.sol";
+import "./interfaces/IL2ETHBridge.sol";
+import "solidity-bytes-utils/contracts/BytesLib.sol";
+import {L2Mailbox} from "../core/L2Mailbox.sol";
 
 contract L2ETHBridge is BridgeBase, IL2ETHBridge {
     uint256 public balance;
@@ -46,5 +48,22 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
 //        _doCallback(to_, msg_);
 
         emit FinalizeDepositETH(sender_, to_, amount_, msg_);
+    }
+
+    function claimDeposit(bytes calldata msg_) external override nonReentrant whenNotPaused {
+        (address l1bridge, address l2bridge, uint256 value, uint256 nonce, bytes memory depositMsg) = abi.decode(msg_[4:], (address, address, uint256, uint256, bytes));
+        bytes memory newDepositMsg = BytesLib.slice(depositMsg, 4, depositMsg.length-4);
+        (address sender, address target, uint256 amount, bytes memory data) = abi.decode(newDepositMsg, (address, address, uint256, bytes));
+        bytes32 depositHash = keccak256(msg_);
+        IL2Mailbox(mailBox).claimAmount(target, amount, nonce,depositHash);
+    }
+
+    function claimDeposit(bytes calldata msg_, address new_refund_address_) external override nonReentrant whenNotPaused {
+        (address l1bridge, address l2bridge, uint256 value, uint256 nonce, bytes memory depositMsg) = abi.decode(msg_[4:], (address, address, uint256, uint256, bytes));
+        bytes memory newDepositMsg = BytesLib.slice(depositMsg, 4, depositMsg.length-4);
+        (address sender, address target, uint256 amount, bytes memory data) = abi.decode(newDepositMsg, (address, address, uint256, bytes));
+        bytes32 depositHash = keccak256(msg_);
+        require(msg.sender == sender, "claimDeposit change refund must called by origin sender");
+        IL2Mailbox(mailBox).claimAmount(new_refund_address_, amount, nonce, depositHash);
     }
 }

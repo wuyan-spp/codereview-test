@@ -37,4 +37,7 @@ interface IL2ETHBridge {
      * @param data_ data
      */
     function finalizeDeposit(address sender_, address to_, uint256 amount_, bytes calldata data_) external payable;
+
+    function claimDeposit(bytes calldata msg_) external;
+    function claimDeposit(bytes calldata msg_, address new_refund_address_) external;
 }

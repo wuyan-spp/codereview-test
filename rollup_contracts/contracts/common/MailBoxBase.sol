@@ -79,6 +79,10 @@ abstract contract MailBoxBase is OwnableUpgradeable, PausableUpgradeable, Reentr
         receiveMsgMap[hash_] = true;
     }
 
+    function _msgExistCheck(bytes32 hash_) internal view {
+        require(receiveMsgMap[hash_], "L2 message not exist");
+    }
+
     function _encodeCall(
         address sender_,
         address target_,

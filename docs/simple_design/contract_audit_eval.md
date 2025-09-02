@@ -15,6 +15,9 @@ A detailed breakdown of the specific directories and their respective lines of c
 https://github.com/jovaynetwork/jovay-contracts/
 
 ```
+
+You must `bash ./compile.sh` first to install patches in `rollup_contracts/contracts/L1/tee_verifier/sh`
+
 .
 ├── rollup_contracts/contracts
 │ ├── common
@@ -71,9 +74,12 @@ https://github.com/jovaynetwork/jovay-contracts/
 │     │ └── L2ETHBridge.sol
 │     ├── core
 │     │ └── L2Mailbox.sol
+│     │ └── L2GasOracle.sol
+│     │ └── L2CoinBase.sol
 │     ├── interfaces
 │     │ ├── IL2Mailbox.sol
 │     │ └── IL2MailQueue.sol
+│     │ └── IClaimAmount.sol
 │     └── libraries
 │         └── common
 │             └── AppendOnlyMerkleTree.sol

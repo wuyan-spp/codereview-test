@@ -14,6 +14,8 @@ A detailed breakdown of the specific directories and their respective lines of c
 
 https://github.com/jovaynetwork/jovay-contracts/
 
+## Directory Structure
+
 ```
 
 You must `bash ./compile.sh` first to install patches in `rollup_contracts/contracts/L1/tee_verifier/sh`
@@ -94,3 +96,11 @@ You must `bash ./compile.sh` first to install patches in `rollup_contracts/contr
                 ├── sys_staking.sol
                 
 ```
+
+
+## Line of Code
+|                                        | blank | comment | code                                                                                                                                                                 |
+| -------------------------------------- | ----- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| rollup_contracts (exclude tee_verifier) | 396   | 629     | 1353                                                                                                                                                                 |
+| tee_verifier                           | -     | -       | 568 + 354 (V5QuoteVerifier.sol, just need to aduit the difference between V4QuoteVerifier and V5QuoteVerifier contracts) + 1 (PCCSRouter.sol, just one line needs to be audited) |
+| sequencer_contracts                    | 377   | 1174    | 1813                                                                                                                                                                 |

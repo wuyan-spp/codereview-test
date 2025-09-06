@@ -1235,7 +1235,11 @@ library SignedMath {
      * However, the compiler may optimize Solidity ternary operations (i.e. `a ? b : c`) to only compute
      * one branch when needed, making this function more expensive.
      */
-    function ternary(bool condition, int256 a, int256 b) internal pure returns (int256) {
+    function ternary(
+        bool condition,
+        int256 a,
+        int256 b
+    ) internal pure returns (int256) {
         unchecked {
             // branchless ternary works because:
             // b ^ (a ^ b) == a
@@ -1304,7 +1308,10 @@ library Math {
     /**
      * @dev Returns the addition of two unsigned integers, with an success flag (no overflow).
      */
-    function tryAdd(uint256 a, uint256 b) internal pure returns (bool success, uint256 result) {
+    function tryAdd(
+        uint256 a,
+        uint256 b
+    ) internal pure returns (bool success, uint256 result) {
         unchecked {
             uint256 c = a + b;
             if (c < a) return (false, 0);
@@ -1315,7 +1322,10 @@ library Math {
     /**
      * @dev Returns the subtraction of two unsigned integers, with an success flag (no overflow).
      */
-    function trySub(uint256 a, uint256 b) internal pure returns (bool success, uint256 result) {
+    function trySub(
+        uint256 a,
+        uint256 b
+    ) internal pure returns (bool success, uint256 result) {
         unchecked {
             if (b > a) return (false, 0);
             return (true, a - b);
@@ -1325,7 +1335,10 @@ library Math {
     /**
      * @dev Returns the multiplication of two unsigned integers, with an success flag (no overflow).
      */
-    function tryMul(uint256 a, uint256 b) internal pure returns (bool success, uint256 result) {
+    function tryMul(
+        uint256 a,
+        uint256 b
+    ) internal pure returns (bool success, uint256 result) {
         unchecked {
             // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
             // benefit is lost if 'b' is also tested.
@@ -1340,7 +1353,10 @@ library Math {
     /**
      * @dev Returns the division of two unsigned integers, with a success flag (no division by zero).
      */
-    function tryDiv(uint256 a, uint256 b) internal pure returns (bool success, uint256 result) {
+    function tryDiv(
+        uint256 a,
+        uint256 b
+    ) internal pure returns (bool success, uint256 result) {
         unchecked {
             if (b == 0) return (false, 0);
             return (true, a / b);
@@ -1350,7 +1366,10 @@ library Math {
     /**
      * @dev Returns the remainder of dividing two unsigned integers, with a success flag (no division by zero).
      */
-    function tryMod(uint256 a, uint256 b) internal pure returns (bool success, uint256 result) {
+    function tryMod(
+        uint256 a,
+        uint256 b
+    ) internal pure returns (bool success, uint256 result) {
         unchecked {
             if (b == 0) return (false, 0);
             return (true, a % b);
@@ -1364,7 +1383,11 @@ library Math {
      * However, the compiler may optimize Solidity ternary operations (i.e. `a ? b : c`) to only compute
      * one branch when needed, making this function more expensive.
      */
-    function ternary(bool condition, uint256 a, uint256 b) internal pure returns (uint256) {
+    function ternary(
+        bool condition,
+        uint256 a,
+        uint256 b
+    ) internal pure returns (uint256) {
         unchecked {
             // branchless ternary works because:
             // b ^ (a ^ b) == a
@@ -1425,7 +1448,11 @@ library Math {
      * Original credit to Remco Bloemen under MIT license (https://xn--2-umb.com/21/muldiv) with further edits by
      * Uniswap Labs also under MIT license.
      */
-    function mulDiv(uint256 x, uint256 y, uint256 denominator) internal pure returns (uint256 result) {
+    function mulDiv(
+        uint256 x,
+        uint256 y,
+        uint256 denominator
+    ) internal pure returns (uint256 result) {
         unchecked {
             // 512-bit multiply [prod1 prod0] = x * y. Compute the product mod 2²⁵⁶ and mod 2²⁵⁶ - 1, then use
             // the Chinese Remainder Theorem to reconstruct the 512 bit result. The result is stored in two 256
@@ -1447,7 +1474,13 @@ library Math {
 
             // Make sure the result is less than 2²⁵⁶. Also prevents denominator == 0.
             if (denominator <= prod1) {
-                Panic.panic(ternary(denominator == 0, Panic.DIVISION_BY_ZERO, Panic.UNDER_OVERFLOW));
+                Panic.panic(
+                    ternary(
+                        denominator == 0,
+                        Panic.DIVISION_BY_ZERO,
+                        Panic.UNDER_OVERFLOW
+                    )
+                );
             }
 
             ///////////////////////////////////////////////
@@ -1509,8 +1542,17 @@ library Math {
     /**
      * @dev Calculates x * y / denominator with full precision, following the selected rounding direction.
      */
-    function mulDiv(uint256 x, uint256 y, uint256 denominator, Rounding rounding) internal pure returns (uint256) {
-        return mulDiv(x, y, denominator) + SafeCast.toUint(unsignedRoundsUp(rounding) && mulmod(x, y, denominator) > 0);
+    function mulDiv(
+        uint256 x,
+        uint256 y,
+        uint256 denominator,
+        Rounding rounding
+    ) internal pure returns (uint256) {
+        return
+            mulDiv(x, y, denominator) +
+            SafeCast.toUint(
+                unsignedRoundsUp(rounding) && mulmod(x, y, denominator) > 0
+            );
     }
 
     /**
@@ -1600,7 +1642,11 @@ library Math {
      * the underlying function will succeed given the lack of a revert, but the result may be incorrectly
      * interpreted as 0.
      */
-    function modExp(uint256 b, uint256 e, uint256 m) internal view returns (uint256) {
+    function modExp(
+        uint256 b,
+        uint256 e,
+        uint256 m
+    ) internal view returns (uint256) {
         (bool success, uint256 result) = tryModExp(b, e, m);
         if (!success) {
             Panic.panic(Panic.DIVISION_BY_ZERO);
@@ -1618,7 +1664,11 @@ library Math {
      * https://eips.ethereum.org/EIPS/eip-198[EIP-198]. Otherwise, the underlying function will succeed given the lack
      * of a revert, but the result may be incorrectly interpreted as 0.
      */
-    function tryModExp(uint256 b, uint256 e, uint256 m) internal view returns (bool success, uint256 result) {
+    function tryModExp(
+        uint256 b,
+        uint256 e,
+        uint256 m
+    ) internal view returns (bool success, uint256 result) {
         if (m == 0) return (false, 0);
         assembly ("memory-safe") {
             let ptr := mload(0x40)
@@ -1647,7 +1697,11 @@ library Math {
     /**
      * @dev Variant of {modExp} that supports inputs of arbitrary length.
      */
-    function modExp(bytes memory b, bytes memory e, bytes memory m) internal view returns (bytes memory) {
+    function modExp(
+        bytes memory b,
+        bytes memory e,
+        bytes memory m
+    ) internal view returns (bytes memory) {
         (bool success, bytes memory result) = tryModExp(b, e, m);
         if (!success) {
             Panic.panic(Panic.DIVISION_BY_ZERO);
@@ -1673,7 +1727,14 @@ library Math {
         assembly ("memory-safe") {
             let dataPtr := add(result, 0x20)
             // Write result on top of args to avoid allocating extra memory.
-            success := staticcall(gas(), 0x05, dataPtr, mload(result), dataPtr, mLen)
+            success := staticcall(
+                gas(),
+                0x05,
+                dataPtr,
+                mload(result),
+                dataPtr,
+                mLen
+            )
             // Overwrite the length.
             // result.length > returndatasize() is guaranteed because returndatasize() == m.length
             mstore(result, mLen)
@@ -1810,10 +1871,17 @@ library Math {
     /**
      * @dev Calculates sqrt(a), following the selected rounding direction.
      */
-    function sqrt(uint256 a, Rounding rounding) internal pure returns (uint256) {
+    function sqrt(
+        uint256 a,
+        Rounding rounding
+    ) internal pure returns (uint256) {
         unchecked {
             uint256 result = sqrt(a);
-            return result + SafeCast.toUint(unsignedRoundsUp(rounding) && result * result < a);
+            return
+                result +
+                SafeCast.toUint(
+                    unsignedRoundsUp(rounding) && result * result < a
+                );
         }
     }
 
@@ -1862,10 +1930,17 @@ library Math {
      * @dev Return the log in base 2, following the selected rounding direction, of a positive value.
      * Returns 0 if given 0.
      */
-    function log2(uint256 value, Rounding rounding) internal pure returns (uint256) {
+    function log2(
+        uint256 value,
+        Rounding rounding
+    ) internal pure returns (uint256) {
         unchecked {
             uint256 result = log2(value);
-            return result + SafeCast.toUint(unsignedRoundsUp(rounding) && 1 << result < value);
+            return
+                result +
+                SafeCast.toUint(
+                    unsignedRoundsUp(rounding) && 1 << result < value
+                );
         }
     }
 
@@ -1911,10 +1986,17 @@ library Math {
      * @dev Return the log in base 10, following the selected rounding direction, of a positive value.
      * Returns 0 if given 0.
      */
-    function log10(uint256 value, Rounding rounding) internal pure returns (uint256) {
+    function log10(
+        uint256 value,
+        Rounding rounding
+    ) internal pure returns (uint256) {
         unchecked {
             uint256 result = log10(value);
-            return result + SafeCast.toUint(unsignedRoundsUp(rounding) && 10 ** result < value);
+            return
+                result +
+                SafeCast.toUint(
+                    unsignedRoundsUp(rounding) && 10 ** result < value
+                );
         }
     }
 
@@ -1953,10 +2035,17 @@ library Math {
      * @dev Return the log in base 256, following the selected rounding direction, of a positive value.
      * Returns 0 if given 0.
      */
-    function log256(uint256 value, Rounding rounding) internal pure returns (uint256) {
+    function log256(
+        uint256 value,
+        Rounding rounding
+    ) internal pure returns (uint256) {
         unchecked {
             uint256 result = log256(value);
-            return result + SafeCast.toUint(unsignedRoundsUp(rounding) && 1 << (result << 3) < value);
+            return
+                result +
+                SafeCast.toUint(
+                    unsignedRoundsUp(rounding) && 1 << (result << 3) < value
+                );
         }
     }
 
@@ -2015,8 +2104,14 @@ library Strings {
     /**
      * @dev Converts a `int256` to its ASCII `string` decimal representation.
      */
-    function toStringSigned(int256 value) internal pure returns (string memory) {
-        return string.concat(value < 0 ? "-" : "", toString(SignedMath.abs(value)));
+    function toStringSigned(
+        int256 value
+    ) internal pure returns (string memory) {
+        return
+            string.concat(
+                value < 0 ? "-" : "",
+                toString(SignedMath.abs(value))
+            );
     }
 
     /**
@@ -2031,7 +2126,10 @@ library Strings {
     /**
      * @dev Converts a `uint256` to its ASCII `string` hexadecimal representation with fixed length.
      */
-    function toHexString(uint256 value, uint256 length) internal pure returns (string memory) {
+    function toHexString(
+        uint256 value,
+        uint256 length
+    ) internal pure returns (string memory) {
         uint256 localValue = value;
         bytes memory buffer = new bytes(2 * length + 2);
         buffer[0] = "0";
@@ -2058,7 +2156,9 @@ library Strings {
      * @dev Converts an `address` with fixed length of 20 bytes to its checksummed ASCII `string` hexadecimal
      * representation, according to EIP-55.
      */
-    function toChecksumHexString(address addr) internal pure returns (string memory) {
+    function toChecksumHexString(
+        address addr
+    ) internal pure returns (string memory) {
         bytes memory buffer = bytes(toHexString(addr));
 
         // hash the hex part of buffer (skip length + 2 bytes, length 40)
@@ -2081,8 +2181,13 @@ library Strings {
     /**
      * @dev Returns true if the two strings are equal.
      */
-    function equal(string memory a, string memory b) internal pure returns (bool) {
-        return bytes(a).length == bytes(b).length && keccak256(bytes(a)) == keccak256(bytes(b));
+    function equal(
+        string memory a,
+        string memory b
+    ) internal pure returns (bool) {
+        return
+            bytes(a).length == bytes(b).length &&
+            keccak256(bytes(a)) == keccak256(bytes(b));
     }
 
     /**
@@ -2104,7 +2209,11 @@ library Strings {
      * - The substring must be formatted as `[0-9]*`
      * - The result must fit into an `uint256` type
      */
-    function parseUint(string memory input, uint256 begin, uint256 end) internal pure returns (uint256) {
+    function parseUint(
+        string memory input,
+        uint256 begin,
+        uint256 end
+    ) internal pure returns (uint256) {
         (bool success, uint256 value) = tryParseUint(input, begin, end);
         if (!success) revert StringsInvalidChar();
         return value;
@@ -2115,7 +2224,9 @@ library Strings {
      *
      * NOTE: This function will revert if the result does not fit in a `uint256`.
      */
-    function tryParseUint(string memory input) internal pure returns (bool success, uint256 value) {
+    function tryParseUint(
+        string memory input
+    ) internal pure returns (bool success, uint256 value) {
         return _tryParseUintUncheckedBounds(input, 0, bytes(input).length);
     }
 
@@ -2179,50 +2290,50 @@ library Strings {
      * NOTE: making this function internal would mean it could be used with memory unsafe offset, and marking the
      * assembly block as such would prevent some optimizations.
      */
-    function _unsafeReadBytesOffset(bytes memory buffer, uint256 offset) private pure returns (bytes32 value) {
+    function _unsafeReadBytesOffset(
+        bytes memory buffer,
+        uint256 offset
+    ) private pure returns (bytes32 value) {
         // This is not memory safe in the general case, but all calls to this private function are within bounds.
         assembly ("memory-safe") {
             value := mload(add(buffer, add(0x20, offset)))
         }
     }
-
 }
-
 
 // import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 // import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract ReentrancyGuard {
+    /**
+     * @dev We use a single lock for the whole contract.
+     */
+    bool private reentrancyLock = false;
 
-  /**
-   * @dev We use a single lock for the whole contract.
-   */
-  bool private reentrancyLock = false;
-
-  /**
-   * @dev Prevents a contract from calling itself, directly or indirectly.
-   * @notice If you mark a function `nonReentrant`, you should also
-   * mark it `external`. Calling one nonReentrant function from
-   * another is not supported. Instead, you can implement a
-   * `private` function doing the actual work, and a `external`
-   * wrapper marked as `nonReentrant`.
-   */
-  modifier nonReentrant() {
-    require(!reentrancyLock);
-    reentrancyLock = true;
-    _;
-    reentrancyLock = false;
-  }
-
+    /**
+     * @dev Prevents a contract from calling itself, directly or indirectly.
+     * @notice If you mark a function `nonReentrant`, you should also
+     * mark it `external`. Calling one nonReentrant function from
+     * another is not supported. Instead, you can implement a
+     * `private` function doing the actual work, and a `external`
+     * wrapper marked as `nonReentrant`.
+     */
+    modifier nonReentrant() {
+        require(!reentrancyLock);
+        reentrancyLock = true;
+        _;
+        reentrancyLock = false;
+    }
 }
 
 interface SysChainCfg {
     function set_config(string[] memory keys, string[] memory values) external;
-    function get_config(string memory key) external view returns (string memory);
+    function get_config(
+        string memory key
+    ) external view returns (string memory);
 }
 
 contract DPoSValidatorManager is ReentrancyGuard {
-
     struct Validator {
         string description;
         string publicKey;
@@ -2253,8 +2364,10 @@ contract DPoSValidatorManager is ReentrancyGuard {
     uint256 public currentEpoch;
     uint256 public totalStake;
 
-    address public constant sysChainCfg = 0x3100000000000000000000000000000000000000;
-    address public constant intrinsicSys = 0x1111111111111111111111111111111111111111;
+    address public constant sysChainCfg =
+        0x3100000000000000000000000000000000000000;
+    address public constant intrinsicSys =
+        0x1111111111111111111111111111111111111111;
 
     event DomainUpdate(
         bytes32 indexed poolId,
@@ -2292,12 +2405,19 @@ contract DPoSValidatorManager is ReentrancyGuard {
         uint256 withdrawStake
     );
 
-    event StakeAdded(address indexed delegator, bytes32 indexed poolId, uint256 amount);
-    event ValidatorRegistered(address indexed validator, bytes32 indexed poolId);
+    event StakeAdded(
+        address indexed delegator,
+        bytes32 indexed poolId,
+        uint256 amount
+    );
+    event ValidatorRegistered(
+        address indexed validator,
+        bytes32 indexed poolId
+    );
     event ValidatorUpdated(bytes32 indexed poolId);
     event ValidatorExitRequested(bytes32 indexed poolId);
 
-    event ErrorOccurred (
+    event ErrorOccurred(
         uint256 indexed epochNumber,
         uint256 indexed blockNumber,
         uint indexed errorCode,
@@ -2305,27 +2425,27 @@ contract DPoSValidatorManager is ReentrancyGuard {
     );
 
     event BalanceReceived(
-       uint256 indexed epochNumber,
-       uint256 indexed blockNumber,
-       address indexed sender,
-       uint256 amount,
-       uint256 totalBalance
+        uint256 indexed epochNumber,
+        uint256 indexed blockNumber,
+        address indexed sender,
+        uint256 amount,
+        uint256 totalBalance
     );
 
-    constructor() {
-
-    }
+    constructor() {}
 
     modifier onlyOwner() {
         require(msg.sender == intrinsicSys, "Not owner");
         _;
     }
 
-    function hexStringToBytes(string memory str) public pure returns (bytes memory) {
+    function hexStringToBytes(
+        string memory str
+    ) public pure returns (bytes memory) {
         bytes memory strBytes = bytes(str);
 
         // Check and strip the '0x' prefix if it exists
-        if (strBytes.length >= 2 && strBytes[0] == '0' && strBytes[1] == 'x') {
+        if (strBytes.length >= 2 && strBytes[0] == "0" && strBytes[1] == "x") {
             strBytes = sliceBytes(strBytes, 2, strBytes.length);
         }
 
@@ -2334,13 +2454,21 @@ contract DPoSValidatorManager is ReentrancyGuard {
         bytes memory result = new bytes(strBytes.length / 2);
 
         for (uint i = 0; i < strBytes.length / 2; i++) {
-            result[i] = bytes1(_fromHexChar(strBytes[2 * i]) * 16 + _fromHexChar(strBytes[2 * i + 1]));
+            result[i] = bytes1(
+                _fromHexChar(strBytes[2 * i]) *
+                    16 +
+                    _fromHexChar(strBytes[2 * i + 1])
+            );
         }
 
         return result;
     }
 
-    function sliceBytes(bytes memory data, uint start, uint end) internal pure returns (bytes memory) {
+    function sliceBytes(
+        bytes memory data,
+        uint start,
+        uint end
+    ) internal pure returns (bytes memory) {
         bytes memory result = new bytes(end - start);
         for (uint i = start; i < end; i++) {
             result[i - start] = data[i];
@@ -2361,7 +2489,10 @@ contract DPoSValidatorManager is ReentrancyGuard {
         }
     }
 
-    function isArrayContains(bytes32[] memory array, bytes32 element) internal pure returns (bool)  {
+    function isArrayContains(
+        bytes32[] memory array,
+        bytes32 element
+    ) internal pure returns (bool) {
         for (uint i = 0; i < array.length; i++) {
             if (array[i] == element) {
                 return true;
@@ -2378,48 +2509,25 @@ contract DPoSValidatorManager is ReentrancyGuard {
         return isArrayContains(pendingAddPoolIds, _poolId);
     }
 
-    function isValidatorPendingExit(bytes32 _poolId) public view returns (bool) {
+    function isValidatorPendingExit(
+        bytes32 _poolId
+    ) public view returns (bool) {
         return isArrayContains(pendingExitPoolIds, _poolId);
     }
-
-    function unionArrays(bytes32[] memory _poolId1, bytes32[] memory _poolId2) public pure returns (bytes32[] memory) {
-        bytes32[] memory temp_union = new bytes32[](_poolId1.length + _poolId2.length);
-        uint total_count = 0;
-
-        // put array1
-        for (uint i = 0; i < _poolId1.length; i++) {
-            bytes32 pool_id = _poolId1[i];
-            temp_union[total_count] = pool_id;
-            total_count++;
-        }
-
-        // put array2
-        for (uint i = 0; i < _poolId2.length; i++) {
-            bytes32 pool_id = _poolId2[i];
-            if (!isArrayContains(temp_union, pool_id)) {
-                temp_union[total_count] = pool_id;
-                total_count++;
-            }
-        }
-
-        bytes32[] memory result = new bytes32[](total_count);
-        for (uint i = 0; i < total_count; i++) {
-            result[i] = temp_union[i];
-        }
-
-        return result;
-    }
-
 
     function _transferTo(address recipient, uint amount) internal {
         if (amount > address(this).balance) {
             uint error_code = 1;
-            bytes memory errorData = abi.encode(recipient, amount, address(this).balance);
+            bytes memory errorData = abi.encode(
+                recipient,
+                amount,
+                address(this).balance
+            );
             emit ErrorOccurred(
-               currentEpoch,
-               block.number,
-               error_code,
-               errorData
+                currentEpoch,
+                block.number,
+                error_code,
+                errorData
             );
             return;
         }
@@ -2428,56 +2536,19 @@ contract DPoSValidatorManager is ReentrancyGuard {
 
         if (!success) {
             uint error_code = 2;
-            bytes memory errorData = abi.encode(recipient, amount, address(this).balance);
+            bytes memory errorData = abi.encode(
+                recipient,
+                amount,
+                address(this).balance
+            );
             emit ErrorOccurred(
-               currentEpoch,
-               block.number,
-               error_code,
-               errorData
+                currentEpoch,
+                block.number,
+                error_code,
+                errorData
             );
             return;
         }
-    }
-
-
-    function registerValidator(
-        string memory _description,
-        string memory _publicKey,
-        string memory _publicKeyPop,
-        string memory _blsPublicKey,
-        string memory _blsPublicKeyPop,
-        string memory _endpoint
-    ) external payable nonReentrant returns (bytes32)  {
-        require(msg.value >= MIN_VALIDATOR_STAKE, "Insufficient stake");
-        require(msg.value <= MAX_POOL_STAKE, "Stake too large");
-
-        bytes memory public_key = hexStringToBytes(_publicKey);
-        bytes32 poolId = bytes32(sha256((abi.encodePacked(public_key))));
-
-        require(validators[poolId].status == 0, "Validator already registered");
-        require(validators[poolId].owner == address(0), "Validator already registered");
-
-        Validator memory newValidator = Validator({
-            description: _description,
-            publicKey: _publicKey,
-            publicKeyPop: _publicKeyPop,
-            blsPublicKey: _blsPublicKey,
-            blsPublicKeyPop: _blsPublicKeyPop,
-            endpoint: _endpoint,
-            status: 0,
-            poolId: poolId,
-            totalStake: msg.value,
-            owner: msg.sender,
-            stakeSnapshot: 0,
-            pendingWithdrawStake: 0,
-            pendingWithdrawWindow: 0
-        });
-
-        validators[poolId] = newValidator;
-        pendingAddPoolIds.push(poolId);
-
-        emit ValidatorRegistered(msg.sender, poolId);
-        return poolId;
     }
 
     function updateValidator(
@@ -2487,8 +2558,14 @@ contract DPoSValidatorManager is ReentrancyGuard {
         address _new_owner
     ) external {
         require(validators[_poolId].poolId != 0, "Validator does not exist");
-        require(validators[_poolId].owner == msg.sender, "Validator does not exist");
-        require(isValidatorActive(_poolId) || isValidatorPendingAdd(_poolId), "Validator status invalid");
+        require(
+            validators[_poolId].owner == msg.sender,
+            "Validator does not exist"
+        );
+        require(
+            isValidatorActive(_poolId) || isValidatorPendingAdd(_poolId),
+            "Validator status invalid"
+        );
         require(_new_owner != address(0), "Invalid new address");
         // Add more checks here to ensure only the validator can update their info
 
@@ -2499,120 +2576,22 @@ contract DPoSValidatorManager is ReentrancyGuard {
         emit ValidatorUpdated(_poolId);
     }
 
-    function exitValidator(bytes32 _poolId) external {
-        require(validators[_poolId].poolId != 0, "Validator does not exist");
-        require(isValidatorActive(_poolId) || isValidatorPendingAdd(_poolId), "Validator status invalid"); 
-        require(!isValidatorPendingExit(_poolId), "Validator is pending exit");
-        require(validators[_poolId].owner == msg.sender, "Validator does not exist");
-
-        // remove from pending add queue
-        if (isValidatorPendingAdd(_poolId)) {
-            for (uint i = 0; i < pendingAddPoolIds.length; i++) {
-                if (pendingAddPoolIds[i] == _poolId) {
-                    pendingAddPoolIds[i] = pendingAddPoolIds[pendingAddPoolIds.length - 1];
-                    pendingAddPoolIds.pop();
-                    break;
-                }
-            }
-        }
-
-        validators[_poolId].pendingWithdrawStake = validators[_poolId].totalStake;
-        validators[_poolId].totalStake = 0;
-        validators[_poolId].pendingWithdrawWindow = getWithdrawEffectiveWindow();
-        pendingExitPoolIds.push(_poolId);
-        emit ValidatorExitRequested(_poolId);
-    }
-
-    function addStake(bytes32 _poolId) external payable nonReentrant {
-        require(validators[_poolId].poolId != 0, "Validator does not exist");
-        require(isValidatorActive(_poolId) || isValidatorPendingAdd(_poolId), "Validator status invalid");
-        require(msg.value >= MIN_DELEGATOR_STAKE, "Insufficient stake");
-        require(validators[_poolId].totalStake + msg.value <= MAX_POOL_STAKE, "Pool stake limit exceeded");
-
-        validators[_poolId].totalStake = validators[_poolId].totalStake + msg.value;
-
-        emit StakeAdded(msg.sender, _poolId, msg.value);
-    }
-
     function advanceEpoch() public onlyOwner {
         bytes32[] memory _poolIds = new bytes32[](0);
         uint256[] memory _priority_fees = new uint256[](0);
         advanceEpoch(_poolIds, _priority_fees);
     }
 
-    function advanceEpoch(bytes32[] memory _poolIds, uint256[] memory _priority_fees) public onlyOwner {
-        require(_poolIds.length == _priority_fees.length, "PoolId Fees not match");
-        rewardValidators(_poolIds, _priority_fees);
-
-        // Process pending additions
-        uint pending_index = 0;
-        while (pending_index < pendingAddPoolIds.length) {
-            bytes32 poolId = pendingAddPoolIds[pending_index];
-            if (validators[poolId].totalStake >= MIN_POOL_STAKE) {
-                activePoolIds.push(poolId);
-                validators[poolId].status = 1;
-                pendingAddPoolIds[pending_index] = pendingAddPoolIds[pendingAddPoolIds.length - 1];
-                pendingAddPoolIds.pop();
-                emit DomainUpdate(
-                    poolId,
-                    validators[poolId].description,
-                    validators[poolId].publicKey,
-                    validators[poolId].blsPublicKey,
-                    validators[poolId].endpoint,
-                    uint64(block.number + 1),
-                    validators[poolId].status
-                );
-            } else {
-                ++pending_index;
-            }
-        }
-
-        // Process pending exits
-        for (uint i = 0; i < pendingExitPoolIds.length; i++) {
-            bytes32 poolId = pendingExitPoolIds[i];
-            // find and delete in active validators
-            for (uint j = 0; j < activePoolIds.length; j++) {
-                if (activePoolIds[j] == poolId) {
-                    if (validators[poolId].totalStake < MIN_POOL_STAKE) {
-                        // remove from active
-                        activePoolIds[j] = activePoolIds[activePoolIds.length - 1];
-                        activePoolIds.pop();
-                        validators[poolId].status = 0;
-
-                        // domain delete
-                        emit DomainUpdate(poolId,
-                                      validators[poolId].description,
-                                      validators[poolId].publicKey,
-                                      validators[poolId].blsPublicKey,
-                                      validators[poolId].endpoint,
-                                      uint64(block.number + 1),
-                                      validators[poolId].status);
-                    }
-
-                    break;
-                }
-            }
-        }
-
-        // process withdraw
-        uint pending_withdraw_index = 0;
-        while (pending_withdraw_index < pendingExitPoolIds.length) {
-            bytes32 poolId = pendingExitPoolIds[pending_withdraw_index];
-            if (validators[poolId].pendingWithdrawWindow == 0) {
-                // effective withdraw window is reached
-                uint pending_withdraw_stake = validators[poolId].pendingWithdrawStake;
-                validators[poolId].pendingWithdrawStake = 0;
-                _transferTo(validators[poolId].owner, pending_withdraw_stake);
-                pendingExitPoolIds[pending_withdraw_index] = pendingExitPoolIds[pendingExitPoolIds.length - 1];
-                pendingExitPoolIds.pop();
-            } else {
-                validators[poolId].pendingWithdrawWindow -= 1;
-                pending_withdraw_index++;
-            }
-        }
+    function advanceEpoch(
+        bytes32[] memory _poolIds,
+        uint256[] memory _priority_fees
+    ) public onlyOwner {
+        require(
+            _poolIds.length == _priority_fees.length,
+            "PoolId Fees not match"
+        );
 
         setChainEpochBlock();
-        updateTotalStake();
         currentEpoch++;
 
         emit EpochChange(
@@ -2623,16 +2602,6 @@ contract DPoSValidatorManager is ReentrancyGuard {
             activePoolIds
         );
     }
-
-    function updateTotalStake() internal {
-        totalStake = 0;
-        for (uint i = 0; i < activePoolIds.length; i++) {
-            bytes32 poolId = activePoolIds[i];
-            validators[poolId].stakeSnapshot = validators[poolId].totalStake;
-            totalStake += validators[poolId].totalStake;
-        }
-    }
-
 
     function setChainEpochBlock() internal {
         SysChainCfg sys_chain_cfg = SysChainCfg(sysChainCfg);
@@ -2656,97 +2625,34 @@ contract DPoSValidatorManager is ReentrancyGuard {
         return activePoolIds;
     }
 
-    function getPendingAddValidators() external view returns (bytes32[] memory) {
+    function getPendingAddValidators()
+        external
+        view
+        returns (bytes32[] memory)
+    {
         return pendingAddPoolIds;
     }
 
-    function getPendingExitValidators() external view returns (bytes32[] memory) {
+    function getPendingExitValidators()
+        external
+        view
+        returns (bytes32[] memory)
+    {
         return pendingExitPoolIds;
     }
 
-    // Function to slash misbehaving validators (to be implemented)
-    function slashValidator(bytes32 _poolId) external {
-        // Implement slashing logic
-    }
-
-    function withdrawStake(bytes32 _poolId, uint256 _withdrawStake) external {
-        require(validators[_poolId].poolId != 0, "Validator does not exist");
-        require(validators[_poolId].owner == msg.sender, "Validator does not exist");
-        require(!isValidatorPendingExit(_poolId), "Validator is pending exit");
-        require(validators[_poolId].totalStake >= _withdrawStake, "WithdrawStake is too large");
-
-        validators[_poolId].pendingWithdrawStake = _withdrawStake;
-        validators[_poolId].totalStake -= _withdrawStake;
-        validators[_poolId].pendingWithdrawWindow = getWithdrawEffectiveWindow();
-
-        pendingExitPoolIds.push(_poolId);
-        emit ValidatorWithdrawStake(_poolId,
-                currentEpoch,
-                block.number,
-                validators[_poolId].totalStake,
-                _withdrawStake
-        );
-    }
-
-
     function getWithdrawEffectiveWindow() internal view returns (uint8) {
-       string memory key = "staking.withdraw_effective_epoch";
-       string memory value  = getChainCfg(key);
-       return uint8(Strings.parseUint(value));
+        string memory key = "staking.withdraw_effective_epoch";
+        string memory value = getChainCfg(key);
+        return uint8(Strings.parseUint(value));
     }
 
-    function getStakingBaseReward() internal view returns (uint256) {
-       string memory key = "staking.epoch_base_rewards";
-       string memory value = getChainCfg(key);
-       return Strings.parseUint(value);
-    }
-
-    function getChainCfg(string memory key) internal view returns (string memory) {
+    function getChainCfg(
+        string memory key
+    ) internal view returns (string memory) {
         SysChainCfg sys_chain_cfg = SysChainCfg(sysChainCfg);
         return sys_chain_cfg.get_config(key);
     }
-
-    function getValidatorRewards(bytes32[] memory _poolIds) internal view returns (uint256[] memory) {
-        uint256 base_reward = getStakingBaseReward();
-        uint256[] memory rewards = new uint256[](_poolIds.length);
-        for (uint i = 0; i < _poolIds.length; i++) {
-           bytes32 poolId = _poolIds[i];
-           uint256 reward = 0;
-           if (isValidatorActive(poolId)) {
-               uint256 stake = validators[poolId].stakeSnapshot;
-               reward = uint256(base_reward * stake / totalStake);
-           }
-           rewards[i] = reward;
-        }
-
-        return rewards;
-    }
-
-    function rewardValidators(bytes32[] memory _poolIds, uint256[] memory _priority_fees) internal {
-        bytes32[] memory total_pool_ids = unionArrays(_poolIds, activePoolIds);
-
-        uint256[] memory validator_rewards = getValidatorRewards(total_pool_ids);
-        for (uint i = 0; i < total_pool_ids.length; i++) {
-            bytes32 pool_id = total_pool_ids[i];
-            uint256 base_reward = validator_rewards[i];
-            uint256 fee_reward = 0;
-            if (i < _priority_fees.length) {
-                fee_reward = _priority_fees[i];
-            }
-
-            uint256 total_reward = base_reward + fee_reward;
-            emit ValidatorReward(pool_id,
-                validators[pool_id].owner,
-                currentEpoch,
-                block.number,
-                base_reward,
-                fee_reward,
-                total_reward
-            );
-        }
-    }
-
-
 
     receive() external payable {
         emit BalanceReceived(

@@ -22,14 +22,6 @@ interface IRollup {
     /// @param stateRoot The state root on layer 2 after this batch.
     /// @param l2MsgRoot The merkle root on layer2 after this batch.
     event VerifyBatch(uint8 proveType, uint256 indexed batchIndex, bytes32 indexed batchHash, bytes32 stateRoot, bytes32 l2MsgRoot);
-
-    event Log(bytes32 data);
-
-    event LogBytes(bytes data);
-
-    event LogUint(uint256 length);
-
-    event LogUint64(uint64 data);
     
     /// @notice get l2MsgRoot of batchIndex
     /// @param _batchIndex. the index of l2MsgRoot;

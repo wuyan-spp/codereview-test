@@ -26,13 +26,17 @@ contract L1GasOracle is OwnableUpgradeable{
 
     uint256 public txLengthLimit;
 
+    constructor(){
+        _disableInitializers();
+    }
+
     function initialize(uint256 _lastBatchDaFee, uint256 _lastBatchExecFee, uint256 _lastBatchByteLength) external initializer {
         OwnableUpgradeable.__Ownable_init();
         totalScala = 110;
         l1Profit = 0;
         lastBatchDaFee = _lastBatchDaFee;
         lastBatchExecFee = _lastBatchExecFee;
-        txLengthLimit = 50000;
+        txLengthLimit = 1000000;
         lastBatchByteLength = 50000;
         if (_lastBatchByteLength < txLengthLimit) {
             lastBatchByteLength = txLengthLimit;
@@ -64,6 +68,8 @@ contract L1GasOracle is OwnableUpgradeable{
 
     event SetTotalScala(uint256 _totalScala);
 
+    event SetTxLengthLimit(uint256 _txLengthLimit);
+
     event AddRelayer(address relayer);
 
     event RemoveRelayer(address oldRelayer);
@@ -80,7 +86,7 @@ contract L1GasOracle is OwnableUpgradeable{
         lastBatchExecFee = _lastBatchExecFee;
         CalcL1FeePerByte();
 
-        emit SetNewBatchBlobFeeAndTxFee(lastBatchDaFee, lastBatchExecFee, lastBatchByteLength);
+        emit SetNewBatchBlobFeeAndTxFee(_lastBatchDaFee, _lastBatchExecFee, _lastBatchByteLength);
     }
 
     function setBlobBaseFeeScalaAndTxFeeScala(uint256 _baseFeeScala,
@@ -88,21 +94,27 @@ contract L1GasOracle is OwnableUpgradeable{
         baseFeeScala = _baseFeeScala;
         blobBaseFeeScala = _blobBaseFeeScala;
         CalcL1FeePerByte();
-        emit SetBlobBaseFeeScalaAndTxFeeScala(baseFeeScala, blobBaseFeeScala);
+        emit SetBlobBaseFeeScalaAndTxFeeScala(_baseFeeScala, _blobBaseFeeScala);
     }
 
     function setL1Profit(uint256 _l1Profit) onlyOwner external {
         l1Profit = _l1Profit;
         CalcL1FeePerByte();
 
-        emit SetL1Profit(l1Profit);
+        emit SetL1Profit(_l1Profit);
     }
 
     function setTotalScala(uint256 _totalScala) onlyOwner external {
         totalScala = _totalScala;
         CalcL1FeePerByte();
 
-        emit SetTotalScala(totalScala);
+        emit SetTotalScala(_totalScala);
+    }
+
+    function setTxLengthLimit(uint256 _txLengthLimit) onlyOwner external {
+        txLengthLimit = _txLengthLimit;
+        CalcL1FeePerByte();
+        emit SetTxLengthLimit(_txLengthLimit);
     }
 
     function addRelayer(address _newRelayer) onlyOwner external {
@@ -118,6 +130,6 @@ contract L1GasOracle is OwnableUpgradeable{
     }
 
     function getTxL1Fee(uint256 txLength) external view returns(uint256){
-        return (((lastBatchDaFee + lastBatchExecFee)/lastBatchByteLength) * txLength + l1Profit) * totalScala;
+        return l1FeePerByte * txLength;
     }
 }

@@ -4,6 +4,12 @@ pragma solidity ^0.8.0;
 interface IMailBoxBase {
     error InvalidInitAddress();
 
+    error InvalidL2GasLimit();
+
+    error SetL2GasLimitSmallerThanGasUsed();
+
+    error SetL2FinalizeDepositGasUsedBiggerThanGasLimit();
+
     /// @notice Emitted when a message is sent.
     event SentMsg(
         address indexed sender,
@@ -15,21 +21,11 @@ interface IMailBoxBase {
         bytes32 hash
     );
 
-    event Log(
-        address log
-    );
+    /// @notice Emitted when a finalize deposit message is relayed failed.
+    event FinalizeDepositETHFailed(bytes32 indexed hash, uint256 nonce);
 
-    event LogBytes(
-        bytes log
-    );
-
-    event LogBytes32(
-        bytes32 log
-    );
-
-    event LogUint(
-        uint256 log
-    );
+    /// @notice Emitted when a finalize deposit message is relayed success.
+    event FinalizeDepositETHSuccess(bytes32 indexed hash, uint256 nonce);
 
     /// @notice Emitted when a cross domain message is relayed successfully.
     event RelayedMsg(bytes32 indexed hash, uint256 nonce);

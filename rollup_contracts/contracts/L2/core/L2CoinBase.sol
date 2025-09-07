@@ -5,15 +5,20 @@ import "../bridge/interfaces/IL2ETHBridge.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract L2CoinBase is OwnableUpgradeable {
-    address public mailbox;
+    address public l2EthBridge;
 
     receive() external payable {
     }
 
-    function initialize(address _mailbox) external initializer {
-        OwnableUpgradeable.__Ownable_init();
-        mailbox = _mailbox;
+    constructor(){
+        _disableInitializers();
     }
+
+    function initialize(address _l2EthBridge) external initializer {
+        OwnableUpgradeable.__Ownable_init();
+        l2EthBridge = _l2EthBridge;
+    }
+
     // Withdrawal permission account
     mapping(address => bool) public isWithdrawer;
 
@@ -26,7 +31,7 @@ contract L2CoinBase is OwnableUpgradeable {
         _;
     }
 
-    event SetMailbox(address indexed newMailbox);
+    event SetL2EthBridge(address indexed l2EthBridge);
 
     event AddWithdrawer(address indexed newWithdrawer);
 
@@ -38,44 +43,43 @@ contract L2CoinBase is OwnableUpgradeable {
 
     event CoinBaseWithdraw(address indexed _target, uint256 indexed amount);
 
-    function setMailbox(address newMailbox) onlyOwner external {
-        mailbox = newMailbox;
-
-        emit SetMailbox(mailbox);
+    function setL2EthBridge(address _newL2EthBridge) onlyOwner external {
+        l2EthBridge = _newL2EthBridge;
+        emit SetL2EthBridge(_newL2EthBridge);
     }
 
-    function addWithdrawer(address newWithdrawer) onlyOwner external {
-        isWithdrawer[newWithdrawer] = true;
+    function addWithdrawer(address _newWithdrawer) onlyOwner external {
+        isWithdrawer[_newWithdrawer] = true;
 
-        emit AddWithdrawer(newWithdrawer);
+        emit AddWithdrawer(_newWithdrawer);
     }
 
-    function removeWithdrawer(address oldWithdrawer) onlyOwner external {
-        isWithdrawer[oldWithdrawer] = false;
+    function removeWithdrawer(address _oldWithdrawer) onlyOwner external {
+        isWithdrawer[_oldWithdrawer] = false;
 
-        emit RemoveWithdrawer(oldWithdrawer);
+        emit RemoveWithdrawer(_oldWithdrawer);
     }
 
-    function addWhiteAddress(address whiteAddress) onlyOwner external {
-        whiteListOnL1[whiteAddress] = true;
+    function addWhiteAddress(address _whiteAddress) onlyOwner external {
+        whiteListOnL1[_whiteAddress] = true;
 
-        emit AddWhiteAddress(whiteAddress);
+        emit AddWhiteAddress(_whiteAddress);
     }
 
-    function removeWhiteAddress(address whiteAddress) onlyOwner external {
-        whiteListOnL1[whiteAddress] = false;
+    function removeWhiteAddress(address _whiteAddress) onlyOwner external {
+        whiteListOnL1[_whiteAddress] = false;
 
-        emit RemoveWhiteAddress(whiteAddress);
+        emit RemoveWhiteAddress(_whiteAddress);
     }
 
-    function withdraw(address _target, uint256 amount) onlyWithdrawer public {
+    function withdraw(address _target, uint256 _amount) onlyWithdrawer public {
         require(whiteListOnL1[_target], "INVALID_PERMISSION : target is not receiver on L1");
-        require(amount <= address(this).balance, "INVALID_PERMISSION : withdraw amount must smaller than or equal to balance");
+        require(_amount <= address(this).balance, "INVALID_PERMISSION : withdraw amount must smaller than or equal to balance");
 
-        bytes memory message_ = abi.encodeCall(IL2ETHBridge.withdraw, (_target, amount, 0, ""));
-        (bool success_, ) = mailbox.call{value : amount}(message_);
+        bytes memory message_ = abi.encodeCall(IL2ETHBridge.withdraw, (_target, _amount, 0, ""));
+        (bool success_, ) = l2EthBridge.call{value : _amount}(message_);
         require(success_, "withdraw failed in L2EthBridge");
-        emit CoinBaseWithdraw(_target, amount);
+        emit CoinBaseWithdraw(_target, _amount);
     }
 
     function withdrawAll(address _target) onlyWithdrawer external {

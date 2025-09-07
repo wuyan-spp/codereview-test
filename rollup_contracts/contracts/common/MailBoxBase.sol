@@ -56,10 +56,10 @@ abstract contract MailBoxBase is OwnableUpgradeable, PausableUpgradeable, Reentr
         return gasLimit_ * baseFee;
     }
 
-    function setBaseFee(uint256 newBaseFee_) external onlyOwner {
-        uint256 oldBaseFee_ = baseFee;
-        baseFee = newBaseFee_;
-        emit BaseFeeChanged(oldBaseFee_, newBaseFee_);
+    function setBaseFee(uint256 _newBaseFee) external onlyOwner {
+        uint256 oldBaseFee = baseFee;
+        baseFee = _newBaseFee;
+        emit BaseFeeChanged(oldBaseFee, _newBaseFee);
     }
 
     // function nextMsgIndex() public view override virtual returns (uint256);

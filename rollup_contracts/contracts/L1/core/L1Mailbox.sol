@@ -64,6 +64,10 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         if (rollup_ == address(0) || owner_ == address(0)) {
             revert InvalidInitAddress();
         }
+
+        if (_l2GasLimit < _l2FinalizeDepositGasUsed) {
+            revert InvalidL2GasLimit();
+        }
         __MailBox_init();
 
         rollup = rollup_;
@@ -97,7 +101,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         // Calculate the fee and leave it in the MailBox contract
         uint256 fee_ = estimateMsgFee(gasLimit_);
         require(gasLimit_ < l2GasLimit, "gasLimit must less than L2 config");
-        require(gasLimit_ > l2FinalizeDepositGasUsed, "gas limit must be bigger than the tx_fee of finalize deposit on Jovay");
+        require(gasLimit_ >= l2FinalizeDepositGasUsed, "gas limit must be bigger than or equal to the tx_fee of finalize deposit on Jovay");
         require(msg.value >= fee_ + value_, "Insufficient msg.value");
 
         bytes32 hash_ = keccak256(data_);
@@ -153,18 +157,21 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         emit RelayedMsg(hash_, nonce_);
     }
 
-    function withdrawDepositFee(address _target, uint256 _amount) external onlyWithdrawer {
+    function withdrawDepositFee(address _target, uint256 _amount) external onlyWithdrawer whenNotPaused {
         require(_target.code.length == 0, "INVALID_PARAMETER: withdraw target must be eoa");
         require(_amount <= feeBalance, "INVALID_PARAMETER : withdraw amount must smaller than or equal to fee in mailbox");
+        feeBalance -= _amount;
         (bool success,) = _target.call{value : _amount}("");
         require(success, "INTERNAL_ERROR : withdraw fee Failed");
-        feeBalance -= _amount;
     }
 
     /**
      * @notice Set new L2 Gas limit for deposit
      */
     function setL2GasLimit(uint256 _l2GasLimit) external onlyOwner {
+        if (l2FinalizeDepositGasUsed > _l2GasLimit) {
+            revert SetL2GasLimitSmallerThanGasUsed();
+        }
         uint256 oldL2GasLimit = l2GasLimit;
         l2GasLimit = _l2GasLimit;
         emit SetL2GasLimit(oldL2GasLimit, _l2GasLimit);
@@ -174,6 +181,9 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
      * @notice Set new L2 Gas used for finalize deposit
      */
     function setL2FinalizeDepositGasUsed(uint256 _l2FinalizeDepositGasUsed) external onlyOwner {
+        if (_l2FinalizeDepositGasUsed > l2GasLimit) {
+            revert SetL2FinalizeDepositGasUsedBiggerThanGasLimit();
+        }
         uint256 oldL2FinalizeDepositGasUsed = l2FinalizeDepositGasUsed;
         l2FinalizeDepositGasUsed = _l2FinalizeDepositGasUsed;
         emit SetL2FinalizeDepositGasUsed(oldL2FinalizeDepositGasUsed, _l2FinalizeDepositGasUsed);

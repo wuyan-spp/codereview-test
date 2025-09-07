@@ -10,7 +10,7 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
     /// @notice The address of L1MailBox contract.
     address public l1MailBox;
 
-    mapping(bytes32 => bool) public isReceiveMsgStatus;
+    mapping(bytes32 => bool) public receiveMsgStatus;
 
     constructor(){
         _disableInitializers();
@@ -98,9 +98,11 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
 
         (bool success,) = target_.call{value : value_}(msg_);
         if (success) {
-            _receiveMsgFailed(hash_);
-        } else {
             _receiveMsgSuccess(hash_);
+            emit FinalizeDepositETHSuccess(hash_, nonce_);
+        } else {
+            _receiveMsgFailed(hash_);
+            emit FinalizeDepositETHFailed(hash_, nonce_);
         }
         emit RelayedMsg(hash_, nonce_);
     }
@@ -134,23 +136,23 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
 
     function _receiveMsgFailed(bytes32 hash_) internal {
         _receiveMsgCheck(hash_);
-        isReceiveMsgStatus[hash_] = false;
+        receiveMsgStatus[hash_] = false;
     }
 
     function _receiveMsgSuccess(bytes32 hash_) internal {
         _receiveMsgCheck(hash_);
-        isReceiveMsgStatus[hash_] = true;
+        receiveMsgStatus[hash_] = true;
     }
 
     function _checkMsgClaimValid(bytes32 hash_) internal view {
         _msgExistCheck(hash_);
-        require(!isReceiveMsgStatus[hash_], "ClaimMsg : L2 msg must exec failed before");
+        require(!receiveMsgStatus[hash_], "ClaimMsg : L2 msg must exec failed before");
     }
 
     function _finalizeClaimMsg(bytes32 hash_) internal {
         _msgExistCheck(hash_);
-        require(!isReceiveMsgStatus[hash_], "ClaimMsg : L2 msg must exec failed before");
-        isReceiveMsgStatus[hash_] = true;
+        require(!receiveMsgStatus[hash_], "ClaimMsg : L2 msg must exec failed before");
+        receiveMsgStatus[hash_] = true;
     }
 
 }

@@ -25,8 +25,8 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
         address sender_ = _msgSender();
 
         bytes memory message_ = abi.encodeCall(IL1ETHBridge.finalizeWithdraw, (sender_, to_, amount_, msg_));
-        mailBoxCall(abi.encodeCall(IMailBoxBase.sendMsg, (toBridge, amount_, message_, gasLimit_, sender_)));
         balance -= amount_;
+        mailBoxCall(abi.encodeCall(IMailBoxBase.sendMsg, (toBridge, amount_, message_, gasLimit_, sender_)));
         emit WithdrawETH(sender_, to_, amount_, message_);
     }
 
@@ -40,10 +40,10 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
      */
     function finalizeDeposit(address sender_, address to_, uint256 amount_, bytes calldata msg_) external payable override nonReentrant onlyMailBox whenNotPaused {
         require(msg.value == amount_, "msg.value mismatch");
+        balance += amount_;
 
         (bool success_,) = to_.call{value : amount_, gas : gasleft() / 2}("");
         require(success_, "ETH transfer failed");
-        balance += amount_;
 // TODO : add call msg with deposit
 //        _doCallback(to_, msg_);
 

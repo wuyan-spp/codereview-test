@@ -39,12 +39,12 @@ abstract contract BridgeBase is OwnableUpgradeable, PausableUpgradeable, Reentra
         _transferOwnership(owner);
     }
 
-    function setMailBox(address mailBox_) external onlyOwner {
+    function setMailBox(address mailBox_) external whenPaused onlyOwner {
         require(mailBox_ != address(0), "mailBox cannot be set to 0");
         mailBox = mailBox_;
     }
 
-    function setToBridge(address toBridge_) external onlyOwner {
+    function setToBridge(address toBridge_) external whenPaused onlyOwner {
         require(toBridge_ != address(0), "toBridge cannot be set to 0");
         toBridge = toBridge_;
     }

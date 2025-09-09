@@ -3,8 +3,10 @@ pragma solidity ^0.8.0;
 
 import "../bridge/interfaces/IL2ETHBridge.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-contract L2CoinBase is OwnableUpgradeable {
+contract L2CoinBase is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     address public l2EthBridge;
 
     receive() external payable {
@@ -31,6 +33,14 @@ contract L2CoinBase is OwnableUpgradeable {
         _;
     }
 
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
     event SetL2EthBridge(address indexed l2EthBridge);
 
     event AddWithdrawer(address indexed newWithdrawer);
@@ -43,7 +53,7 @@ contract L2CoinBase is OwnableUpgradeable {
 
     event CoinBaseWithdraw(address indexed _target, uint256 indexed amount);
 
-    function setL2EthBridge(address _newL2EthBridge) onlyOwner external {
+    function setL2EthBridge(address _newL2EthBridge) whenPaused onlyOwner external {
         l2EthBridge = _newL2EthBridge;
         emit SetL2EthBridge(_newL2EthBridge);
     }
@@ -72,7 +82,7 @@ contract L2CoinBase is OwnableUpgradeable {
         emit RemoveWhiteAddress(_whiteAddress);
     }
 
-    function withdraw(address _target, uint256 _amount) onlyWithdrawer public {
+    function withdraw(address _target, uint256 _amount) onlyWithdrawer whenNotPaused nonReentrant public {
         require(whiteListOnL1[_target], "INVALID_PERMISSION : target is not receiver on L1");
         require(_amount <= address(this).balance, "INVALID_PERMISSION : withdraw amount must smaller than or equal to balance");
 

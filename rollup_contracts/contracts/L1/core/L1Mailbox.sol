@@ -40,6 +40,8 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
 
     uint256 public l2FinalizeDepositGasUsed;
 
+    uint256 public lastestQueueIndex;
+
     modifier onlyRollup() {
         require(msg.sender == rollup, "Only callable by the Rollup");
         _;
@@ -77,7 +79,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         _transferOwnership(owner_);
     }
 
-    function setRollup(address rollup_) external onlyOwner {
+    function setRollup(address rollup_) external whenPaused onlyOwner {
         require(rollup_ != address(0), "Invalid rollup address");
         rollup = rollup_;
     }
@@ -204,12 +206,19 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
             return bytes32(0);
         }
         // totalIndex - 1 == index; index >= nextFinalizeQueueIndex or index = nextFinalizeQueueIndex - 1;
-        require(_l1MsgCount >= nextFinalizeQueueIndex, "used msg must bigger than finalized");
+        require(_l1MsgCount >= lastestQueueIndex, "used msg must bigger than lastestQueueIndex");
         require(_l1MsgCount - 1 < pendingQueueIndex, "used msg must smaller than next pending");
-        if (_l1MsgCount < nextFinalizeQueueIndex + 1) {
+        if (_l1MsgCount < lastestQueueIndex + 1) {
             return stableRollingHash;
         }
-        return msgQueue.at(_l1MsgCount - nextFinalizeQueueIndex - 1);
+        return msgQueue.at(_l1MsgCount - lastestQueueIndex - 1);
+    }
+
+    /**
+      * @notice set lastest queue index  called when pause
+     */
+    function setLastQueueIndex() external whenPaused onlyOwner {
+        lastestQueueIndex = nextFinalizeQueueIndex;
     }
 
     /**
@@ -226,13 +235,14 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
      */
     function popMsgs(uint256 _l1MsgCount) external onlyRollup whenNotPaused {
         // l1MsgCount - 1 = index < pendingQueueIndex
-        require(_l1MsgCount < pendingQueueIndex + 1, "finalzie index must small than pendingQueueIndex");
-        while (nextFinalizeQueueIndex < _l1MsgCount) {
-            stableRollingHash = msgQueue.popFront();
-            nextFinalizeQueueIndex++;
-        }
+        require(_l1MsgCount < pendingQueueIndex + 1, "finalize index must smaller than pendingQueueIndex");
+        require(_l1MsgCount >= nextFinalizeQueueIndex, "finalize index must smaller than or equal to l1MsgCount");
+        nextFinalizeQueueIndex = _l1MsgCount;
+//        while (nextFinalizeQueueIndex < _l1MsgCount) {
+//            stableRollingHash = msgQueue.popFront();
+//            nextFinalizeQueueIndex++;
+//        }
         emit PopMsgs(nextFinalizeQueueIndex);
     }
 
-    uint256[50] private __gap;
 }

@@ -20,9 +20,8 @@ contract L1ETHBridge is L1BridgeProof, IL1ETHBridge {
 
         // 2. Generate message passed to L1Mailbox.
         bytes memory message_ = abi.encodeCall(IL2ETHBridge.finalizeDeposit, (sender_, to_, amount_, msg_));
-
-        mailBoxCall(abi.encodeCall(IMailBoxBase.sendMsg, (toBridge, amount_, message_, gasLimit_, sender_)));
         balance += amount_;
+        mailBoxCall(abi.encodeCall(IMailBoxBase.sendMsg, (toBridge, amount_, message_, gasLimit_, sender_)));
 
         emit DepositETH(sender_, to_, amount_, msg_);
     }
@@ -33,9 +32,9 @@ contract L1ETHBridge is L1BridgeProof, IL1ETHBridge {
 
         // @note can possible trigger reentrant call to messenger,
         // but it seems not a big problem.
+        balance -= amount_;
         (bool success_, ) = to_.call{value: amount_}("");
         require(success_, "ETH transfer failed");
-        balance -= amount_;
 // TODO : add call msg with withdraw
 //        _doCallback(to_, msg_);
 

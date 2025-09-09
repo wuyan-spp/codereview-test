@@ -2,29 +2,51 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-contract L1GasOracle is OwnableUpgradeable{
+contract L1GasOracle is OwnableUpgradeable {
     uint256 public l1FeePerByte;
 
-    // L1 batch submission related parameters.
+    // the fee of da for last batch
     uint256 public lastBatchDaFee;
+
+    // the fee of commit and verify for last batch
     uint256 public lastBatchExecFee;
+
+    // the tx length of all tx in last batch
     uint256 public lastBatchByteLength;
 
-    // L1 basefee and blobbasefee trend
+    // The changing trend of the current block base fee and blob base fee compared to the previous batch
     uint256 public blobBaseFeeScala;
     uint256 public baseFeeScala;
 
-    // fixed income
+    // the constant profit of one batch
     uint256 public l1Profit;
 
-    // Fixed expansion factor, used to control L1 Fee overall to avoid losses, default is 1.1.
+    // the constant parameter for the whole fee of L1
     uint256 public totalScala;
 
-    // Permission control
+    // relayer is who can send L1 fee to jovay
     mapping(address => bool) public isRelayer;
 
-    uint256 public txLengthLimit;
+    // the lower limit of tx length in one batch
+    uint256 private constant MIN_TX_LENGTH_LIMIT = 6 * 128 * 1024;
+
+    // the lower limit of tx length in one batch
+    uint256 private constant MAX_TX_LENGTH_LIMIT = 1e9;
+
+    // the upper limit of L1 base fee
+    uint256 private constant MAX_L1_BASE_FEE_LIMIT = 1e9;
+
+    // the upper limit of L1 blob base fee
+    uint256 private constant MAX_L1_BLOB_BASE_FEE_LIMIT = 1e9;
+
+    // the upper limit of the sum of commit and verify tx's gas used;
+    uint256 public maxL1ExecGasUsedLimit;
+
+    // the max limit of blob gas used, mainnet is 6blobs;
+    uint256 public maxL1BlobGasUsedLimit;
 
     constructor(){
         _disableInitializers();
@@ -32,19 +54,18 @@ contract L1GasOracle is OwnableUpgradeable{
 
     function initialize(uint256 _lastBatchDaFee, uint256 _lastBatchExecFee, uint256 _lastBatchByteLength) external initializer {
         OwnableUpgradeable.__Ownable_init();
-        totalScala = 110;
-        l1Profit = 0;
         lastBatchDaFee = _lastBatchDaFee;
         lastBatchExecFee = _lastBatchExecFee;
-        txLengthLimit = 1000000;
-        lastBatchByteLength = 50000;
-        if (_lastBatchByteLength < txLengthLimit) {
-            lastBatchByteLength = txLengthLimit;
+        maxL1ExecGasUsedLimit = 1e6;
+        maxL1BlobGasUsedLimit = 6 * 128 * 1024;
+        totalScala = 110;
+        blobBaseFeeScala = 100;
+        baseFeeScala = 100;
+        if (_lastBatchByteLength < MIN_TX_LENGTH_LIMIT) {
+            lastBatchByteLength = MIN_TX_LENGTH_LIMIT;
         } else {
             lastBatchByteLength = _lastBatchByteLength;
         }
-        blobBaseFeeScala = 100;
-        baseFeeScala = 100;
         CalcL1FeePerByte();
         isRelayer[_msgSender()] = true;
     }
@@ -68,7 +89,9 @@ contract L1GasOracle is OwnableUpgradeable{
 
     event SetTotalScala(uint256 _totalScala);
 
-    event SetTxLengthLimit(uint256 _txLengthLimit);
+    event SetMaxL1ExecGasUsedLimit(uint256 _maxL1ExecGasUsedLimit);
+
+    event SetMaxL1BlobGasUsedLimit(uint256 _maxL1BlobGasUsedLimit);
 
     event AddRelayer(address relayer);
 
@@ -77,11 +100,19 @@ contract L1GasOracle is OwnableUpgradeable{
     function setNewBatchBlobFeeAndTxFee(uint256 _lastBatchDaFee,
         uint256 _lastBatchExecFee,
         uint256 _lastBatchByteLength) onlyRelayer external {
-        if (_lastBatchByteLength < txLengthLimit) {
-            lastBatchByteLength = txLengthLimit;
-        } else {
-            lastBatchByteLength = _lastBatchByteLength;
+        if (_lastBatchByteLength < MIN_TX_LENGTH_LIMIT) {
+            _lastBatchByteLength = MIN_TX_LENGTH_LIMIT;
         }
+        if (_lastBatchByteLength > MAX_TX_LENGTH_LIMIT) {
+            _lastBatchByteLength = MAX_TX_LENGTH_LIMIT;
+        }
+        if (_lastBatchExecFee > MAX_L1_BASE_FEE_LIMIT * maxL1ExecGasUsedLimit) {
+            _lastBatchExecFee = MAX_L1_BASE_FEE_LIMIT * maxL1ExecGasUsedLimit;
+        }
+        if (_lastBatchDaFee > MAX_L1_BLOB_BASE_FEE_LIMIT * maxL1BlobGasUsedLimit) {
+            _lastBatchDaFee = MAX_L1_BLOB_BASE_FEE_LIMIT * maxL1BlobGasUsedLimit;
+        }
+        lastBatchByteLength = _lastBatchByteLength;
         lastBatchDaFee = _lastBatchDaFee;
         lastBatchExecFee = _lastBatchExecFee;
         CalcL1FeePerByte();
@@ -91,6 +122,7 @@ contract L1GasOracle is OwnableUpgradeable{
 
     function setBlobBaseFeeScalaAndTxFeeScala(uint256 _baseFeeScala,
         uint256 _blobBaseFeeScala) onlyRelayer external {
+        require(_baseFeeScala != 0 && _blobBaseFeeScala != 0, "scala must not be zero");
         baseFeeScala = _baseFeeScala;
         blobBaseFeeScala = _blobBaseFeeScala;
         CalcL1FeePerByte();
@@ -111,10 +143,18 @@ contract L1GasOracle is OwnableUpgradeable{
         emit SetTotalScala(_totalScala);
     }
 
-    function setTxLengthLimit(uint256 _txLengthLimit) onlyOwner external {
-        txLengthLimit = _txLengthLimit;
+    function setMaxL1ExecGasUsedLimit(uint256 _maxL1ExecGasUsedLimit) onlyOwner external {
+        maxL1ExecGasUsedLimit = _maxL1ExecGasUsedLimit;
         CalcL1FeePerByte();
-        emit SetTxLengthLimit(_txLengthLimit);
+
+        emit SetMaxL1ExecGasUsedLimit(_maxL1ExecGasUsedLimit);
+    }
+
+    function setMaxL1BlobGasUsedLimit(uint256 _maxL1BlobGasUsedLimit) onlyOwner external {
+        maxL1BlobGasUsedLimit = _maxL1BlobGasUsedLimit;
+        CalcL1FeePerByte();
+
+        emit SetMaxL1BlobGasUsedLimit(_maxL1BlobGasUsedLimit);
     }
 
     function addRelayer(address _newRelayer) onlyOwner external {

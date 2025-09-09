@@ -14,6 +14,8 @@ import {IL1MailQueue} from "../interfaces/IL1MailQueue.sol";
 
 contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
 
+    error NotSupportZkProof();
+
     /// @notice The max number of txs in a chunk, fill by bytes32(0) if not enough.
     uint32 public maxTxsInChunk;
 
@@ -210,8 +212,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
             _l2MsgRoot
         );
         if (_prove_type == 0) {
-            IZkRollupVerifier(zk_verifier).verifyProof(_proof, _publicInput);
-            lastZkVerifiedBatch = lastZkVerifiedBatch + 1;
+            revert NotSupportZkProof();
         } else if (_prove_type == 1) {
             _verifyTeeProof(_proof, _publicInput);
         }

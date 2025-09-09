@@ -48,9 +48,9 @@ contract TEECacheVerifier is P256Verifier, Ownable {
         _isCallerRestricted = true;
     }
 
-    function disableCallerRestriction() external onlyOwner {
-        _isCallerRestricted = false;
-    }
+    // function disableCallerRestriction() external onlyOwner {
+    //     _isCallerRestricted = false;
+    // }
 
     function isInitialized(bytes calldata key) external view returns (bool) {
         return _verificationCache[key];

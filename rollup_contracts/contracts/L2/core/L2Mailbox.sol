@@ -35,7 +35,7 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         _initializeMerkleTree();
     }
 
-    function setL1MailBox(address l1MailBox_) external onlyOwner {
+    function setL1MailBox(address l1MailBox_) whenPaused external onlyOwner {
         require(l1MailBox_ != address(0), "Invalid address");
         l1MailBox = l1MailBox_;
     }
@@ -95,7 +95,7 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         bytes32 hash_ = keccak256(_encodeCall(sender_, target_, value_, nonce_, msg_));
         bytes32 rollinghash = _getRollingHash(hash_);
         emit RollingHash(rollinghash);
-
+        _receiveMsgCheck(hash_);
         (bool success,) = target_.call{value : value_}(msg_);
         if (success) {
             _receiveMsgSuccess(hash_);
@@ -135,12 +135,10 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
     }
 
     function _receiveMsgFailed(bytes32 hash_) internal {
-        _receiveMsgCheck(hash_);
         receiveMsgStatus[hash_] = false;
     }
 
     function _receiveMsgSuccess(bytes32 hash_) internal {
-        _receiveMsgCheck(hash_);
         receiveMsgStatus[hash_] = true;
     }
 

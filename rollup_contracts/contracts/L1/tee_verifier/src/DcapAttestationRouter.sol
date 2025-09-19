@@ -145,7 +145,12 @@ contract DcapAttestationRouter is Ownable {
                 if (quoteVersion == 3) {
                     offset = USER_DATA_V3_OFFSET;
                 } else if (quoteVersion == 4) {
-                    offset = USER_DATA_V4_OFFSET;
+                    bytes4 teeType = bytes4(aggrProof[4:8]);
+                    if (teeType == SGX_TEE) {
+                        offset = USER_DATA_V3_OFFSET;
+                    } else {
+                        offset = USER_DATA_V4_OFFSET;
+                    }
                 } else if (quoteVersion == 5) {
                     offset = USER_DATA_V5_OFFSET;
                 } else {

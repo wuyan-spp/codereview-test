@@ -11,11 +11,15 @@ contract MeasurementDao is Ownable {
 
     mapping(bytes32 => bytes32) private mr;
     bytes32[] private mrEnclaveList;
+    mapping(bytes32 => uint256) private mrEnclaveIndex;
+
     mapping(bytes => bool) private rtmr;
     bytes[] private rtmrList;
+    mapping(bytes => uint256) private rtmrIndex;
 
     mapping(bytes => bool) private mrtdMap;
     bytes[] private mrtdList;
+    mapping(bytes => uint256) private mrtdIndex; 
 
     uint16 private constant MR_ENCLAVE_OFFSET = 112;
     uint16 private constant MR_SIGNER_OFFSET = 176;
@@ -35,6 +39,7 @@ contract MeasurementDao is Ownable {
     function add_mr_enclave(bytes32 _mrEnclave, bytes32 _mrSigner) external onlyOwner {
         if (mr[_mrEnclave] != bytes32(0)) revert AlreadyExists();
         mr[_mrEnclave] = _mrSigner;
+        mrEnclaveIndex[_mrEnclave] = mrEnclaveList.length;
         mrEnclaveList.push(_mrEnclave);
     }
 
@@ -45,13 +50,15 @@ contract MeasurementDao is Ownable {
     function delete_mr_enclave(bytes32 _mrEnclave) external onlyOwner {
         if (mr[_mrEnclave] == bytes32(0)) revert NotExists();
         delete mr[_mrEnclave];
-        for (uint256 i = 0; i < mrEnclaveList.length; ++i) {
-            if (mrEnclaveList[i] == _mrEnclave) {
-                mrEnclaveList[i] = mrEnclaveList[mrEnclaveList.length - 1];
-                mrEnclaveList.pop();
-                break;
-            }
-        }
+
+        uint256 index = mrEnclaveIndex[_mrEnclave];
+        require(index < mrEnclaveList.length, "Invalid index");
+        bytes32 lastElement = mrEnclaveList[mrEnclaveList.length - 1];
+        mrEnclaveList[index] = lastElement;
+        mrEnclaveIndex[lastElement] = index;
+        
+        mrEnclaveList.pop();
+        delete mrEnclaveIndex[_mrEnclave];
     }
 
     function get_mr_enclave() external view returns (bytes32[] memory) {
@@ -61,6 +68,7 @@ contract MeasurementDao is Ownable {
     function clearup_mr_enclave() external onlyOwner {
         for (uint256 i = 0; i < mrEnclaveList.length; ++i) {
             delete mr[mrEnclaveList[i]];
+            delete mrEnclaveIndex[mrEnclaveList[i]];
         }
         delete mrEnclaveList;
     }
@@ -72,6 +80,7 @@ contract MeasurementDao is Ownable {
     function add_rtMr(bytes calldata rtmr3) external onlyOwner {
         if (rtmr[rtmr3]) revert AlreadyExists();
         rtmr[rtmr3] = true;
+        rtmrIndex[rtmr3] = rtmrList.length;
         rtmrList.push(rtmr3);
     }
 
@@ -82,14 +91,13 @@ contract MeasurementDao is Ownable {
     function delete_rtMr(bytes calldata rtmr3) external onlyOwner {
         if (!rtmr[rtmr3]) revert NotExists();
         delete rtmr[rtmr3];
-        bytes32 rtmrHash = keccak256(rtmr3);
-        for (uint256 i = 0; i < rtmrList.length; ++i) {
-            if (keccak256(rtmrList[i]) == rtmrHash) {
-                rtmrList[i] = rtmrList[rtmrList.length - 1];
-                rtmrList.pop();
-                break;
-            }
-        }
+        uint256 index = rtmrIndex[rtmr3];
+        require(index < rtmrList.length, "Invalid index");
+        bytes memory lastElement = rtmrList[rtmrList.length - 1];
+        rtmrList[index] = lastElement;
+        rtmrIndex[lastElement] = index;   
+        rtmrList.pop();
+        delete rtmrIndex[rtmr3];
     }
 
     function get_rtMr() external view returns (bytes[] memory) {
@@ -99,6 +107,7 @@ contract MeasurementDao is Ownable {
     function clearup_rtMr() external onlyOwner {
         for (uint256 i = 0; i < rtmrList.length; ++i) {
             delete rtmr[rtmrList[i]];
+            delete rtmrIndex[rtmrList[i]];
         }
         delete rtmrList;
     }
@@ -106,20 +115,21 @@ contract MeasurementDao is Ownable {
     function add_mrtd(bytes calldata mrtd) external onlyOwner {
         if (mrtdMap[mrtd]) revert AlreadyExists();
         mrtdMap[mrtd] = true;
+        mrtdIndex[mrtd] = mrtdList.length;
         mrtdList.push(mrtd);
     }
 
     function delete_mrtd(bytes calldata mrtd) external onlyOwner {
         if (!mrtdMap[mrtd]) revert NotExists();
         delete mrtdMap[mrtd];
-        bytes32 mrtdHash = keccak256(mrtd);
-        for (uint256 i = 0; i < mrtdList.length; ++i) {
-            if (keccak256(mrtdList[i]) == mrtdHash) {
-                mrtdList[i] = mrtdList[mrtdList.length - 1];
-                mrtdList.pop();
-                break;
-            }
-        }
+
+        uint256 index = mrtdIndex[mrtd];
+        require(index < mrtdList.length, "Invalid index");
+        bytes memory lastElement = mrtdList[mrtdList.length - 1];
+        mrtdList[index] = lastElement;
+        mrtdIndex[lastElement] = index;
+        mrtdList.pop();
+        delete mrtdIndex[mrtd];
     }
 
     function get_mrtd() external view returns (bytes[] memory) {
@@ -129,6 +139,7 @@ contract MeasurementDao is Ownable {
     function clearup_mrtd() external onlyOwner {
         for (uint256 i = 0; i < mrtdList.length; ++i) {
             delete mrtdMap[mrtdList[i]];
+            delete mrtdIndex[mrtdList[i]];
         }
         delete mrtdList;
     }

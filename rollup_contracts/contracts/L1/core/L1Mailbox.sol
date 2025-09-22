@@ -79,6 +79,10 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         _transferOwnership(owner_);
     }
 
+    function queueSize() external view returns(uint256){
+        return msgQueue.length();
+    }
+
     function setRollup(address rollup_) external whenPaused onlyOwner {
         require(rollup_ != address(0), "Invalid rollup address");
         rollup = rollup_;

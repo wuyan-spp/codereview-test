@@ -44,7 +44,7 @@ contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
         );
 
         // 4. send message to L2Mailbox
-        mailBoxCall(abi.encodeCall(IMailBoxBase.sendMsg, (toBridge, amount_, message_, gasLimit_, sender_)));
+        mailBoxCall(abi.encodeCall(IMailBoxBase.sendMsg, (toBridge, 0, message_, gasLimit_, sender_)));
 
         emit WithdrawERC20(l1Token_, token_, sender_, to_, amount_, message_);
         _decreaseBalance(token_, amount_);

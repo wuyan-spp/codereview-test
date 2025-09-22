@@ -13,7 +13,7 @@ contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
      * @param token_ Current chain asset contract address
      * @param tokenTo_ Target asset contract address
      */
-    function setTokenMapping(address token_, address tokenTo_) public payable override onlyOwner whenNotPaused {
+    function setTokenMapping(address token_, address tokenTo_) public payable override onlyMailBox whenNotPaused {
         super.setTokenMapping(token_, tokenTo_);
     }
 

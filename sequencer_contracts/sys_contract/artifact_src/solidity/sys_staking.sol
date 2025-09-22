@@ -2355,12 +2355,6 @@ contract DPoSValidatorManager is ReentrancyGuard {
     bytes32[] public pendingAddPoolIds;
     bytes32[] public pendingExitPoolIds;
 
-    uint256 public constant MIN_VALIDATOR_STAKE = 1 ether;
-    uint256 public constant MIN_DELEGATOR_STAKE = 1 ether;
-    uint256 public constant MIN_POOL_STAKE = 1 ether;
-    uint256 public constant MAX_POOL_STAKE = 100000 ether;
-    uint256 public constant EPOCH_DURATION = 6 hours;
-
     uint256 public currentEpoch;
     uint256 public totalStake;
 
@@ -2368,16 +2362,6 @@ contract DPoSValidatorManager is ReentrancyGuard {
         0x3100000000000000000000000000000000000000;
     address public constant intrinsicSys =
         0x1111111111111111111111111111111111111111;
-
-    event DomainUpdate(
-        bytes32 indexed poolId,
-        string description,
-        string publicKey,
-        string blsPublicKey,
-        string endpoint,
-        uint64 effectiveBlockNum,
-        uint8 status
-    );
 
     event EpochChange(
         uint256 indexed epochNumber,
@@ -2387,106 +2371,11 @@ contract DPoSValidatorManager is ReentrancyGuard {
         bytes32[] activeValidators
     );
 
-    event ValidatorReward(
-        bytes32 indexed poolId,
-        address indexed owner,
-        uint256 indexed epochNumber,
-        uint256 blockNumber,
-        uint256 baseReward,
-        uint256 feeReward,
-        uint256 totalReward
-    );
-
-    event ValidatorWithdrawStake(
-        bytes32 indexed poolId,
-        uint256 indexed epochNumber,
-        uint256 indexed blockNumber,
-        uint256 totalStake,
-        uint256 withdrawStake
-    );
-
-    event StakeAdded(
-        address indexed delegator,
-        bytes32 indexed poolId,
-        uint256 amount
-    );
-    event ValidatorRegistered(
-        address indexed validator,
-        bytes32 indexed poolId
-    );
-    event ValidatorUpdated(bytes32 indexed poolId);
-    event ValidatorExitRequested(bytes32 indexed poolId);
-
-    event ErrorOccurred(
-        uint256 indexed epochNumber,
-        uint256 indexed blockNumber,
-        uint indexed errorCode,
-        bytes errorData
-    );
-
-    event BalanceReceived(
-        uint256 indexed epochNumber,
-        uint256 indexed blockNumber,
-        address indexed sender,
-        uint256 amount,
-        uint256 totalBalance
-    );
-
     constructor() {}
 
     modifier onlyOwner() {
         require(msg.sender == intrinsicSys, "Not owner");
         _;
-    }
-
-    function hexStringToBytes(
-        string memory str
-    ) public pure returns (bytes memory) {
-        bytes memory strBytes = bytes(str);
-
-        // Check and strip the '0x' prefix if it exists
-        if (strBytes.length >= 2 && strBytes[0] == "0" && strBytes[1] == "x") {
-            strBytes = sliceBytes(strBytes, 2, strBytes.length);
-        }
-
-        require(strBytes.length % 2 == 0, "Invalid hex string length");
-
-        bytes memory result = new bytes(strBytes.length / 2);
-
-        for (uint i = 0; i < strBytes.length / 2; i++) {
-            result[i] = bytes1(
-                _fromHexChar(strBytes[2 * i]) *
-                    16 +
-                    _fromHexChar(strBytes[2 * i + 1])
-            );
-        }
-
-        return result;
-    }
-
-    function sliceBytes(
-        bytes memory data,
-        uint start,
-        uint end
-    ) internal pure returns (bytes memory) {
-        bytes memory result = new bytes(end - start);
-        for (uint i = start; i < end; i++) {
-            result[i - start] = data[i];
-        }
-        return result;
-    }
-
-    function _fromHexChar(bytes1 c) internal pure returns (uint8) {
-        uint8 charCode = uint8(c);
-        if (charCode >= 48 && charCode <= 57) {
-            return charCode - 48; // '0'-'9'
-        } else if (charCode >= 97 && charCode <= 102) {
-            return charCode - 87; // 'a'-'f'
-        } else if (charCode >= 65 && charCode <= 70) {
-            return charCode - 55; // 'A'-'F'
-        } else {
-            revert("Invalid hex character");
-        }
     }
 
     function isArrayContains(
@@ -2501,96 +2390,7 @@ contract DPoSValidatorManager is ReentrancyGuard {
         return false;
     }
 
-    function isValidatorActive(bytes32 _poolId) public view returns (bool) {
-        return isArrayContains(activePoolIds, _poolId);
-    }
-
-    function isValidatorPendingAdd(bytes32 _poolId) public view returns (bool) {
-        return isArrayContains(pendingAddPoolIds, _poolId);
-    }
-
-    function isValidatorPendingExit(
-        bytes32 _poolId
-    ) public view returns (bool) {
-        return isArrayContains(pendingExitPoolIds, _poolId);
-    }
-
-    function _transferTo(address recipient, uint amount) internal {
-        if (amount > address(this).balance) {
-            uint error_code = 1;
-            bytes memory errorData = abi.encode(
-                recipient,
-                amount,
-                address(this).balance
-            );
-            emit ErrorOccurred(
-                currentEpoch,
-                block.number,
-                error_code,
-                errorData
-            );
-            return;
-        }
-
-        (bool success, ) = recipient.call{value: amount}("");
-
-        if (!success) {
-            uint error_code = 2;
-            bytes memory errorData = abi.encode(
-                recipient,
-                amount,
-                address(this).balance
-            );
-            emit ErrorOccurred(
-                currentEpoch,
-                block.number,
-                error_code,
-                errorData
-            );
-            return;
-        }
-    }
-
-    function updateValidator(
-        bytes32 _poolId,
-        string memory _description,
-        string memory _endpoint,
-        address _new_owner
-    ) external {
-        require(validators[_poolId].poolId != 0, "Validator does not exist");
-        require(
-            validators[_poolId].owner == msg.sender,
-            "Validator does not exist"
-        );
-        require(
-            isValidatorActive(_poolId) || isValidatorPendingAdd(_poolId),
-            "Validator status invalid"
-        );
-        require(_new_owner != address(0), "Invalid new address");
-        // Add more checks here to ensure only the validator can update their info
-
-        validators[_poolId].description = _description;
-        validators[_poolId].endpoint = _endpoint;
-        validators[_poolId].owner = _new_owner;
-
-        emit ValidatorUpdated(_poolId);
-    }
-
     function advanceEpoch() public onlyOwner {
-        bytes32[] memory _poolIds = new bytes32[](0);
-        uint256[] memory _priority_fees = new uint256[](0);
-        advanceEpoch(_poolIds, _priority_fees);
-    }
-
-    function advanceEpoch(
-        bytes32[] memory _poolIds,
-        uint256[] memory _priority_fees
-    ) public onlyOwner {
-        require(
-            _poolIds.length == _priority_fees.length,
-            "PoolId Fees not match"
-        );
-
         setChainEpochBlock();
         currentEpoch++;
 
@@ -2619,42 +2419,5 @@ contract DPoSValidatorManager is ReentrancyGuard {
         values[1] = epoch_time_value;
 
         sys_chain_cfg.set_config(keys, values);
-    }
-
-    function getActiveValidators() external view returns (bytes32[] memory) {
-        return activePoolIds;
-    }
-
-    function getPendingAddValidators()
-        external
-        view
-        returns (bytes32[] memory)
-    {
-        return pendingAddPoolIds;
-    }
-
-    function getPendingExitValidators()
-        external
-        view
-        returns (bytes32[] memory)
-    {
-        return pendingExitPoolIds;
-    }
-
-    function getChainCfg(
-        string memory key
-    ) internal view returns (string memory) {
-        SysChainCfg sys_chain_cfg = SysChainCfg(sysChainCfg);
-        return sys_chain_cfg.get_config(key);
-    }
-
-    receive() external payable {
-        emit BalanceReceived(
-            currentEpoch,
-            block.number,
-            msg.sender,
-            msg.value,
-            address(this).balance
-        );
     }
 }

@@ -59,41 +59,36 @@ contract ChainCfg {
 
     function set_config(string[] memory keys, string[] memory values) external onlyOwner {
         require(keys.length == values.length, "KVs are not match");
-        if (configCps.length == 3) {
-            delete configCps[0];
-            for (uint256 i = 1; i < configCps.length; i++) {
-                configCps[i - 1] = configCps[i];
-            }
-            configCps.pop(); 
+        // Initialize array with one element if empty
+        if (configCps.length == 0) {
+            configCps.push();
         }
-
-        uint256 old_config_cps_number = configCps.length;
-
-        ConfigCheckpoint storage cfgCp = configCps.push();
+        
+        ConfigCheckpoint storage cfgCp = configCps[0];
         cfgCp.blockNum = uint64(block.number);
         cfgCp.effectiveBlockNum = uint64(block.number + 1);
-
-        if (old_config_cps_number != 0) {
-            require(configCps[configCps.length - 2].effectiveBlockNum <= block.number, "INVALID_STATE");
-
-            for (uint256 i = 0; i < configCps[configCps.length - 2].configs.length; i++) {
-                Config storage conf = configCps[configCps.length - 2].configs[i];
-                bool found = false;
-                for (uint256 j = 0; j < keys.length; j++) {
-                    if (keccak256(abi.encodePacked(conf.key)) == keccak256(abi.encodePacked(keys[j]))) {
-                        found = true; 
-                        break;
-                    }
-                }
-                if (!found) {
-                    cfgCp.configs.push(Config({
-                        key: conf.key,
-                        value: conf.value
-                    }));
+        
+        // Preserve existing configurations
+        Config[] memory oldConfigs = cfgCp.configs;
+        
+        // Clear existing configurations and refill
+        delete cfgCp.configs;
+        
+        // Preserve unmodified existing configurations
+        for (uint256 i = 0; i < oldConfigs.length; i++) {
+            bool found = false;
+            for (uint256 j = 0; j < keys.length; j++) {
+                if (keccak256(abi.encodePacked(oldConfigs[i].key)) == keccak256(abi.encodePacked(keys[j]))) {
+                    found = true;
+                    break;
                 }
             }
+            if (!found) {
+                cfgCp.configs.push(oldConfigs[i]);
+            }
         }
-
+        
+        // Add new or updated configurations
         for (uint256 i = 0; i < keys.length; i++) {
             cfgCp.configs.push(Config({
                 key: keys[i],

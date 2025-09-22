@@ -38,23 +38,45 @@ contract ChainCfg {
     }
 
     function get_config(string memory key) public view returns (string memory) {
-        if (configCps.length != 0) {
-            for (uint256 i = 0; i < configCps[configCps.length - 1].configs.length; i++) {
-                Config storage conf = configCps[configCps.length - 1].configs[i];
-                if (keccak256(abi.encodePacked(key)) == keccak256(abi.encodePacked(conf.key))) {
-                    return conf.value;
-                }
+        // Check configCps length
+        if (configCps.length == 0) {
+            return "";
+        }
+        
+        ConfigCheckpoint storage currentCp = configCps[0];
+        
+        // Check if block number has reached effective block
+        if (block.number < currentCp.effectiveBlockNum) {
+            return "";
+        }
+        
+        // Search for config value
+        for (uint256 i = 0; i < currentCp.configs.length; i++) {
+            Config storage conf = currentCp.configs[i];
+            if (keccak256(abi.encodePacked(key)) == keccak256(abi.encodePacked(conf.key))) {
+                return conf.value;
             }
         }
+        
         return "";
     }
 
     function get_configs() public view returns (Config[] memory) {
-        if (configCps.length != 0) {
-            return configCps[configCps.length - 1].configs;
+        // Check configCps length
+        if (configCps.length == 0) {
+            Config[] memory emptyConfigs;
+            return emptyConfigs;
         }
-        Config[] memory configs;
-        return configs;
+        
+        ConfigCheckpoint storage currentCp = configCps[0];
+        
+        // Check if block number has reached effective block
+        if (block.number < currentCp.effectiveBlockNum) {
+            Config[] memory emptyConfigs;
+            return emptyConfigs;
+        }
+        
+        return currentCp.configs;
     }
 
     function set_config(string[] memory keys, string[] memory values) external onlyOwner {

@@ -145,9 +145,11 @@ contract TEECacheVerifier is P256Verifier, Ownable {
         bytes4 teeType = bytes4(rawQuote[4:8]);
         uint256 offset = HEADER_LENGTH;
         if (teeType == SGX_TEE) {
-            offset += ENCLAVE_REPORT_LENGTH;
+           offset += ENCLAVE_REPORT_LENGTH;
+        } else if(teeType == TDX_TEE) {
+             offset += TD_REPORT10_LENGTH;
         } else {
-            offset += TD_REPORT10_LENGTH;
+            return (1, bytes32(0));
         }
         offset += 4; // localAuthDataSize
         ecdsa256BitSignature = rawQuote[offset:offset + 64];

@@ -25,6 +25,8 @@ contract TEECacheVerifier is P256Verifier, Ownable {
     error InvalidAddress();
     error ListTooLong();
     error UnknownTdReportType();
+    error InvalidKeyLength();
+    error ZeroKey();
 
     modifier onlyAuthorized() {
         if (_isCallerRestricted && !_authorized[msg.sender]) {
@@ -70,7 +72,9 @@ contract TEECacheVerifier is P256Verifier, Ownable {
      * @param key The verification key to initialize
      */
     function initializeCache(bytes calldata key) external onlyAuthorized {
-         // Limit the number of iterations to prevent malicious injection and gas exhaustion
+        if (key.length != 64) revert InvalidKeyLength();
+        if (key.length == 0 || keccak256(key) == keccak256(bytes(""))) revert ZeroKey();
+        // Limit the number of iterations to prevent malicious injection and gas exhaustion
         if (_initializedKeys.length >= 10000) revert ListTooLong();
         _verificationCache[key] = true;
         _initializedKeys.push(key);

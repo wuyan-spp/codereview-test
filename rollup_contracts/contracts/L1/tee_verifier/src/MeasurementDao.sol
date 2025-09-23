@@ -30,6 +30,8 @@ contract MeasurementDao is Ownable {
 
     error AlreadyExists();
     error NotExists();
+    error InvalidLength();
+    error ZeroValue();
 
     constructor() {
         _initializeOwner(msg.sender);
@@ -41,6 +43,7 @@ contract MeasurementDao is Ownable {
      * @param _mrSigner The measurement register of the signer (32 bytes)
      */
     function add_mr_enclave(bytes32 _mrEnclave, bytes32 _mrSigner) external onlyOwner {
+        if (_mrSigner == bytes32(0)) revert ZeroValue();
         if (mr[_mrEnclave] != bytes32(0)) revert AlreadyExists();
         mr[_mrEnclave] = _mrSigner;
         mrEnclaveList.push(_mrEnclave);
@@ -52,6 +55,7 @@ contract MeasurementDao is Ownable {
      * @param _mrEnclave The measurement register of the enclave to delete
      */
     function delete_mr_enclave(bytes32 _mrEnclave) external onlyOwner {
+        if (_mrEnclave == bytes32(0)) revert ZeroValue();
         if (mr[_mrEnclave] == bytes32(0)) revert NotExists();
         delete mr[_mrEnclave];
 
@@ -89,6 +93,8 @@ contract MeasurementDao is Ownable {
      * @param rtmr3 The RTMR3 value to add (48 bytes for TDX)
      */
     function add_rtMr(bytes calldata rtmr3) external onlyOwner {
+        if (rtmr3.length != 48) revert InvalidLength();
+        if (rtmr3.length == 0 || keccak256(rtmr3) == keccak256(bytes(""))) revert ZeroValue();
         if (rtmr[rtmr3]) revert AlreadyExists();
         rtmr[rtmr3] = true;
         rtmrList.push(rtmr3);
@@ -135,6 +141,8 @@ contract MeasurementDao is Ownable {
      * @param mrtd The MRTD value to add (48 bytes for TDX)
      */
     function add_mrtd(bytes calldata mrtd) external onlyOwner {
+        if (mrtd.length != 48) revert InvalidLength();
+        if (mrtd.length == 0 || keccak256(mrtd) == keccak256(bytes(""))) revert ZeroValue();
         if (mrtdMap[mrtd]) revert AlreadyExists();
         mrtdMap[mrtd] = true;
         mrtdList.push(mrtd);

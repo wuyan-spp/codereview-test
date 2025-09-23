@@ -14,8 +14,8 @@ import {console} from "forge-std/console.sol";
  */
 contract TEECacheVerifier is P256Verifier, Ownable {
     uint16 private constant DATA_OFFSET = 526;
-    mapping(address => bool) _authorized;
-    bool _isCallerRestricted = true;
+    mapping(address => bool) private _authorized;
+    bool private _isCallerRestricted = true;
     mapping(bytes => bool) private _verificationCache;
     bytes[] private _initializedKeys;
 

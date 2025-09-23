@@ -10,8 +10,8 @@ import {DcapAttestationRouter} from "./DcapAttestationRouter.sol";
  */
 contract TEEVerifierProxy is ITeeRollupVerifier, Ownable {
     address public dcapAttestationRouter;
-    mapping(address => bool) _authorized;
-    bool _isCallerRestricted = true;
+    mapping(address => bool) private _authorized;
+    bool private _isCallerRestricted = true;
 
     error Forbidden();
     error InvalidAddress();

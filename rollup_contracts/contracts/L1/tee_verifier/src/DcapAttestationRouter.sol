@@ -26,8 +26,8 @@ contract DcapAttestationRouter is Ownable {
     bool public toVerifyMr;
     address public cacheVerifierAddr;
     bool public CacheOption;
-    mapping(address => bool) _authorized;
-    bool _isCallerRestricted = true;
+    mapping(address => bool) private _authorized;
+    bool private _isCallerRestricted = true;
     bool public toVerifyMrtd = false;
 
     error Forbidden();

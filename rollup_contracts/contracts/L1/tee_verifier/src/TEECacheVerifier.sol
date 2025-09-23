@@ -107,8 +107,8 @@ contract TEECacheVerifier is P256Verifier, Ownable {
 
     function verifyAndAttestOnChain(
         bytes calldata rawQuote,
-        bytes memory ecdsa256BitSignature,
-        bytes memory ecdsaAttestationKey,
+        bytes calldata ecdsa256BitSignature,
+        bytes calldata ecdsaAttestationKey,
         uint256 version
     ) external view onlyAuthorized returns (uint32 _error_code, bytes32 commitment) {
         // Extract the quote version from the raw quote
@@ -176,8 +176,8 @@ contract TEECacheVerifier is P256Verifier, Ownable {
 
     function _verifyQuoteV3(
         bytes calldata rawQuote,
-        bytes memory ecdsa256BitSignature,
-        bytes memory ecdsaAttestationKey
+        bytes calldata ecdsa256BitSignature,
+        bytes calldata ecdsaAttestationKey
     ) private view returns (uint32, bytes32) {
         // Extract the header and body from the raw quote
         bytes memory rawHeader = rawQuote[0:HEADER_LENGTH];
@@ -202,8 +202,8 @@ contract TEECacheVerifier is P256Verifier, Ownable {
 
     function _verifyQuoteV4(
         bytes calldata rawQuote,
-        bytes memory ecdsa256BitSignature,
-        bytes memory ecdsaAttestationKey
+        bytes calldata ecdsa256BitSignature,
+        bytes calldata ecdsaAttestationKey
     ) private view returns (uint32, bytes32) {
         // Extract the header and body from the raw quote
         bytes memory rawHeader = rawQuote[0:HEADER_LENGTH];
@@ -238,8 +238,8 @@ contract TEECacheVerifier is P256Verifier, Ownable {
 
     function _verifyQuoteV5(
         bytes calldata rawQuote,
-        bytes memory ecdsa256BitSignature,
-        bytes memory ecdsaAttestationKey
+        bytes calldata ecdsa256BitSignature,
+        bytes calldata ecdsaAttestationKey
     ) private view returns (uint32, bytes32) {
         // Extract the header and body from the raw quote
         bytes memory rawHeader = rawQuote[0:HEADER_LENGTH];

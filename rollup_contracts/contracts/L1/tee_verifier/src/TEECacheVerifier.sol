@@ -18,7 +18,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
     bool _isCallerRestricted = true;
     mapping(bytes => bool) private _verificationCache;
     bytes[] private _initializedKeys;
-    mapping(bytes => uint256) private _keyIndex; // Store index, 0 means it doesn't exist
+    mapping(bytes => uint256) private _keyIndex;
 
     error Forbidden();
     error KeyNotInitialized();

@@ -5,6 +5,11 @@ import {Ownable} from "solady/auth/Ownable.sol";
 import "dcap-attestation/types/Constants.sol";
 import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
 
+/**
+ * @title MeasurementDao
+ * @notice Contract for managing TEE measurements including MR_ENCLAVE, MR_SIGNER, RTMR, and MRTD
+ * @dev This contract stores and manages various measurement values used for TEE attestation verification
+ */
 contract MeasurementDao is Ownable {
     using BytesUtils for bytes;
 
@@ -31,9 +36,9 @@ contract MeasurementDao is Ownable {
     }
 
     /**
-     * @notice
-     * @param _mrEnclave measurement of enclave
-     * @param _mrSigner measurement of signer
+     * @notice Add a new MR_ENCLAVE and MR_SIGNER pair for SGX verification
+     * @param _mrEnclave The measurement register of the enclave (32 bytes)
+     * @param _mrSigner The measurement register of the signer (32 bytes)
      */
     function add_mr_enclave(bytes32 _mrEnclave, bytes32 _mrSigner) external onlyOwner {
         if (mr[_mrEnclave] != bytes32(0)) revert AlreadyExists();
@@ -43,8 +48,8 @@ contract MeasurementDao is Ownable {
     }
 
     /**
-     * @notice
-     * @param _mrEnclave measurement of enclave
+     * @notice Delete an MR_ENCLAVE and its corresponding MR_SIGNER
+     * @param _mrEnclave The measurement register of the enclave to delete
      */
     function delete_mr_enclave(bytes32 _mrEnclave) external onlyOwner {
         if (mr[_mrEnclave] == bytes32(0)) revert NotExists();
@@ -60,10 +65,17 @@ contract MeasurementDao is Ownable {
         delete mrEnclaveIndex[_mrEnclave];
     }
 
+    /**
+     * @notice Get all registered MR_ENCLAVE values
+     * @return Array of all MR_ENCLAVE values
+     */
     function get_mr_enclave() external view returns (bytes32[] memory) {
         return mrEnclaveList;
     }
 
+    /**
+     * @notice Clear all MR_ENCLAVE and MR_SIGNER mappings
+     */
     function clearup_mr_enclave() external onlyOwner {
         for (uint256 i = 0; i < mrEnclaveList.length; ++i) {
             delete mr[mrEnclaveList[i]];
@@ -73,8 +85,8 @@ contract MeasurementDao is Ownable {
     }
 
     /**
-     * @notice
-     * @param rtmr3
+     * @notice Add a new RTMR (Runtime Measurement Register) value for TDX verification
+     * @param rtmr3 The RTMR3 value to add (48 bytes for TDX)
      */
     function add_rtMr(bytes calldata rtmr3) external onlyOwner {
         if (rtmr[rtmr3]) revert AlreadyExists();
@@ -84,8 +96,8 @@ contract MeasurementDao is Ownable {
     }
 
     /**
-     * @notice
-     * @param rtmr3
+     * @notice Delete an RTMR value from the registry
+     * @param rtmr3 The RTMR3 value to delete
      */
     function delete_rtMr(bytes calldata rtmr3) external onlyOwner {
         if (!rtmr[rtmr3]) revert NotExists();
@@ -99,10 +111,17 @@ contract MeasurementDao is Ownable {
         delete rtmrIndex[rtmr3];
     }
 
+    /**
+     * @notice Get all registered RTMR values
+     * @return Array of all RTMR values
+     */
     function get_rtMr() external view returns (bytes[] memory) {
         return rtmrList;
     }
 
+    /**
+     * @notice Clear all RTMR mappings and lists
+     */
     function clearup_rtMr() external onlyOwner {
         for (uint256 i = 0; i < rtmrList.length; ++i) {
             delete rtmr[rtmrList[i]];
@@ -111,6 +130,10 @@ contract MeasurementDao is Ownable {
         delete rtmrList;
     }
 
+    /**
+     * @notice Add a new MRTD (Measurement Register for TD) value for TDX verification
+     * @param mrtd The MRTD value to add (48 bytes for TDX)
+     */
     function add_mrtd(bytes calldata mrtd) external onlyOwner {
         if (mrtdMap[mrtd]) revert AlreadyExists();
         mrtdMap[mrtd] = true;
@@ -118,6 +141,10 @@ contract MeasurementDao is Ownable {
         mrtdIndex[mrtd] = mrtdList.length;
     }
 
+    /**
+     * @notice Delete an MRTD value from the registry
+     * @param mrtd The MRTD value to delete
+     */
     function delete_mrtd(bytes calldata mrtd) external onlyOwner {
         if (!mrtdMap[mrtd]) revert NotExists();
         delete mrtdMap[mrtd];
@@ -131,10 +158,17 @@ contract MeasurementDao is Ownable {
         delete mrtdIndex[mrtd];
     }
 
+    /**
+     * @notice Get all registered MRTD values
+     * @return Array of all MRTD values
+     */
     function get_mrtd() external view returns (bytes[] memory) {
         return mrtdList;
     }
 
+    /**
+     * @notice Clear all MRTD mappings and lists
+     */
     function clearup_mrtd() external onlyOwner {
         for (uint256 i = 0; i < mrtdList.length; ++i) {
             delete mrtdMap[mrtdList[i]];
@@ -143,6 +177,12 @@ contract MeasurementDao is Ownable {
         delete mrtdList;
     }
 
+    /**
+     * @notice Verify SGX measurement against registered MR_ENCLAVE and MR_SIGNER pairs
+     * @param quote The SGX quote data
+     * @param quoteVersion The version of the quote format (3, 4, or 5)
+     * @return True if the measurement is valid, false otherwise
+     */
     function verifyMeasurementSGX(bytes calldata quote, uint16 quoteVersion) external view returns (bool) {
         uint256 mrEnclaveOffset;
         uint256 mrSignerOffset;
@@ -163,6 +203,12 @@ contract MeasurementDao is Ownable {
         return mrSigner != bytes32(0) && mr[mrEnclave] == mrSigner; //mrSigner not zero
     }
 
+    /**
+     * @notice Verify TDX measurement against registered RTMR values
+     * @param quote The TDX quote data
+     * @param quoteVersion The version of the quote format (3, 4, or 5)
+     * @return True if the measurement is valid, false otherwise
+     */
     function verifyMeasurementTDX(bytes calldata quote, uint16 quoteVersion) external view returns (bool) {
         uint256 rtmr3Offset;
 
@@ -180,6 +226,12 @@ contract MeasurementDao is Ownable {
         return rtmr[rtmr3];
     }
 
+    /**
+     * @notice Verify TDX MRTD (Measurement Register for TD) against registered values
+     * @param quote The TDX quote data
+     * @param quoteVersion The version of the quote format (3, 4, or 5)
+     * @return True if the MRTD is valid, false otherwise
+     */
     function verifyMRTD(bytes calldata quote, uint16 quoteVersion) external view returns (bool) {
         uint256 mrtdOffset;
 

@@ -11,7 +11,9 @@ import {TEECacheVerifier} from "./TEECacheVerifier.sol";
 import "dcap-attestation/types/Constants.sol";
 
 /**
- * @notice verify quote from rollup
+ * @title DcapAttestationRouter
+ * @notice Contract for verifying TEE attestation quotes from rollup using Intel DCAP attestation
+ * @dev This contract acts as a router to verify TEE quotes and optionally verify measurements
  */
 contract DcapAttestationRouter is Ownable {
     using BytesUtils for bytes;
@@ -20,13 +22,28 @@ contract DcapAttestationRouter is Ownable {
     uint16 private constant USER_DATA_V4_OFFSET = 533;
     uint16 private constant USER_DATA_V5_OFFSET = 539;
 
+    /// @notice Address of the DCAP attestation contract
     address public dcapAttestation;
+
+    /// @notice Address of the measurement DAO contract for verifying measurements
     address public measurementDao;
+   
+    /// @notice Flag indicating whether to verify measurement registers
     bool public toVerifyMr;
+    
+    /// @notice Address of the TEE cache verifier contract
     address public cacheVerifierAddr;
+   
+    /// @notice Flag indicating whether to use cache-based verification
     bool public CacheOption;
+    
+    /// @notice Mapping of authorized callers
     mapping(address => bool) private _authorized;
+    
+    /// @notice Flag indicating whether caller restriction is enabled
     bool private _isCallerRestricted = true;
+    
+    /// @notice Flag indicating whether to verify MRTD (TDX only)
     bool public toVerifyMrtd = false;
 
     error Forbidden();
@@ -46,6 +63,14 @@ contract DcapAttestationRouter is Ownable {
         _setConfig(_dcapAttestation, _measurementDao, true, _cacheVerifierAddr, true);
     }
 
+    /**
+     * @notice Set the configuration for the attestation router
+     * @param _dcapAttestation Address of the DCAP attestation contract
+     * @param _measurementDao Address of the measurement DAO contract
+     * @param _toVerifyMr Flag indicating whether to verify measurement registers
+     * @param _cacheVerifierAddr Address of the TEE cache verifier contract
+     * @param _CacheOption Flag indicating whether to use cache-based verification
+     */
     function setConfig(
         address _dcapAttestation,
         address _measurementDao,
@@ -56,18 +81,37 @@ contract DcapAttestationRouter is Ownable {
         _setConfig(_dcapAttestation, _measurementDao, _toVerifyMr, _cacheVerifierAddr, _CacheOption);
     }
 
+    /**
+     * @notice Set authorization status for a caller
+     * @param caller Address to set authorization for
+     * @param authorized Whether the caller is authorized
+     */
     function setAuthorized(address caller, bool authorized) external onlyOwner {
         _authorized[caller] = authorized;
     }
 
+   /**
+     * @notice Enable caller restriction (only authorized callers can call functions)
+     */
     function enableCallerRestriction() external onlyOwner {
         _isCallerRestricted = true;
     }
 
+	
+    /**
+     * @notice Disable caller restriction (anyone can call functions)
+     */
     function disableCallerRestriction() external onlyOwner {
         _isCallerRestricted = false;
     }
 
+	
+    /**
+     * @notice Verify proof from rollup
+     * @param aggrProof The aggregated proof containing the TEE quote
+     * @return _error_code Error code (0 for success, 1 for failure)
+     * @return commitment The extracted commitment from the quote
+     */
     function verifyProof(bytes calldata aggrProof)
         external
         onlyAuthorized
@@ -76,6 +120,14 @@ contract DcapAttestationRouter is Ownable {
         (_error_code, commitment) = _verifyProof(aggrProof);
     }
 
+    /**
+     * @notice Internal function to set the configuration for the attestation router
+     * @param _dcapAttestation Address of the DCAP attestation contract
+     * @param _measurementDao Address of the measurement DAO contract
+     * @param _toVerifyMr Flag indicating whether to verify measurement registers
+     * @param _cacheVerifierAddr Address of the TEE cache verifier contract
+     * @param _CacheOption Flag indicating whether to use cache-based verification
+     */
     function _setConfig(
         address _dcapAttestation,
         address _measurementDao,
@@ -93,14 +145,26 @@ contract DcapAttestationRouter is Ownable {
         CacheOption = _CacheOption;
     }
 
+    /**
+     * @notice Enable MRTD verification for TDX quotes
+     */
     function enableVerifyMRTD() external onlyOwner {
         toVerifyMrtd = true;
     }
 
+    /**
+     * @notice Disable MRTD verification for TDX quotes
+     */
     function disableVerifyMRTD() external onlyOwner {
         toVerifyMrtd = false;
     }
 
+    /**
+     * @notice Internal function to verify TEE measurements against registered values
+     * @param quote The TEE attestation quote data
+     * @param quoteVersion The version of the quote format
+     * @return True if the measurement is valid, false otherwise
+     */
     function _verifyMeasurement(bytes calldata quote, uint16 quoteVersion) private view returns (bool) {
         bytes4 teeType = bytes4(quote.substring(4, 4));
         if (teeType == SGX_TEE) {
@@ -115,6 +179,12 @@ contract DcapAttestationRouter is Ownable {
         }
     }
 
+    /**
+     * @notice Internal function to verify TEE attestation proof
+     * @param aggrProof The aggregated proof containing the TEE quote
+     * @return _error_code Error code (0 for success, 1 for failure)
+     * @return commitment The extracted commitment from the quote
+     */
     function _verifyProof(bytes calldata aggrProof) private returns (uint32 _error_code, bytes32 commitment) {
         uint16 quoteVersion = SafeCast.toUint16(BELE.leBytesToBeUint(aggrProof[0:2]));
         if (toVerifyMr) {

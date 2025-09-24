@@ -18,7 +18,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
     bool _isCallerRestricted = true;
     mapping(bytes => bool) private _verificationCache;
     bytes[] private _initializedKeys;
-    mapping(bytes => uint256) private _keyIndex;
+    mapping(bytes => uint256) private _keyIndex; // Store index, 0 means it doesn't exist
 
     error Forbidden();
     error KeyNotInitialized();
@@ -57,20 +57,22 @@ contract TEECacheVerifier is P256Verifier, Ownable {
          // Limit the number of iterations to prevent malicious injection and gas exhaustion
         if (_initializedKeys.length >= 10000) revert ListTooLong();
         _verificationCache[key] = true;
-        _keyIndex[key] = _initializedKeys.length;
         _initializedKeys.push(key);
+        _keyIndex[key] = _initializedKeys.length;
     }
 
     function deleteKey(bytes calldata key) external onlyOwner {
         require(_verificationCache[key], KeyNotInitialized());
         _verificationCache[key] = false;
         uint256 index = _keyIndex[key];
-        require(index < _initializedKeys.length, "Invalid index");
+        require(index > 0 && index <= _initializedKeys.length, "Invalid index");
+        
+        uint256 actualIndex = index - 1;
         
         // Move the last element to the location to delete
         bytes memory lastElement = _initializedKeys[_initializedKeys.length - 1];
-        _initializedKeys[index] = lastElement;
-        _keyIndex[lastElement] = index;
+        _initializedKeys[actualIndex] = lastElement;
+        _keyIndex[lastElement] = actualIndex + 1;
         
         _initializedKeys.pop();
         delete _keyIndex[key];

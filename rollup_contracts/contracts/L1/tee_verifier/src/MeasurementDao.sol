@@ -39,8 +39,8 @@ contract MeasurementDao is Ownable {
     function add_mr_enclave(bytes32 _mrEnclave, bytes32 _mrSigner) external onlyOwner {
         if (mr[_mrEnclave] != bytes32(0)) revert AlreadyExists();
         mr[_mrEnclave] = _mrSigner;
-        mrEnclaveIndex[_mrEnclave] = mrEnclaveList.length;
         mrEnclaveList.push(_mrEnclave);
+        mrEnclaveIndex[_mrEnclave] = mrEnclaveList.length;
     }
 
     /**
@@ -52,10 +52,11 @@ contract MeasurementDao is Ownable {
         delete mr[_mrEnclave];
 
         uint256 index = mrEnclaveIndex[_mrEnclave];
-        require(index < mrEnclaveList.length, "Invalid index");
+        require(index > 0 && index <= mrEnclaveList.length, "Invalid index");
+        uint256 actualIndex = index - 1;
         bytes32 lastElement = mrEnclaveList[mrEnclaveList.length - 1];
-        mrEnclaveList[index] = lastElement;
-        mrEnclaveIndex[lastElement] = index;
+        mrEnclaveList[actualIndex] = lastElement;
+        mrEnclaveIndex[lastElement] = actualIndex + 1;
         
         mrEnclaveList.pop();
         delete mrEnclaveIndex[_mrEnclave];
@@ -80,8 +81,8 @@ contract MeasurementDao is Ownable {
     function add_rtMr(bytes calldata rtmr3) external onlyOwner {
         if (rtmr[rtmr3]) revert AlreadyExists();
         rtmr[rtmr3] = true;
-        rtmrIndex[rtmr3] = rtmrList.length;
         rtmrList.push(rtmr3);
+        rtmrIndex[rtmr3] = rtmrList.length;
     }
 
     /**
@@ -92,10 +93,11 @@ contract MeasurementDao is Ownable {
         if (!rtmr[rtmr3]) revert NotExists();
         delete rtmr[rtmr3];
         uint256 index = rtmrIndex[rtmr3];
-        require(index < rtmrList.length, "Invalid index");
+        require(index > 0 && index <= rtmrList.length, "Invalid index");
+        uint256 actualIndex = index - 1;
         bytes memory lastElement = rtmrList[rtmrList.length - 1];
-        rtmrList[index] = lastElement;
-        rtmrIndex[lastElement] = index;   
+        rtmrList[actualIndex] = lastElement;
+        rtmrIndex[lastElement] = actualIndex + 1; 
         rtmrList.pop();
         delete rtmrIndex[rtmr3];
     }
@@ -115,8 +117,8 @@ contract MeasurementDao is Ownable {
     function add_mrtd(bytes calldata mrtd) external onlyOwner {
         if (mrtdMap[mrtd]) revert AlreadyExists();
         mrtdMap[mrtd] = true;
-        mrtdIndex[mrtd] = mrtdList.length;
         mrtdList.push(mrtd);
+        mrtdIndex[mrtd] = mrtdList.length;
     }
 
     function delete_mrtd(bytes calldata mrtd) external onlyOwner {
@@ -124,10 +126,11 @@ contract MeasurementDao is Ownable {
         delete mrtdMap[mrtd];
 
         uint256 index = mrtdIndex[mrtd];
-        require(index < mrtdList.length, "Invalid index");
+        require(index > 0 && index <= mrtdList.length, "Invalid index");
+        uint256 actualIndex = index - 1;
         bytes memory lastElement = mrtdList[mrtdList.length - 1];
-        mrtdList[index] = lastElement;
-        mrtdIndex[lastElement] = index;
+        mrtdList[actualIndex] = lastElement;
+        mrtdIndex[lastElement] = actualIndex + 1;
         mrtdList.pop();
         delete mrtdIndex[mrtd];
     }

@@ -12,14 +12,6 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
 
     mapping(bytes32 => bool) public receiveMsgStatus;
 
-    uint256 public feeBalance;
-    address public withdrawer;
-
-    modifier onlyWithdrawer() {
-        require(msg.sender == withdrawer, "Only callable by the withdrawer");
-        _;
-    }
-
     constructor(){
         _disableInitializers();
     }
@@ -47,11 +39,6 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
     function setL1MailBox(address l1MailBox_) whenPaused external onlyOwner {
         require(l1MailBox_ != address(0), "Invalid address");
         l1MailBox = l1MailBox_;
-    }
-
-    function setWithdrawer(address _withdrawer) external onlyOwner {
-        require(_withdrawer != address(0), "Invalid withdrawer address");
-        withdrawer = _withdrawer;
     }
 
     function sendMsg(
@@ -86,16 +73,6 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
                 require(success_, "Failed to refund the fee");
             }
         }
-
-        feeBalance += fee_;
-    }
-
-    function withdrawFee(address _target, uint256 _amount) external onlyWithdrawer whenNotPaused {
-        require(_target.code.length == 0, "INVALID_PARAMETER: withdraw target must be eoa");
-        require(_amount <= feeBalance, "INVALID_PARAMETER : withdraw amount must smaller than or equal to fee in mailbox");
-        feeBalance -= _amount;
-        (bool success,) = _target.call{value : _amount}("");
-        require(success, "INTERNAL_ERROR : withdraw fee Failed");
     }
 
     /**

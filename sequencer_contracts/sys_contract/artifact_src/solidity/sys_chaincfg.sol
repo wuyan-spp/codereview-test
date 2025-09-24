@@ -43,18 +43,51 @@ contract ChainCfg {
             return "";
         }
         
-        ConfigCheckpoint storage currentCp = configCps[0];
-        
-        // Check if block number has reached effective block
-        if (block.number < currentCp.effectiveBlockNum) {
+        if (configCps.length == 1) {
+            // Only have effective config
+            ConfigCheckpoint storage effectiveCp = configCps[0];
+            
+            // Check if block number has reached effective block
+            // Config will be inited in genesis block and will be effective at block 0, so this if block
+            // will not be entered. This block is write for Defensive Programming.
+            if (block.number < effectiveCp.effectiveBlockNum) {
+                return "";
+            }
+            
+            // Search for config value
+            for (uint256 i = 0; i < effectiveCp.configs.length; i++) {
+                Config storage conf = effectiveCp.configs[i];
+                if (keccak256(abi.encodePacked(key)) == keccak256(abi.encodePacked(conf.key))) {
+                    return conf.value;
+                }
+            }
             return "";
         }
         
-        // Search for config value
-        for (uint256 i = 0; i < currentCp.configs.length; i++) {
-            Config storage conf = currentCp.configs[i];
-            if (keccak256(abi.encodePacked(key)) == keccak256(abi.encodePacked(conf.key))) {
-                return conf.value;
+        // Have both effective and latest configs
+        ConfigCheckpoint storage latestCp = configCps[1];
+        
+        // Check if latest config is effective
+        if (block.number >= latestCp.effectiveBlockNum) {
+            // Latest config is effective, use it
+            for (uint256 i = 0; i < latestCp.configs.length; i++) {
+                Config storage conf = latestCp.configs[i];
+                if (keccak256(abi.encodePacked(key)) == keccak256(abi.encodePacked(conf.key))) {
+                    return conf.value;
+                }
+            }
+        } else {
+            // Latest config not effective, use effective config
+            ConfigCheckpoint storage effectiveCp = configCps[0];
+            
+            // Check if effective config is actually effective
+            if (block.number >= effectiveCp.effectiveBlockNum) {
+                for (uint256 i = 0; i < effectiveCp.configs.length; i++) {
+                    Config storage conf = effectiveCp.configs[i];
+                    if (keccak256(abi.encodePacked(key)) == keccak256(abi.encodePacked(conf.key))) {
+                        return conf.value;
+                    }
+                }
             }
         }
         
@@ -68,15 +101,40 @@ contract ChainCfg {
             return emptyConfigs;
         }
         
-        ConfigCheckpoint storage currentCp = configCps[0];
-        
-        // Check if block number has reached effective block
-        if (block.number < currentCp.effectiveBlockNum) {
-            Config[] memory emptyConfigs;
-            return emptyConfigs;
+        if (configCps.length == 1) {
+            // Only have effective config
+            ConfigCheckpoint storage effectiveCp = configCps[0];
+            
+            // Config will be inited in genesis block and will be effective at block 0, so this if block
+            // will not be entered. This block is write for Defensive Programming.
+            if (block.number < effectiveCp.effectiveBlockNum) {
+                Config[] memory emptyConfigs;
+                return emptyConfigs;
+            }
+            
+            return effectiveCp.configs;
         }
         
-        return currentCp.configs;
+        // Have both effective and latest configs
+        ConfigCheckpoint storage latestCp = configCps[1];
+        
+        // Check if latest config is effective
+        if (block.number >= latestCp.effectiveBlockNum) {
+            return latestCp.configs;
+        } else {
+            // Latest config not effective, use effective config
+            ConfigCheckpoint storage effectiveCp = configCps[0];
+            
+            // Check if effective config is actually effective
+            if (block.number >= effectiveCp.effectiveBlockNum) {
+                return effectiveCp.configs;
+            } else {
+                // Config will be inited in genesis block and will be effective at block 0, so this else block
+                // will not be entered. This block is write for Defensive Programming.
+                Config[] memory emptyConfigs;
+                return emptyConfigs;
+            }
+        }
     }
 
     function set_config(string[] memory keys, string[] memory values) external onlyOwner {

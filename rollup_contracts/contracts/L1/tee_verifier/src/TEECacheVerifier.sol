@@ -67,12 +67,10 @@ contract TEECacheVerifier is P256Verifier, Ownable {
         uint256 index = _keyIndex[key];
         require(index > 0 && index <= _initializedKeys.length, "Invalid index");
         
-        uint256 actualIndex = index - 1;
-        
         // Move the last element to the location to delete
         bytes memory lastElement = _initializedKeys[_initializedKeys.length - 1];
-        _initializedKeys[actualIndex] = lastElement;
-        _keyIndex[lastElement] = actualIndex + 1;
+        _initializedKeys[index - 1] = lastElement;
+        _keyIndex[lastElement] = index;
         
         _initializedKeys.pop();
         delete _keyIndex[key];

@@ -53,10 +53,9 @@ contract MeasurementDao is Ownable {
 
         uint256 index = mrEnclaveIndex[_mrEnclave];
         require(index > 0 && index <= mrEnclaveList.length, "Invalid index");
-        uint256 actualIndex = index - 1;
         bytes32 lastElement = mrEnclaveList[mrEnclaveList.length - 1];
-        mrEnclaveList[actualIndex] = lastElement;
-        mrEnclaveIndex[lastElement] = actualIndex + 1;
+        mrEnclaveList[index - 1] = lastElement;
+        mrEnclaveIndex[lastElement] = index;
         
         mrEnclaveList.pop();
         delete mrEnclaveIndex[_mrEnclave];
@@ -94,10 +93,9 @@ contract MeasurementDao is Ownable {
         delete rtmr[rtmr3];
         uint256 index = rtmrIndex[rtmr3];
         require(index > 0 && index <= rtmrList.length, "Invalid index");
-        uint256 actualIndex = index - 1;
         bytes memory lastElement = rtmrList[rtmrList.length - 1];
-        rtmrList[actualIndex] = lastElement;
-        rtmrIndex[lastElement] = actualIndex + 1; 
+        rtmrList[index - 1] = lastElement;
+        rtmrIndex[lastElement] = index; 
         rtmrList.pop();
         delete rtmrIndex[rtmr3];
     }
@@ -127,10 +125,9 @@ contract MeasurementDao is Ownable {
 
         uint256 index = mrtdIndex[mrtd];
         require(index > 0 && index <= mrtdList.length, "Invalid index");
-        uint256 actualIndex = index - 1;
         bytes memory lastElement = mrtdList[mrtdList.length - 1];
-        mrtdList[actualIndex] = lastElement;
-        mrtdIndex[lastElement] = actualIndex + 1;
+        mrtdList[index - 1] = lastElement;
+        mrtdIndex[lastElement] = index;
         mrtdList.pop();
         delete mrtdIndex[mrtd];
     }

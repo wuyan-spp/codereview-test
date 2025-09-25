@@ -106,14 +106,13 @@ contract DcapAttestationRouter is Ownable {
         bytes4 teeType = bytes4(quote.substring(4, 4));
         if (teeType == SGX_TEE) {
             return MeasurementDao(measurementDao).verifyMeasurementSGX(quote, quoteVersion);
-        } else {
+        } else if(teeType == TDX_TEE) {
             if (toVerifyMrtd) {
-                bool mrtdVerified = MeasurementDao(measurementDao).verifyMRTD(quote, quoteVersion);
-                if (!mrtdVerified) {
-                    revert MRTDValidationFailed();
-                }
+                require(MeasurementDao(measurementDao).verifyMRTD(quote, quoteVersion), MRTDValidationFailed());
             }
             return MeasurementDao(measurementDao).verifyMeasurementTDX(quote, quoteVersion);
+        } else {
+            return false;
         }
     }
 

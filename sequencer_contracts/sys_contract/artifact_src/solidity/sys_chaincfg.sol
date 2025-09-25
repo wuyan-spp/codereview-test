@@ -14,7 +14,7 @@ contract ChainCfg {
     }
 
 
-    ConfigCheckpoint[] configCps;
+    ConfigCheckpoint[] private configCps;
 
     event ConfigUpdate(uint64 indexed blockNum, uint64 indexed effectiveBlockNum, string[] keys, string[] values);
     

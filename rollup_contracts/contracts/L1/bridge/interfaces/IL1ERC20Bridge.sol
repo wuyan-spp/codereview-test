@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.28;
 
-import "./IL1BridgeProof.sol";
-import "../../../common/interfaces/ITokenBridge.sol";
-
 interface IL1ERC20Bridge {
     /**
      *

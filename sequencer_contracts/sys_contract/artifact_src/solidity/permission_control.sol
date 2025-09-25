@@ -4,7 +4,6 @@ pragma solidity 0.8.27;
 
 contract PermissionControl {
     address private administrator_;
-    // todo add grants admin
     address [] private grantees_;
 
     constructor() {

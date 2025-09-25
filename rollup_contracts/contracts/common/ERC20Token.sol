@@ -21,7 +21,6 @@ contract ERC20Token is
     //roles
     bytes32 public constant MINTER_ROLE = keccak256(abi.encodePacked("MINTER_ROLE"));
     bytes32 public constant BURNER_ROLE = keccak256(abi.encodePacked("BURNER_ROLE"));
-    bytes32 public constant TRANSFER_ROLE = keccak256(abi.encodePacked("TRANSFER_ROLE"));
 
     constructor() {
         _disableInitializers();
@@ -37,8 +36,6 @@ contract ERC20Token is
         __AccessControlEnumerable_init_unchained();
         __ERC20Burnable_init_unchained();
         __ERC20Capped_init_unchained(cap_);
-
-        require(admin_ != address(0), "ERC20Token: admin is zero address");
 
         require(admin_ != address(0), "ERC20Token: admin is zero address");
 

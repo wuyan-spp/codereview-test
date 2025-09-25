@@ -29,8 +29,8 @@ contract PermissionControl {
     }
 
     event SuperTransferred(
-        address old_administrator_,
-        address new_administrator_
+        address indexed old_administrator_,
+        address indexed new_administrator_
     );
     function tranferSuperAdmin(address _new_admin) external {
         require(checkSuperPermission(msg.sender), "Permission denied");
@@ -53,7 +53,7 @@ contract PermissionControl {
     }
 
     event AdminGranted(
-        address grantee
+        address indexed grantee
     );
     function grantAdmin(address _addr) external {
         require(checkSuperPermission(msg.sender), "Permission denied");
@@ -64,7 +64,7 @@ contract PermissionControl {
         emit AdminGranted(_addr);
     }
     event AdminRevoked(
-        address revoked
+        address indexed revoked
     );
     function revokeAdmin(address _addr) external {
         require(checkSuperPermission(msg.sender), "Permission denied");

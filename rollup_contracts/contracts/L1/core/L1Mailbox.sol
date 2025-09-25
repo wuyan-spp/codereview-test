@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.28;
 
-import "../interfaces/IL1Mailbox.sol";
-import "../interfaces/IRollup.sol";
-import "../../common/MailBoxBase.sol";
-import "../libraries/verifier/WithdrawTrieVerifier.sol";
-import "../interfaces/IL1MailQueue.sol";
-import "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
+import {IL1Mailbox} from "../interfaces/IL1Mailbox.sol";
+import {IRollup} from "../interfaces/IRollup.sol";
+import {MailBoxBase, IBridge} from "../../common/MailBoxBase.sol";
+import {WithdrawTrieVerifier} from "../libraries/verifier/WithdrawTrieVerifier.sol";
+import {IL1MailQueue} from "../interfaces/IL1MailQueue.sol";
+import {DoubleEndedQueue} from "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 
 contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;

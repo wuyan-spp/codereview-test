@@ -2,10 +2,11 @@
 pragma solidity 0.8.28;
 
 import {AppendOnlyMerkleTree} from "../libraries/common/AppendOnlyMerkleTree.sol";
-import "../interfaces/IL2Mailbox.sol";
-import "../interfaces/IL2MailQueue.sol";
-import "../../common/MailBoxBase.sol";
+import {IL2Mailbox} from "../interfaces/IL2Mailbox.sol";
+import {IL2MailQueue} from "../interfaces/IL2MailQueue.sol";
+import {MailBoxBase} from "../../common/MailBoxBase.sol";
 
+/// @custom:security-contact enxi.zys@antgroup.com
 contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueue {
     /// @notice The address of L1MailBox contract.
     address public l1MailBox;

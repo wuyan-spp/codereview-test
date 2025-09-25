@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.28;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-
-import "./interfaces/IMailBoxBase.sol";
-import "./interfaces/IGasPriceOracle.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {IMailBoxBase} from "./interfaces/IMailBoxBase.sol";
+import {IGasPriceOracle} from "./interfaces/IGasPriceOracle.sol";
 
 interface IRelay {
     function relayMsg(address sender_, address target_, uint256 value_, uint256 msgNonce_, bytes calldata msg_)

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.28;
 
-import "../../common/interfaces/IMailBoxBase.sol";
+import {IMailBoxBase} from "../../common/interfaces/IMailBoxBase.sol";
 
 interface IL1Mailbox is IMailBoxBase {
     struct L2MsgProof {

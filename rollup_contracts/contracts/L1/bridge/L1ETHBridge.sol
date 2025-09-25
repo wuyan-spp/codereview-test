@@ -2,13 +2,13 @@
 pragma solidity 0.8.28;
 
 import {AddressUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
-import "./interfaces/IL1ETHBridge.sol";
-import "../interfaces/IL1Mailbox.sol";
-import "../../L2/bridge/interfaces/IL2ETHBridge.sol";
-import "./L1BridgeProof.sol";
+import {IL1ETHBridge} from "./interfaces/IL1ETHBridge.sol";
+import {IMailBoxBase} from "../../common/interfaces/IMailBoxBase.sol";
+import {IL2ETHBridge} from "../../L2/bridge/interfaces/IL2ETHBridge.sol";
+import {L1BridgeProof} from "./L1BridgeProof.sol";
 
+/// @custom:security-contact enxi.zys@antgroup.com
 contract L1ETHBridge is L1BridgeProof, IL1ETHBridge {
     using AddressUpgradeable for address;
 

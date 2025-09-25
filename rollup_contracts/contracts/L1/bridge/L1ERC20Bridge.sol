@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.28;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
-import "./interfaces/IL1ERC20Bridge.sol";
-import "../interfaces/IL1Mailbox.sol";
-import "../../L2/bridge/interfaces/IL2ERC20Bridge.sol";
-import "../../common/TokenBridge.sol";
+import {IL1ERC20Bridge} from "./interfaces/IL1ERC20Bridge.sol";
+import {IMailBoxBase} from "../../common/interfaces/IMailBoxBase.sol";
+import {IL2ERC20Bridge} from "../../L2/bridge/interfaces/IL2ERC20Bridge.sol";
+import {TokenBridge, ITokenBridge} from "../../common/TokenBridge.sol";
 import {L1BridgeProof} from "src/L1/bridge/L1BridgeProof.sol";
 
+/// @custom:security-contact enxi.zys@antgroup.com
 contract L1ERC20Bridge is TokenBridge, L1BridgeProof, IL1ERC20Bridge {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 

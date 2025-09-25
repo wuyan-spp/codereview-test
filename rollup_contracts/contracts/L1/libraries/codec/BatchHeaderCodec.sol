@@ -52,7 +52,7 @@ library BatchHeaderCodec {
         assembly {
             batchPtr := mload(0x40)
             calldatacopy(batchPtr, _batchHeader.offset, length)
-            mstore(0x40, add(batchPtr, length))
+            mstore(0x40, add(batchPtr, BATCH_HEADER_FIXED_LENGTH))
         }
     }
 

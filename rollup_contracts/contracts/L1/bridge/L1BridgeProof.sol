@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.28;
 
-import "../../common/BridgeBase.sol";
-import "./interfaces/IL1BridgeProof.sol";
+import {BridgeBase} from "../../common/BridgeBase.sol";
+import {IL1Mailbox} from "../interfaces/IL1Mailbox.sol";
+import {IL1BridgeProof} from "./interfaces/IL1BridgeProof.sol";
 
+/// @custom:security-contact enxi.zys@antgroup.com
 contract L1BridgeProof is BridgeBase, IL1BridgeProof {
     function relayMsgWithProof(uint256 value_, uint256 nonce_, bytes memory msg_, IL1Mailbox.L2MsgProof memory proof_)
         external

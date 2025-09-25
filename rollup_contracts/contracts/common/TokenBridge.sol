@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.28;
 
-import "./BridgeBase.sol";
-import "./interfaces/ITokenBridge.sol";
+import {BridgeBase} from "./BridgeBase.sol";
+import {ITokenBridge} from "./interfaces/ITokenBridge.sol";
 
 abstract contract TokenBridge is BridgeBase, ITokenBridge {
     mapping(address => address) public tokenMapping;

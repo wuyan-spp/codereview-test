@@ -77,9 +77,7 @@ contract DcapAttestationRouter is Ownable {
     event VerifyMRTDDisabled();
 
     modifier onlyAuthorized() {
-        if (_isCallerRestricted && !_authorized[msg.sender]) {
-            revert Forbidden();
-        }
+        require(!_isCallerRestricted || _authorized[msg.sender], Forbidden());
         _;
     }
 
@@ -162,9 +160,9 @@ contract DcapAttestationRouter is Ownable {
         address _cacheVerifierAddr,
         bool _cacheOption
     ) private {
-        if (_dcapAttestation == address(0)) revert InvalidAddress();
-        if (_measurementDao == address(0)) revert InvalidAddress();
-        if (_cacheVerifierAddr == address(0)) revert InvalidAddress();
+        require(_dcapAttestation != address(0), InvalidAddress());
+        require(_measurementDao != address(0), InvalidAddress());
+        require(_cacheVerifierAddr != address(0), InvalidAddress());
         dcapAttestation = _dcapAttestation;
         measurementDao = _measurementDao;
         toVerifyMr = _toVerifyMr;
@@ -222,9 +220,7 @@ contract DcapAttestationRouter is Ownable {
     function _verifyProof(bytes calldata aggrProof) private returns (uint32 _error_code, bytes32 commitment) {
         uint16 quoteVersion = SafeCast.toUint16(BELE.leBytesToBeUint(aggrProof[0:2]));
         if (toVerifyMr) {
-            if (!_verifyMeasurement(aggrProof, quoteVersion)) {
-                revert MrValidationFailed();
-            }
+            require(_verifyMeasurement(aggrProof, quoteVersion), MrValidationFailed());
         }
         bytes memory ecdsa256BitSignature;
         bytes memory ecdsaAttestationKey;

@@ -44,14 +44,12 @@ contract TEECacheVerifier is P256Verifier, Ownable {
     event AllKeysCleared();
 
     modifier onlyAuthorized() {
-        if (_isCallerRestricted && !_authorized[msg.sender]) {
-            revert Forbidden();
-        }
+        require(!_isCallerRestricted || _authorized[msg.sender], Forbidden());
         _;
     }
 
     constructor(address _ecdsaVerifier) P256Verifier(_ecdsaVerifier) {
-        if (_ecdsaVerifier == address(0)) revert InvalidAddress();
+        require(_ecdsaVerifier != address(0), InvalidAddress());
         _initializeOwner(msg.sender);
         _authorized[msg.sender] = true;
     }
@@ -62,7 +60,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
      * @param authorized Whether the caller is authorized
      */
     function setAuthorized(address caller, bool authorized) external onlyOwner {
-        if (caller == address(0)) revert InvalidAddress();
+        require(caller != address(0), InvalidAddress());
         _authorized[caller] = authorized;
         emit AuthorizationSet(caller, authorized);
     }
@@ -89,11 +87,10 @@ contract TEECacheVerifier is P256Verifier, Ownable {
      * @param key The verification key to add
      */
     function initializeCache(bytes calldata key) external onlyAuthorized {
-        if (key.length != 64) revert InvalidKeyLength();
-        if (key.length == 0 || keccak256(key) == keccak256(bytes(""))) revert ZeroKey();
+        require(key.length == 64, InvalidKeyLength());
+        require(key.length != 0 && keccak256(key) != keccak256(bytes("")), ZeroKey());
         // Limit the number of iterations to prevent malicious injection and gas exhaustion
-        if (_initializedKeys.length >= 10000) revert ListTooLong();
-        if (_verificationCache[key]) return;
+        require(_initializedKeys.length < 10000, ListTooLong());
         _verificationCache[key] = true;
         _initializedKeys.push(key);
         _keyIndex[key] = _initializedKeys.length;

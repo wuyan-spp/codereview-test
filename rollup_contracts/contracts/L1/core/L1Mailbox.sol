@@ -96,6 +96,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         uint256 gasLimit_,
         address refundAddress_
     ) external payable override onlyBridge whenNotPaused nonReentrant {
+        require(target_ != address(0), "L1Mailbox: target is zero address");
         // compute the actual cross domain message calldata.
         uint256 nonce_ = nextMsgIndex();
         bytes memory data_ = _encodeCall(_msgSender(), target_, value_, nonce_, msg_);
@@ -144,6 +145,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         bytes memory msg_,
         L2MsgProof memory proof_
     ) external payable whenNotPaused nonReentrant {
+        require(target_ != address(0), "L1Mailbox: target is zero address");
         require(sender_ == IBridge(target_).toBridge(), "Invalid sender");
         bytes32 hash_ = keccak256(_encodeCall(sender_, target_, value_, nonce_, msg_));
 
@@ -160,6 +162,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
     }
 
     function withdrawDepositFee(address _target, uint256 _amount) external onlyWithdrawer whenNotPaused {
+        require(_target != address(0), "L1Mailbox: target is zero address");
         require(_target.code.length == 0, "INVALID_PARAMETER: withdraw target must be eoa");
         require(_amount <= feeBalance, "INVALID_PARAMETER : withdraw amount must smaller than or equal to fee in mailbox");
         feeBalance -= _amount;

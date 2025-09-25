@@ -6,6 +6,7 @@ pragma solidity 0.8.28;
 
 library WithdrawTrieVerifier {
     /// @dev Verify the merkle proof given root, leaf node and proof.
+    /// @dev IMPORTANT: This library has limitations and should only be used within the current integration context.
     /// @param _root The expected root node hash of the withdraw trie.
     /// @param _hash The leaf node hash of the withdraw trie.
     /// @param _nonce The index of the leaf node from left to right, starting from 0.
@@ -18,7 +19,7 @@ library WithdrawTrieVerifier {
         require(_proof.length % 32 == 0, "Invalid proof");
         uint256 _length = _proof.length / 32;
 
-        for (uint256 i = 0; i < _length; i++) {
+        for (uint256 i = 0; i < _length; ++i) {
             bytes32 item;
             assembly {
                 item := mload(add(add(_proof, 0x20), mul(i, 0x20)))
@@ -30,6 +31,7 @@ library WithdrawTrieVerifier {
             }
             _nonce /= 2;
         }
+        if (_nonce != 0) return false;
         return _hash == _root;
     }
 

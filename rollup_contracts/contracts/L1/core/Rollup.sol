@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import "../interfaces/IRollup.sol";
-import "../libraries/codec/BatchHeaderCodec.sol";
-import "../libraries/verifier/ITEERollupVerifier.sol";
-import "../libraries/verifier/IZkRollupVerifier.sol";
+import {IRollup} from "../interfaces/IRollup.sol";
+import {BatchHeaderCodec} from "../libraries/codec/BatchHeaderCodec.sol";
+import {ITeeRollupVerifier} from "../libraries/verifier/ITeeRollupVerifier.sol";
+import {IZkRollupVerifier} from "../libraries/verifier/IZkRollupVerifier.sol";
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import {IL1MailQueue} from "../interfaces/IL1MailQueue.sol";
 
+/// @custom:security-contact enxi.zys@antgroup.com
 contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     error NotSupportZkProof();
 
@@ -394,7 +395,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     }
 
     /// @notice Set zk_verifier
-    /// @param _zkVerifierAddress The verifier address of tee.
+    /// @param _zkVerifierAddress The verifier address of zk.
     function setZkVerifierAddress(address _zkVerifierAddress) external onlyOwner whenPaused {
         require(_zkVerifierAddress != address(0), "INVALID_PARAMETER : must specify one verifier address");
         zk_verifier = _zkVerifierAddress;

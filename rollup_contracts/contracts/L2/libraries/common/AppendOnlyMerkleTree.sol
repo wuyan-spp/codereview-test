@@ -23,7 +23,7 @@ abstract contract AppendOnlyMerkleTree {
 
     function _initializeMerkleTree() internal {
         // Compute hashes in empty sparse Merkle tree
-        for (uint256 height = 0; height + 1 < MAX_TREE_HEIGHT; height++) {
+        for (uint256 height = 0; height + 1 < MAX_TREE_HEIGHT; ++height) {
             _zeroHashes[height + 1] = _efficientHash(_zeroHashes[height], _zeroHashes[height]);
         }
     }

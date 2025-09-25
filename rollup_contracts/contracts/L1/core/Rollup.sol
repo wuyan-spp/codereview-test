@@ -64,6 +64,8 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     /// @notice Whether an account is a relayer.
     mapping(address relayerAddress => bool) public isRelayer;
 
+    uint256 internal constant REVERT_BATCH_LIMIT = 100;
+
     /**
      *
      * Function Modifiers *
@@ -253,7 +255,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
             "INVALID_PARAMETER : revert lastCommitBatchIndex must smaller than current"
         );
         require(
-            lastCommittedBatch - _newLastBatchIndex <= 100,
+            lastCommittedBatch - _newLastBatchIndex <= REVERT_BATCH_LIMIT,
             "INVALID_PARAMETER : revert block number must smaller than 100 for gas limit"
         );
         require(

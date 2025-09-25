@@ -14,6 +14,8 @@ import {L1BridgeProof} from "src/L1/bridge/L1BridgeProof.sol";
 contract L1ERC20Bridge is TokenBridge, L1BridgeProof, IL1ERC20Bridge {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
+    uint256 internal constant SET_TOKEN_MAPPING_GAS_LIMIT = 1000000;
+
     /**
      * Set token mapping relationship
      * @param token_ this chain asset contract address
@@ -26,7 +28,7 @@ contract L1ERC20Bridge is TokenBridge, L1BridgeProof, IL1ERC20Bridge {
 
         // update corresponding mapping in L2, 1000000 gas limit should be enough
         bytes memory message_ = abi.encodeCall(ITokenBridge.setTokenMapping, (tokenTo_, token_));
-        mailBoxCall(abi.encodeCall(IMailBoxBase.sendMsg, (toBridge, 0, message_, 1000000, _msgSender())));
+        mailBoxCall(abi.encodeCall(IMailBoxBase.sendMsg, (toBridge, 0, message_, SET_TOKEN_MAPPING_GAS_LIMIT, _msgSender())));
     }
 
     function deposit(address token_, address to_, uint256 amount_, uint256 gasLimit_, bytes memory msg_)

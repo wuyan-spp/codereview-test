@@ -19,11 +19,11 @@ contract ChainCfg {
     event ConfigUpdate(uint64 indexed blockNum, uint64 indexed effectiveBlockNum, string[] keys, string[] values);
     
     address public rootSys;
-    address public constant sysStaking = 0x4100000000000000000000000000000000000000;
-    address public constant intrinsicSys = 0x1111111111111111111111111111111111111111;
+    address public constant SYS_STAKING = 0x4100000000000000000000000000000000000000;
+    address public constant INTRINSIC_SYS = 0x1111111111111111111111111111111111111111;
 
     modifier onlyOwner() {
-        require(msg.sender == rootSys || msg.sender == sysStaking || msg.sender == intrinsicSys, "Not owner");
+        require(msg.sender == rootSys || msg.sender == SYS_STAKING || msg.sender == INTRINSIC_SYS, "Not owner");
         _;
     }
 

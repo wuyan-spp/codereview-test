@@ -2358,9 +2358,9 @@ contract DPoSValidatorManager is ReentrancyGuard {
     uint256 public currentEpoch;
     uint256 public totalStake;
 
-    address public constant sysChainCfg =
+    address public constant SYS_CHAIN_CFG =
         0x3100000000000000000000000000000000000000;
-    address public constant intrinsicSys =
+    address public constant INTRINSIC_SYS =
         0x1111111111111111111111111111111111111111;
 
     event EpochChange(
@@ -2372,7 +2372,7 @@ contract DPoSValidatorManager is ReentrancyGuard {
     );
 
     modifier onlyOwner() {
-        require(msg.sender == intrinsicSys, "Not owner");
+        require(msg.sender == INTRINSIC_SYS, "Not owner");
         _;
     }
 

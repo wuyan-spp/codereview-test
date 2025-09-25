@@ -18,6 +18,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
     bool _isCallerRestricted = true;
     mapping(bytes => bool) private _verificationCache;
     bytes[] private _initializedKeys;
+    mapping(bytes => uint256) private _keyIndex; // Store index, 0 means it doesn't exist
 
     error Forbidden();
     error KeyNotInitialized();
@@ -48,10 +49,6 @@ contract TEECacheVerifier is P256Verifier, Ownable {
         _isCallerRestricted = true;
     }
 
-    // function disableCallerRestriction() external onlyOwner {
-    //     _isCallerRestricted = false;
-    // }
-
     function isInitialized(bytes calldata key) external view returns (bool) {
         return _verificationCache[key];
     }
@@ -61,26 +58,28 @@ contract TEECacheVerifier is P256Verifier, Ownable {
         if (_initializedKeys.length >= 10000) revert ListTooLong();
         _verificationCache[key] = true;
         _initializedKeys.push(key);
+        _keyIndex[key] = _initializedKeys.length;
     }
 
     function deleteKey(bytes calldata key) external onlyOwner {
         require(_verificationCache[key], KeyNotInitialized());
-        // Limit the number of iterations to prevent gas exhaustion
-        // if (_initializedKeys.length >= 10000) revert ListTooLong();
         _verificationCache[key] = false;
-        bytes32 keyHash = keccak256(key);
-        for (uint256 i = 0; i < _initializedKeys.length; ++i) {
-            if (keccak256(_initializedKeys[i]) == keyHash) {
-                _initializedKeys[i] = _initializedKeys[_initializedKeys.length - 1];
-                _initializedKeys.pop();
-                break;
-            }
-        }
+        uint256 index = _keyIndex[key];
+        require(index > 0 && index <= _initializedKeys.length, "Invalid index");
+        
+        // Move the last element to the location to delete
+        bytes memory lastElement = _initializedKeys[_initializedKeys.length - 1];
+        _initializedKeys[index - 1] = lastElement;
+        _keyIndex[lastElement] = index;
+        
+        _initializedKeys.pop();
+        delete _keyIndex[key];
     }
 
     function clearupAllKey() external onlyOwner {
         for (uint256 i = 0; i < _initializedKeys.length; ++i) {
             delete _verificationCache[_initializedKeys[i]];
+            delete _keyIndex[_initializedKeys[i]];
         }
         delete _initializedKeys;
     }

@@ -76,6 +76,9 @@ contract TEEVerifierProxy is ITeeRollupVerifier, Ownable {
         emit CallerRestrictionEnabled();
     }
 
+    /**
+     * @notice Disable caller restriction (anyone can call functions)
+     */
     function disableCallerRestriction() external onlyOwner {
         _isCallerRestricted = false;
     }

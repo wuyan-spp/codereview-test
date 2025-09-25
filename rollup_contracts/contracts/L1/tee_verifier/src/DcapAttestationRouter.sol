@@ -19,8 +19,16 @@ import "dcap-attestation/types/Constants.sol";
 contract DcapAttestationRouter is Ownable {
     using BytesUtils for bytes;
 
+     /// @dev Offset to extract user data from SGX quote v3 output
+    /// @dev Calculation: 13 bytes (DCAP attestation output header) + 320 bytes (offset to report data in enclave report)
     uint16 private constant USER_DATA_V3_OFFSET = 333;
+    
+    /// @dev Offset to extract user data from TDX quote v4 output
+    /// @dev Calculation: 13 bytes (DCAP attestation output header) + 520 bytes (offset to report data in TD report)
     uint16 private constant USER_DATA_V4_OFFSET = 533;
+    
+    /// @dev Offset to extract user data from TDX quote v5 output
+    /// @dev Calculation: 13 bytes (DCAP attestation output header) + 526 bytes (offset to report data in TD report)
     uint16 private constant USER_DATA_V5_OFFSET = 539;
 
     /// @notice Address of the DCAP attestation contract

@@ -57,6 +57,9 @@ abstract contract MailBoxBase is
         return gasLimit_ * baseFee;
     }
 
+    event BridgeAdded(address indexed bridge);
+    event BridgeRemoved(address indexed bridge);
+
     function setBaseFee(uint256 _newBaseFee) external onlyOwner {
         uint256 oldBaseFee = baseFee;
         baseFee = _newBaseFee;
@@ -97,13 +100,21 @@ abstract contract MailBoxBase is
     /// @notice Add an account to the bridge list.
     /// @param _bridge The address of bridge to add.
     function addBridge(address _bridge) external onlyOwner {
-        isBridge[_bridge] = true;
+        require(_bridge != address(0), "invalid address");
+        if (!isBridge[_bridge]) {
+            isBridge[_bridge] = true;
+            emit BridgeAdded(_bridge);
+        }
     }
 
     /// @notice Remove an account from the bridge list.
     /// @param _bridge The address of account to remove.
     function removeBridge(address _bridge) external onlyOwner {
-        isBridge[_bridge] = false;
+        require(_bridge != address(0), "invalid address");
+        if (isBridge[_bridge]) {
+            isBridge[_bridge] = false;
+            emit BridgeRemoved(_bridge);
+        }
     }
 
     function _getRollingHash(bytes32 msgHash) internal returns (bytes32 newRollingHash) {

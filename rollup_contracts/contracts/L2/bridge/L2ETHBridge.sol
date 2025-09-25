@@ -11,6 +11,11 @@ import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 contract L2ETHBridge is BridgeBase, IL2ETHBridge {
     uint256 public balance;
 
+    event WithdrawETH(address indexed sender, address indexed to, uint256 amount, bytes message);
+    event FinalizeDepositETH(address indexed sender, address indexed to, uint256 amount, bytes data);
+    event DepositClaimed(address indexed target, uint256 amount, bytes32 depositHash);
+    event DepositClaimedWithRefund(address indexed newRefundAddress, uint256 amount, bytes32 depositHash);
+
     /**
      * The sender account transfers to tokenbridge to lock the assets;
      * @param to_ target address
@@ -79,7 +84,8 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
             abi.decode(newDepositMsg, (address, address, uint256, bytes));
         bytes32 depositHash = keccak256(msg_);
         balance += amount;
-        IL2Mailbox(mailBox).claimETH(target, amount, nonce,depositHash);
+        IL2Mailbox(mailBox).claimETH(target, amount, nonce, depositHash);
+        emit DepositClaimed(target, amount, depositHash);
     }
 
     function claimDeposit(bytes calldata msg_, address new_refund_address_)
@@ -97,5 +103,6 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
         balance += amount;
         require(msg.sender == sender, "claimDeposit change refund must called by origin sender");
         IL2Mailbox(mailBox).claimETH(new_refund_address_, amount, nonce, depositHash);
+        emit DepositClaimedWithRefund(new_refund_address_, amount, depositHash);
     }
 }

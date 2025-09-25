@@ -80,6 +80,10 @@ contract L1GasOracle is OwnableUpgradeable {
         }
         CalcL1FeePerByte();
         isRelayer[_msgSender()] = true;
+        
+        emit Initialized(_lastBatchDaFee, _lastBatchExecFee, _lastBatchByteLength, 
+                        DEFAULT_MAX_L1_EXEC_GAS_USED, DEFAULT_MAX_L1_BLOB_GAS_USED, 
+                        DEFAULT_TOTAL_SCALA, DEFAULT_BLOB_BASE_FEE_SCALA, DEFAULT_BASE_FEE_SCALA);
     }
 
     function CalcL1FeePerByte() internal {
@@ -111,6 +115,10 @@ contract L1GasOracle is OwnableUpgradeable {
     event AddRelayer(address relayer);
 
     event RemoveRelayer(address oldRelayer);
+
+    event Initialized(uint256 lastBatchDaFee, uint256 lastBatchExecFee, uint256 lastBatchByteLength, 
+                     uint256 maxL1ExecGasUsedLimit, uint256 maxL1BlobGasUsedLimit, 
+                     uint256 totalScala, uint256 blobBaseFeeScala, uint256 baseFeeScala);
 
     function setNewBatchBlobFeeAndTxFee(
         uint256 _lastBatchDaFee,
@@ -175,15 +183,19 @@ contract L1GasOracle is OwnableUpgradeable {
     }
 
     function addRelayer(address _newRelayer) external onlyOwner {
-        isRelayer[_newRelayer] = true;
-
-        emit AddRelayer(_newRelayer);
+        require(_newRelayer != address(0), "invalid address");
+        if (!isRelayer[_newRelayer]) {
+            isRelayer[_newRelayer] = true;
+            emit AddRelayer(_newRelayer);
+        }
     }
 
     function removeRelayer(address _oldRelayer) external onlyOwner {
-        isRelayer[_oldRelayer] = false;
-
-        emit RemoveRelayer(_oldRelayer);
+        require(_oldRelayer != address(0), "invalid address");
+        if (isRelayer[_oldRelayer]) {
+            isRelayer[_oldRelayer] = false;
+            emit RemoveRelayer(_oldRelayer);
+        }
     }
 
     function getTxL1Fee(uint256 txLength) external view returns (uint256) {

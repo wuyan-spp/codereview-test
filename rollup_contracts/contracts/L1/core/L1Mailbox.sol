@@ -16,6 +16,12 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
 
     event SetL2FinalizeDepositGasUsed(uint256 oldL2FinalizeDepositGasUsed, uint256 newL2FinalizeDepositGasUsed);
 
+    event Initialized(address indexed rollup, address indexed owner, uint256 baseFee, uint256 l2GasLimit, uint256 l2FinalizeDepositGasUsed);
+    event RollupChanged(address indexed oldRollup, address indexed newRollup);
+    event WithdrawerChanged(address indexed oldWithdrawer, address indexed newWithdrawer);
+    event DepositFeeWithdrawn(address indexed target, uint256 amount);
+    event LastQueueIndexSet(uint256 indexed lastestQueueIndex);
+
     // double ended msg queue
     // begin is next finalize msg
     // end + 1 is next append msg
@@ -84,16 +90,22 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         l2GasLimit = _l2GasLimit;
         l2FinalizeDepositGasUsed = _l2FinalizeDepositGasUsed;
         _transferOwnership(owner_);
+        
+        emit Initialized(rollup_, owner_, baseFee_, _l2GasLimit, _l2FinalizeDepositGasUsed);
     }
 
     function setRollup(address rollup_) external whenPaused onlyOwner {
         require(rollup_ != address(0), "Invalid rollup address");
+        address oldRollup = rollup;
         rollup = rollup_;
+        emit RollupChanged(oldRollup, rollup_);
     }
 
     function setWithdrawer(address _withdrawer) external onlyOwner {
         require(_withdrawer != address(0), "Invalid withdrawer address");
+        address oldWithdrawer = withdrawer;
         withdrawer = _withdrawer;
+        emit WithdrawerChanged(oldWithdrawer, _withdrawer);
     }
 
     function sendMsg(
@@ -177,6 +189,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         feeBalance -= _amount;
         (bool success,) = _target.call{value: _amount}("");
         require(success, "INTERNAL_ERROR : withdraw fee Failed");
+        emit DepositFeeWithdrawn(_target, _amount);
     }
 
     /**
@@ -223,7 +236,9 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
      * @notice set lastest queue index  called when pause
      */
     function setLastQueueIndex() external whenPaused onlyOwner {
+        uint256 oldLastestQueueIndex = lastestQueueIndex;
         lastestQueueIndex = nextFinalizeQueueIndex;
+        emit LastQueueIndexSet(lastestQueueIndex);
     }
 
     /**

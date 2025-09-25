@@ -9,21 +9,30 @@ import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
  * @title MeasurementDao
  * @notice Contract for managing TEE measurements including MR_ENCLAVE, MR_SIGNER, RTMR, and MRTD
  * @dev This contract stores and manages various measurement values used for TEE attestation verification
+ * @dev Uses independent version-based storage for each data type to avoid O(n) gas costs when clearing mappings
  */
 contract MeasurementDao is Ownable {
     using BytesUtils for bytes;
 
-    mapping(bytes32 => bytes32) private mrMap;
-    bytes32[] private mrEnclaveList;
-    mapping(bytes32 => uint256) private mrEnclaveIndex;
+    // Independent version numbers for each data type
+    uint256 private mrEnclaveVersion = 1;
+    uint256 private rtMrVersion = 1;
+    uint256 private mrtdVersion = 1;
 
-    mapping(bytes => bool) private rtmrMap;
-    bytes[] private rtmrList;
-    mapping(bytes => uint256) private rtmrIndex;
+    // MR_ENCLAVE storage with versioning
+    mapping(uint256 => mapping(bytes32 => bytes32)) private mr;
+    mapping(uint256 => bytes32[]) private mrEnclaveList;
+    mapping(uint256 => mapping(bytes32 => uint256)) private mrEnclaveIndex;
 
-    mapping(bytes => bool) private mrtdMap;
-    bytes[] private mrtdList;
-    mapping(bytes => uint256) private mrtdIndex;
+    // RTMR storage with versioning
+    mapping(uint256 => mapping(bytes => bool)) private rtmr;
+    mapping(uint256 => bytes[]) private rtmrList;
+    mapping(uint256 => mapping(bytes => uint256)) private rtmrIndex;
+
+    // MRTD storage with versioning
+    mapping(uint256 => mapping(bytes => bool)) private mrtdMap;
+    mapping(uint256 => bytes[]) private mrtdList;
+    mapping(uint256 => mapping(bytes => uint256)) private mrtdIndex;
 
     uint16 private constant MR_ENCLAVE_OFFSET = 112;
     uint16 private constant MR_SIGNER_OFFSET = 176;
@@ -43,11 +52,12 @@ contract MeasurementDao is Ownable {
      * @param _mrSigner The measurement register of the signer (32 bytes)
      */
     function addMrEnclave(bytes32 _mrEnclave, bytes32 _mrSigner) external onlyOwner {
-        if (_mrSigner == bytes32(0)) revert ZeroValue();
-        if (mrMap[_mrEnclave] != bytes32(0)) revert AlreadyExists();
-        mrMap[_mrEnclave] = _mrSigner;
-        mrEnclaveList.push(_mrEnclave);
-        mrEnclaveIndex[_mrEnclave] = mrEnclaveList.length;
+        require(_mrEnclave != bytes32(0), ZeroValue());
+        require(_mrSigner != bytes32(0), ZeroValue());
+        require(mr[mrEnclaveVersion][_mrEnclave] == bytes32(0), AlreadyExists());
+        mr[mrEnclaveVersion][_mrEnclave] = _mrSigner;
+        mrEnclaveList[mrEnclaveVersion].push(_mrEnclave);
+        mrEnclaveIndex[mrEnclaveVersion][_mrEnclave] = mrEnclaveList[mrEnclaveVersion].length;
     }
 
     /**
@@ -55,36 +65,33 @@ contract MeasurementDao is Ownable {
      * @param _mrEnclave The measurement register of the enclave to delete
      */
     function deleteMrEnclave(bytes32 _mrEnclave) external onlyOwner {
-        if (mrMap[_mrEnclave] == bytes32(0)) revert NotExists();
-        delete mrMap[_mrEnclave];
-
-        uint256 index = mrEnclaveIndex[_mrEnclave];
-        require(index > 0 && index <= mrEnclaveList.length, "Invalid index");
-        bytes32 lastElement = mrEnclaveList[mrEnclaveList.length - 1];
-        mrEnclaveList[index - 1] = lastElement;
-        mrEnclaveIndex[lastElement] = index;
-
-        mrEnclaveList.pop();
-        delete mrEnclaveIndex[_mrEnclave];
+        require(mr[mrEnclaveVersion][_mrEnclave] != bytes32(0), NotExists());
+        delete mr[mrEnclaveVersion][_mrEnclave];
+        
+        uint256 index = mrEnclaveIndex[mrEnclaveVersion][_mrEnclave];
+        require(index > 0 && index <= mrEnclaveList[mrEnclaveVersion].length, "Invalid index");
+        bytes32 lastElement = mrEnclaveList[mrEnclaveVersion][mrEnclaveList[mrEnclaveVersion].length - 1];
+        mrEnclaveList[mrEnclaveVersion][index - 1] = lastElement;
+        mrEnclaveIndex[mrEnclaveVersion][lastElement] = index;
+        
+        mrEnclaveList[mrEnclaveVersion].pop();
+        delete mrEnclaveIndex[mrEnclaveVersion][_mrEnclave];
     }
 
     /**
-     * @notice Get all registered MR_ENCLAVE values
+     * @notice Get all registered MR_ENCLAVE values for the current version
      * @return Array of all MR_ENCLAVE values
      */
     function getMrEnclave() external view returns (bytes32[] memory) {
-        return mrEnclaveList;
+        return mrEnclaveList[mrEnclaveVersion];
     }
 
     /**
-     * @notice Clear all MR_ENCLAVE and MR_SIGNER mappings
+     * @notice Clear all MR_ENCLAVE and MR_SIGNER mappings by incrementing version
+     * @dev This avoids O(n) gas cost by using version-based storage
      */
     function clearMrEnclave() external onlyOwner {
-        for (uint256 i = 0; i < mrEnclaveList.length; ++i) {
-            delete mrMap[mrEnclaveList[i]];
-            delete mrEnclaveIndex[mrEnclaveList[i]];
-        }
-        delete mrEnclaveList;
+        mrEnclaveVersion += 1;
     }
 
     /**
@@ -92,11 +99,12 @@ contract MeasurementDao is Ownable {
      * @param rtmr3 The RTMR3 value to add (48 bytes for TDX)
      */
     function addRtmr(bytes calldata rtmr3) external onlyOwner {
-        if (rtmr3.length != 48) revert InvalidLength();
-        if (rtmrMap[rtmr3]) revert AlreadyExists();
-        rtmrMap[rtmr3] = true;
-        rtmrList.push(rtmr3);
-        rtmrIndex[rtmr3] = rtmrList.length;
+        require(rtmr3.length == 48, InvalidLength());
+        require(rtmr3.length != 0 && keccak256(rtmr3) != keccak256(bytes("")), ZeroValue());
+        require(!rtmr[rtMrVersion][rtmr3], AlreadyExists());
+        rtmr[rtMrVersion][rtmr3] = true;
+        rtmrList[rtMrVersion].push(rtmr3);
+        rtmrIndex[rtMrVersion][rtmr3] = rtmrList[rtMrVersion].length;
     }
 
     /**
@@ -104,34 +112,32 @@ contract MeasurementDao is Ownable {
      * @param rtmr3 The RTMR3 value to delete
      */
     function deleteRtmr(bytes calldata rtmr3) external onlyOwner {
-        if (!rtmrMap[rtmr3]) revert NotExists();
-        delete rtmrMap[rtmr3];
-        uint256 index = rtmrIndex[rtmr3];
-        require(index > 0 && index <= rtmrList.length, "Invalid index");
-        bytes memory lastElement = rtmrList[rtmrList.length - 1];
-        rtmrList[index - 1] = lastElement;
-        rtmrIndex[lastElement] = index;
-        rtmrList.pop();
-        delete rtmrIndex[rtmr3];
+        require(rtmr[rtMrVersion][rtmr3], NotExists());
+        delete rtmr[rtMrVersion][rtmr3];
+        
+        uint256 index = rtmrIndex[rtMrVersion][rtmr3];
+        require(index > 0 && index <= rtmrList[rtMrVersion].length, "Invalid index");
+        bytes memory lastElement = rtmrList[rtMrVersion][rtmrList[rtMrVersion].length - 1];
+        rtmrList[rtMrVersion][index - 1] = lastElement;
+        rtmrIndex[rtMrVersion][lastElement] = index;   
+        rtmrList[rtMrVersion].pop();
+        delete rtmrIndex[rtMrVersion][rtmr3];
     }
 
     /**
-     * @notice Get all registered RTMR values
+     * @notice Get all registered RTMR values for the current version
      * @return Array of all RTMR values
      */
     function getRtmr() external view returns (bytes[] memory) {
-        return rtmrList;
+        return rtmrList[rtMrVersion];
     }
 
     /**
-     * @notice Clear all RTMR mappings and lists
+     * @notice Clear all RTMR mappings and lists by incrementing version
+     * @dev This avoids O(n) gas cost by using version-based storage
      */
     function clearRtmr() external onlyOwner {
-        for (uint256 i = 0; i < rtmrList.length; ++i) {
-            delete rtmrMap[rtmrList[i]];
-            delete rtmrIndex[rtmrList[i]];
-        }
-        delete rtmrList;
+        rtMrVersion += 1;
     }
 
     /**
@@ -139,11 +145,12 @@ contract MeasurementDao is Ownable {
      * @param mrtd The MRTD value to add (48 bytes for TDX)
      */
     function addMrtd(bytes calldata mrtd) external onlyOwner {
-        if (mrtd.length != 48) revert InvalidLength();
-        if (mrtdMap[mrtd]) revert AlreadyExists();
-        mrtdMap[mrtd] = true;
-        mrtdList.push(mrtd);
-        mrtdIndex[mrtd] = mrtdList.length;
+        require(mrtd.length == 48, InvalidLength());
+        require(mrtd.length != 0 && keccak256(mrtd) != keccak256(bytes("")), ZeroValue());
+        require(!mrtdMap[mrtdVersion][mrtd], AlreadyExists());
+        mrtdMap[mrtdVersion][mrtd] = true;
+        mrtdList[mrtdVersion].push(mrtd);
+        mrtdIndex[mrtdVersion][mrtd] = mrtdList[mrtdVersion].length;
     }
 
     /**
@@ -151,35 +158,32 @@ contract MeasurementDao is Ownable {
      * @param mrtd The MRTD value to delete
      */
     function deleteMrtd(bytes calldata mrtd) external onlyOwner {
-        if (!mrtdMap[mrtd]) revert NotExists();
-        delete mrtdMap[mrtd];
-
-        uint256 index = mrtdIndex[mrtd];
-        require(index > 0 && index <= mrtdList.length, "Invalid index");
-        bytes memory lastElement = mrtdList[mrtdList.length - 1];
-        mrtdList[index - 1] = lastElement;
-        mrtdIndex[lastElement] = index;
-        mrtdList.pop();
-        delete mrtdIndex[mrtd];
+        require(mrtdMap[mrtdVersion][mrtd], NotExists());
+        delete mrtdMap[mrtdVersion][mrtd];
+        
+        uint256 index = mrtdIndex[mrtdVersion][mrtd];
+        require(index > 0 && index <= mrtdList[mrtdVersion].length, "Invalid index");
+        bytes memory lastElement = mrtdList[mrtdVersion][mrtdList[mrtdVersion].length - 1];
+        mrtdList[mrtdVersion][index - 1] = lastElement;
+        mrtdIndex[mrtdVersion][lastElement] = index;
+        mrtdList[mrtdVersion].pop();
+        delete mrtdIndex[mrtdVersion][mrtd];
     }
 
     /**
-     * @notice Get all registered MRTD values
+     * @notice Get all registered MRTD values for the current version
      * @return Array of all MRTD values
      */
     function getMrtd() external view returns (bytes[] memory) {
-        return mrtdList;
+        return mrtdList[mrtdVersion];
     }
 
     /**
-     * @notice Clear all MRTD mappings and lists
+     * @notice Clear all MRTD mappings and lists by incrementing version
+     * @dev This avoids O(n) gas cost by using version-based storage
      */
     function clearMrtd() external onlyOwner {
-        for (uint256 i = 0; i < mrtdList.length; ++i) {
-            delete mrtdMap[mrtdList[i]];
-            delete mrtdIndex[mrtdList[i]];
-        }
-        delete mrtdList;
+        mrtdVersion += 1;
     }
 
     /**
@@ -209,7 +213,7 @@ contract MeasurementDao is Ownable {
         }
         bytes32 mrEnclave = bytes32(quote.substring(mrEnclaveOffset, 32));
         bytes32 mrSigner = bytes32(quote.substring(mrSignerOffset, 32));
-        return mrSigner != bytes32(0) && mrMap[mrEnclave] == mrSigner; //mrSigner not zero
+        return mrSigner != bytes32(0) && mr[mrEnclaveVersion][mrEnclave] == mrSigner; //mrSigner not zero
     }
 
     /**
@@ -236,7 +240,7 @@ contract MeasurementDao is Ownable {
             return false;
         }
         bytes memory rtmr3 = quote.substring(rtmr3Offset, 48);
-        return rtmrMap[rtmr3];
+        return rtmr[rtMrVersion][rtmr3];
     }
 
     /**
@@ -263,6 +267,6 @@ contract MeasurementDao is Ownable {
             return false;
         }
         bytes memory mrtd = quote.substring(mrtdOffset, 48);
-        return mrtdMap[mrtd];
+        return mrtdMap[mrtdVersion][mrtd];
     }
 }

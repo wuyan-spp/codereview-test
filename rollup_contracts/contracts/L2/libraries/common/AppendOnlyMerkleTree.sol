@@ -22,6 +22,9 @@ abstract contract AppendOnlyMerkleTree {
     bytes32[MAX_TREE_HEIGHT] public _branches;
 
     function _initializeMerkleTree() internal {
+        // Initialize zero hash for height 0
+        _zeroHashes[0] = bytes32(0);
+        
         // Compute hashes in empty sparse Merkle tree
         for (uint256 height = 0; height + 1 < MAX_TREE_HEIGHT; ++height) {
             _zeroHashes[height + 1] = _efficientHash(_zeroHashes[height], _zeroHashes[height]);
@@ -30,7 +33,7 @@ abstract contract AppendOnlyMerkleTree {
 
     function _appendMsgHash(bytes32 msgHash) internal returns (uint256, bytes32) {
         // can called only after initialize
-        // require(_zeroHashes[1] != bytes32(0), "call before initialization");
+        require(_zeroHashes[1] != bytes32(0), "call before initialization");
 
         uint256 currentMsgIndex = _nextMsgIndex;
         bytes32 hash = msgHash;

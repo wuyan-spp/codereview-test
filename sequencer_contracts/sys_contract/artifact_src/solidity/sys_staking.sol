@@ -2327,9 +2327,9 @@ contract ReentrancyGuard {
 }
 
 interface SysChainCfg {
-    function set_config(string[] memory keys, string[] memory values) external;
+    function set_config(string[] calldata keys, string[] calldata values) external;
     function get_config(
-        string memory key
+        string calldata key
     ) external view returns (string memory);
 }
 
@@ -2402,7 +2402,7 @@ contract DPoSValidatorManager is ReentrancyGuard {
     }
 
     function setChainEpochBlock() internal {
-        SysChainCfg sys_chain_cfg = SysChainCfg(sysChainCfg);
+        SysChainCfg sys_chain_cfg = SysChainCfg(SYS_CHAIN_CFG);
         string[] memory keys = new string[](2);
         string[] memory values = new string[](2);
 

@@ -134,7 +134,7 @@ contract ChainCfg {
         }
     }
 
-    function set_config(string[] memory keys, string[] memory values) external onlyOwner {
+    function set_config(string[] calldata keys, string[] calldata values) external onlyOwner {
         require(keys.length == values.length, "KVs are not match");
         // Config will be inited in genesis block and will be effective at block 0, so this if block
         // will not be entered. This block is write for Defensive Programming.

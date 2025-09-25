@@ -104,7 +104,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
     ) external payable override onlyBridge whenNotPaused nonReentrant {
         require(target_ != address(0), "L1Mailbox: target is zero address");
         // compute the actual cross domain message calldata.
-        uint256 nonce_ = nextMsgIndex();
+        uint256 nonce_ = pendingQueueIndex;
         bytes memory data_ = _encodeCall(_msgSender(), target_, value_, nonce_, msg_);
 
         // Calculate the fee and leave it in the MailBox contract
@@ -200,13 +200,6 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         uint256 oldL2FinalizeDepositGasUsed = l2FinalizeDepositGasUsed;
         l2FinalizeDepositGasUsed = _l2FinalizeDepositGasUsed;
         emit SetL2FinalizeDepositGasUsed(oldL2FinalizeDepositGasUsed, _l2FinalizeDepositGasUsed);
-    }
-
-    /**
-     * @notice Returns next message index
-     */
-    function nextMsgIndex() public view override returns (uint256) {
-        return pendingQueueIndex;
     }
 
     /**

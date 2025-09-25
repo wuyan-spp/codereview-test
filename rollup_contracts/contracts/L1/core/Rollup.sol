@@ -272,6 +272,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         lastCommittedBatch = _newLastBatchIndex;
     }
 
+    /// @dev Relayer use this, so we will not remove it even l2MsgRoots has getter
     function getL2MsgRoot(uint256 batch_index) external view override returns (bytes32) {
         return l2MsgRoots[batch_index];
     }

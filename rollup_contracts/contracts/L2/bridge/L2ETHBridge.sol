@@ -11,8 +11,6 @@ import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 contract L2ETHBridge is BridgeBase, IL2ETHBridge {
     uint256 public balance;
 
-    event WithdrawETH(address indexed sender, address indexed to, uint256 amount, bytes message);
-    event FinalizeDepositETH(address indexed sender, address indexed to, uint256 amount, bytes data);
     event DepositClaimed(address indexed target, uint256 amount, bytes32 depositHash);
     event DepositClaimedWithRefund(address indexed newRefundAddress, uint256 amount, bytes32 depositHash);
 
@@ -70,8 +68,7 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
         require(gasleft() > post_call_reserve_gas, "L2ETHBridge.finalizeDeposit: not enough gas");
         (bool success_,) = to_.call{value : amount_, gas : gasleft() - post_call_reserve_gas}("");
         require(success_, "ETH transfer failed");
-        // TODO : add call msg with deposit
-        //        _doCallback(to_, msg_);
+//        _doCallback(to_, msg_);
 
         emit FinalizeDepositETH(sender_, to_, amount_, msg_);
     }

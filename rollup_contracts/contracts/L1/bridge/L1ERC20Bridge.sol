@@ -66,8 +66,7 @@ contract L1ERC20Bridge is TokenBridge, L1BridgeProof, IL1ERC20Bridge {
         require(l2Token_ == tokenMapping[l1Token_], "l2 token not exist");
         IERC20Upgradeable(l1Token_).safeTransfer(to_, amount_);
         _decreaseBalance(l1Token_, amount_);
-        // TODO : add call msg with withdraw
-        //        _doCallback(to_, msg_);
+//        _doCallback(to_, msg_);
         require(IERC20Upgradeable(l1Token_).balanceOf(address(this)) >= balanceOf[l1Token_], "totalSupply mismatch");
 
         emit FinalizeWithdrawERC20(l1Token_, l2Token_, sender_, to_, amount_, msg_);

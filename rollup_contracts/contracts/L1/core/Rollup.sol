@@ -15,9 +15,6 @@ import {IL1MailQueue} from "../interfaces/IL1MailQueue.sol";
 contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     error NotSupportZkProof();
 
-    event CommitBatch(uint256 indexed batchIndex, bytes32 indexed batchHash);
-    event VerifyBatch(uint8 indexed proveType, uint256 indexed batchIndex, bytes32 indexed batchHash, bytes32 postStateRoot, bytes32 l2MsgRoot);
-    event BlobDataHash(bytes32 blobDataHash);
     event Initialized(uint64 chainId, address zkVerifier, address teeVerifier, address l1MailBox, 
                       uint32 maxTxsInChunk, uint32 maxBlockInChunk, uint32 maxCallDataInChunk, 
                       uint32 maxZkCircleInChunk, uint32 l1BlobNumberLimit, uint32 rollupTimeLimit);
@@ -28,7 +25,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     event MaxBlockInChunkChanged(uint32 oldValue, uint32 newValue);
     event MaxCallDataInChunkChanged(uint32 oldValue, uint32 newValue);
     event L1BlobNumberLimitChanged(uint32 oldValue, uint32 newValue);
-    event RollupTimeLimitChanged(uint32 oldValue, uint32 newValue);
+    event RollupTimeLimitChanged(uint64 oldValue, uint64 newValue);
     event L2ChainIdChanged(uint64 oldValue, uint64 newValue);
     event TeeVerifierChanged(address oldVerifier, address newVerifier);
     event ZkVerifierChanged(address oldVerifier, address newVerifier);
@@ -425,8 +422,8 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
 
     /// @notice Set rollupTimeLimit of the limit of l1 tx data size.
     /// @param _rollupTimeLimit The limit of L1 tx data size.
-    function setRollupTimeLimit(uint32 _rollupTimeLimit) external onlyOwner {
-        uint32 oldValue = rollupTimeLimit;
+    function setRollupTimeLimit(uint64 _rollupTimeLimit) external onlyOwner {
+        uint64 oldValue = rollupTimeLimit;
         rollupTimeLimit = _rollupTimeLimit;
         emit RollupTimeLimitChanged(oldValue, _rollupTimeLimit);
     }

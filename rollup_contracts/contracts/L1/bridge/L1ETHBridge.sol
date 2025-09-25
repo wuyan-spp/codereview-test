@@ -49,8 +49,6 @@ contract L1ETHBridge is L1BridgeProof, IL1ETHBridge {
         balance -= amount_;
         (bool success_,) = to_.call{value: amount_}("");
         require(success_, "ETH transfer failed");
-        // TODO : add call msg with withdraw
-        //        _doCallback(to_, msg_);
 
         emit FinalizeWithdrawETH(sender_, to_, amount_, msg_);
     }

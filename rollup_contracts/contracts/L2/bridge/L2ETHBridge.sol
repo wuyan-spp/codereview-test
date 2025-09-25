@@ -79,7 +79,7 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
             abi.decode(newDepositMsg, (address, address, uint256, bytes));
         bytes32 depositHash = keccak256(msg_);
         balance += amount;
-        IL2Mailbox(mailBox).claimAmount(target, amount, nonce, depositHash);
+        IL2Mailbox(mailBox).claimETH(target, amount, nonce,depositHash);
     }
 
     function claimDeposit(bytes calldata msg_, address new_refund_address_)
@@ -96,6 +96,6 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
         bytes32 depositHash = keccak256(msg_);
         balance += amount;
         require(msg.sender == sender, "claimDeposit change refund must called by origin sender");
-        IL2Mailbox(mailBox).claimAmount(new_refund_address_, amount, nonce, depositHash);
+        IL2Mailbox(mailBox).claimETH(new_refund_address_, amount, nonce, depositHash);
     }
 }

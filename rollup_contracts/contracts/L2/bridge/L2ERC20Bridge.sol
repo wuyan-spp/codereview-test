@@ -82,7 +82,7 @@ contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
         (address l1Token_, address l2Token_, address sender_, address to_, uint256 amount_, bytes memory extraMsg_) = abi.decode(newDepositMsg, (address, address, address, address, uint256, bytes));
         require(msg.sender == sender_, "claimDeposit change refund must called by origin sender");
         bytes32 depositHash = keccak256(msg_);
-        IL2Mailbox(mailBox).checkMsgClaimValid(depositHash);
+        IL2Mailbox(mailBox).claimERC20(nonce, depositHash);
         _finalizeDeposit(l1Token_, l2Token_, sender_, to_, amount_, extraMsg_);
     }
     
@@ -93,7 +93,7 @@ contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
         address to_,
         uint256 amount_,
         bytes memory msg_
-    ) internal nonReentrant whenNotPaused {
+    ) internal {
         require(msg.value == 0, "nonzero msg.value");
         require(l1Token_ != address(0), "token address cannot be 0");
         require(l2Token_ != address(0), "L2ERC20Bridge: l2Token is zero address");

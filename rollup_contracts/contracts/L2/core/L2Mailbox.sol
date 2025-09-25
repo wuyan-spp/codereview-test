@@ -107,17 +107,25 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         emit RelayedMsg(hash_, nonce_);
     }
 
-    function claimAmount(
+    function claimETH(
         address refundAddress_,
         uint256 amount_,
         uint256 nonce_,
         bytes32 msgHash_
     ) external override onlyBridge whenNotPaused nonReentrant {
         require(refundAddress_ != address(0), "L2Mailbox: refundAddress is zero address");
-        checkMsgClaimValid(msgHash_);
+        _checkMsgClaimValid(msgHash_);
         (bool success,) = refundAddress_.call{value : amount_}("");
         require(success, "claim amount failed when transfer to refund");
 
+        emit ClaimMsg(msgHash_, nonce_);
+    }
+
+    function claimERC20(
+        uint256 nonce_,
+        bytes32 msgHash_
+    ) external override onlyBridge whenNotPaused nonReentrant {
+        _checkMsgClaimValid(msgHash_);
         emit ClaimMsg(msgHash_, nonce_);
     }
 
@@ -142,15 +150,16 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         receiveMsgStatus[hash_] = true;
     }
 
-    function checkMsgClaimValid(bytes32 hash_) public view {
+    function _checkMsgClaimValid(bytes32 hash_) internal {
         _msgExistCheck(hash_);
         require(!receiveMsgStatus[hash_], "ClaimMsg : L2 msg must exec failed before");
         receiveMsgStatus[hash_] = true;
     }
 
-    function _finalizeClaimMsg(bytes32 hash_) internal {
-        _msgExistCheck(hash_);
-        require(!receiveMsgStatus[hash_], "ClaimMsg : L2 msg must exec failed before");
-        receiveMsgStatus[hash_] = true;
-    }
+    // function _finalizeClaimMsg(bytes32 hash_) internal {
+    //     _msgExistCheck(hash_);
+    //     require(!receiveMsgStatus[hash_], "ClaimMsg : L2 msg must exec failed before");
+    //     receiveMsgStatus[hash_] = true;
+    // }
+
 }

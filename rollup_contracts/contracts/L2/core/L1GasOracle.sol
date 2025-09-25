@@ -63,6 +63,8 @@ contract L1GasOracle is OwnableUpgradeable {
         baseFeeScala = 100;
         if (_lastBatchByteLength < MIN_TX_LENGTH_LIMIT) {
             lastBatchByteLength = MIN_TX_LENGTH_LIMIT;
+        } else if (_lastBatchByteLength > MAX_TX_LENGTH_LIMIT) {
+            lastBatchByteLength = MAX_TX_LENGTH_LIMIT;
         } else {
             lastBatchByteLength = _lastBatchByteLength;
         }

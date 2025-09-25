@@ -206,7 +206,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
             return bytes32(0);
         }
         // totalIndex - 1 == index; index >= nextFinalizeQueueIndex or index = nextFinalizeQueueIndex - 1;
-        require(_l1MsgCount >= lastestQueueIndex, "used msg must bigger than lastestQueueIndex");
+        require(_l1MsgCount >= nextFinalizeQueueIndex, "used msg must bigger than or equal to nextFinalizeQueueIndex");
         require(_l1MsgCount - 1 < pendingQueueIndex, "used msg must smaller than next pending");
         if (_l1MsgCount < lastestQueueIndex + 1) {
             return stableRollingHash;

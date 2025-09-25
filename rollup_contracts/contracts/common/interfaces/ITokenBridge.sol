@@ -9,5 +9,5 @@ interface ITokenBridge {
      * @param token_; this chain token address
      * @param tokenTo_; target chain token address
      */
-    function setTokenMapping(address token_, address tokenTo_) payable external;
+    function setTokenMapping(address token_, address tokenTo_) external payable;
 }

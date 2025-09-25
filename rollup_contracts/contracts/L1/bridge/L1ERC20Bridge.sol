@@ -18,7 +18,7 @@ contract L1ERC20Bridge is TokenBridge, L1BridgeProof, IL1ERC20Bridge {
      * @param token_ this chain asset contract address
      * @param tokenTo_ Target chain asset contract address
      */
-    function setTokenMapping(address token_, address tokenTo_) public override payable onlyOwner whenNotPaused {
+    function setTokenMapping(address token_, address tokenTo_) public payable override onlyOwner whenNotPaused {
         require(token_ != address(0) && tokenTo_ != address(0), "token address cannot be 0");
 
         super.setTokenMapping(token_, tokenTo_);
@@ -28,7 +28,13 @@ contract L1ERC20Bridge is TokenBridge, L1BridgeProof, IL1ERC20Bridge {
         mailBoxCall(abi.encodeCall(IMailBoxBase.sendMsg, (toBridge, 0, message_, 1000000, _msgSender())));
     }
 
-    function deposit(address token_, address to_, uint256 amount_, uint256 gasLimit_, bytes memory msg_) external override payable nonReentrant whenNotPaused {
+    function deposit(address token_, address to_, uint256 amount_, uint256 gasLimit_, bytes memory msg_)
+        external
+        payable
+        override
+        nonReentrant
+        whenNotPaused
+    {
         address l2Token_ = tokenMapping[token_];
         require(l2Token_ != address(0), "deposit erc20 token not exist");
 
@@ -37,7 +43,8 @@ contract L1ERC20Bridge is TokenBridge, L1BridgeProof, IL1ERC20Bridge {
         _transferERC20(token_, amount_);
 
         // 2. Generate message passed to L2CustomERC20Gateway.
-        bytes memory message_ = abi.encodeCall(IL2ERC20Bridge.finalizeDeposit, (token_, l2Token_, sender_, to_, amount_, msg_));
+        bytes memory message_ =
+            abi.encodeCall(IL2ERC20Bridge.finalizeDeposit, (token_, l2Token_, sender_, to_, amount_, msg_));
 
         // 3. Send message to L1Mailbox.
         mailBoxCall(abi.encodeCall(IMailBoxBase.sendMsg, (toBridge, 0, message_, gasLimit_, sender_)));
@@ -45,12 +52,19 @@ contract L1ERC20Bridge is TokenBridge, L1BridgeProof, IL1ERC20Bridge {
         emit DepositERC20(token_, l2Token_, sender_, to_, amount_, msg_);
     }
 
-    function finalizeWithdraw(address l1Token_, address l2Token_, address sender_, address to_, uint256 amount_, bytes memory msg_) external payable override nonReentrant onlyMailBox whenNotPaused {
+    function finalizeWithdraw(
+        address l1Token_,
+        address l2Token_,
+        address sender_,
+        address to_,
+        uint256 amount_,
+        bytes memory msg_
+    ) external payable override nonReentrant onlyMailBox whenNotPaused {
         require(l2Token_ == tokenMapping[l1Token_], "l2 token not exist");
         IERC20Upgradeable(l1Token_).safeTransfer(to_, amount_);
         _decreaseBalance(l1Token_, amount_);
         // TODO : add call msg with withdraw
-//        _doCallback(to_, msg_);
+        //        _doCallback(to_, msg_);
         require(IERC20Upgradeable(l1Token_).balanceOf(address(this)) >= balanceOf[l1Token_], "totalSupply mismatch");
 
         emit FinalizeWithdrawERC20(l1Token_, l2Token_, sender_, to_, amount_, msg_);

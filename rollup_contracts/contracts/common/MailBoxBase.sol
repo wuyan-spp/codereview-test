@@ -7,21 +7,23 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 
 import "./interfaces/IMailBoxBase.sol";
 import "./interfaces/IGasPriceOracle.sol";
+
 interface IRelay {
-    function relayMsg(
-        address sender_,
-        address target_,
-        uint256 value_,
-        uint256 msgNonce_,
-        bytes calldata msg_
-    ) external;
+    function relayMsg(address sender_, address target_, uint256 value_, uint256 msgNonce_, bytes calldata msg_)
+        external;
 }
 
 interface IBridge {
     function toBridge() external returns (address);
 }
 
-abstract contract MailBoxBase is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable, IMailBoxBase, IGasPriceOracle {
+abstract contract MailBoxBase is
+    OwnableUpgradeable,
+    PausableUpgradeable,
+    ReentrancyGuardUpgradeable,
+    IMailBoxBase,
+    IGasPriceOracle
+{
     bytes32 public rollingHash;
 
     mapping(bytes32 => bool) public sendMsgMap;
@@ -83,13 +85,11 @@ abstract contract MailBoxBase is OwnableUpgradeable, PausableUpgradeable, Reentr
         require(receiveMsgMap[hash_], "L2 message not exist");
     }
 
-    function _encodeCall(
-        address sender_,
-        address target_,
-        uint256 value_,
-        uint256 msgNonce_,
-        bytes memory msg_
-    ) internal pure returns (bytes memory) {
+    function _encodeCall(address sender_, address target_, uint256 value_, uint256 msgNonce_, bytes memory msg_)
+        internal
+        pure
+        returns (bytes memory)
+    {
         return abi.encodeCall(IRelay.relayMsg, (sender_, target_, value_, msgNonce_, msg_));
     }
 
@@ -107,7 +107,7 @@ abstract contract MailBoxBase is OwnableUpgradeable, PausableUpgradeable, Reentr
         isBridge[_bridge] = false;
     }
 
-    function _getRollingHash(bytes32 msgHash) internal returns (bytes32 newRollingHash){
+    function _getRollingHash(bytes32 msgHash) internal returns (bytes32 newRollingHash) {
         bytes32 localRollingHash = rollingHash;
         assembly {
             let dataStart := mload(0x40)

@@ -11,9 +11,7 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import {IL1MailQueue} from "../interfaces/IL1MailQueue.sol";
 
-
 contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
-
     error NotSupportZkProof();
 
     /// @notice The max number of txs in a chunk, fill by bytes32(0) if not enough.
@@ -58,30 +56,32 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     // total pop l1msg of batch;
     mapping(uint256 => uint256) public l1MsgCount;
 
-    address public zk_verifier;  // zk_verifier contract address, compatibility operations such as upgrades are handled by the verifier contract
-    address public tee_verifier;  // tee_verifier contract address, compatibility operations such as upgrades are handled by the verifier contract
-    address public l1_mail_box;   // mail box address; L1 Msg Rolling hash storage in it
+    address public zk_verifier; // zk_verifier contract address, compatibility operations such as upgrades are handled by the verifier contract
+    address public tee_verifier; // tee_verifier contract address, compatibility operations such as upgrades are handled by the verifier contract
+    address public l1_mail_box; // mail box address; L1 Msg Rolling hash storage in it
 
     /// @notice Whether an account is a relayer.
     mapping(address => bool) public isRelayer;
 
-    /**********************
+    /**
+     *
      * Function Modifiers *
-     **********************/
-
+     *
+     */
     modifier OnlyRelayer() {
         // @note In the decentralized mode, it should be only called by a list of validator.
         require(isRelayer[_msgSender()], "INVALID_PERMISSION : sender is not relayer");
         _;
     }
 
-    /***************
+    /**
+     *
      * Constructor *
-     ***************/
+     *
+     */
 
-//    /// @notice Constructor implementation .
-    constructor(
-    ) {
+    //    /// @notice Constructor implementation .
+    constructor() {
         _disableInitializers();
     }
 
@@ -100,8 +100,10 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         OwnableUpgradeable.__Ownable_init();
         PausableUpgradeable.__Pausable_init();
 
-        require(_zk_verifier != address(0) || _tee_verifier != address(0), "INVALID_PARAMETER : must specify one verifier address");
-        require(_l1_mail_box != address(0), "Rollup: l1_mail_box is zero address");
+        require(
+            _zk_verifier != address(0) || _tee_verifier != address(0),
+            "INVALID_PARAMETER : must specify one verifier address"
+        );
         layer2ChainId = _chainId;
         zk_verifier = _zk_verifier;
         tee_verifier = _tee_verifier;
@@ -114,9 +116,11 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         rollupTimeLimit = _rollupTimeLimit;
     }
 
-    /*****************************
+    /**
+     *
      * Public Mutating Functions *
-     *****************************/
+     *
+     */
     /// @notice Import layer 2 genesis block
     /// @param _batchHeader The header of the genesis batch.
     /// @param _stateRoot The state root of the genesis block.
@@ -127,16 +131,23 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         // check whether the genesis batch is imported
         require(finalizedStateRoots[0] == bytes32(0), "INVALID_PARAMETER : genesis batch is imported");
 
-        (uint256 memPtr, , bytes32 _batchHash, ) = _loadBatchHeader(_batchHeader);
+        (uint256 memPtr,, bytes32 _batchHash,) = _loadBatchHeader(_batchHeader);
 
         // check all fields except `dataHash` and `lastBlockHash` are zero
         unchecked {
-            uint256 sum = BatchHeaderCodec.version(memPtr) +
-                                BatchHeaderCodec.batchIndex(memPtr);
+            uint256 sum = BatchHeaderCodec.version(memPtr) + BatchHeaderCodec.batchIndex(memPtr);
             require(sum == 0, "INVALID_PARAMETER : genesis batch has no zero field");
-            require(BatchHeaderCodec.l1RollingHash(memPtr) == bytes32(0), "INVALID_PARAMETER : genesis batch rolling hash must be zero");
-            require(BatchHeaderCodec.dataHash(memPtr) != bytes32(0), "INVALID_PARAMETER : genesis batch data hash is zero");
-            require(BatchHeaderCodec.parentBatchHash(memPtr) == bytes32(0), "INVALID_PARAMETER : genesis parent batch hash must be zero");
+            require(
+                BatchHeaderCodec.l1RollingHash(memPtr) == bytes32(0),
+                "INVALID_PARAMETER : genesis batch rolling hash must be zero"
+            );
+            require(
+                BatchHeaderCodec.dataHash(memPtr) != bytes32(0), "INVALID_PARAMETER : genesis batch data hash is zero"
+            );
+            require(
+                BatchHeaderCodec.parentBatchHash(memPtr) == bytes32(0),
+                "INVALID_PARAMETER : genesis parent batch hash must be zero"
+            );
         }
         committedBatches[0] = _batchHash;
         finalizedStateRoots[0] = _stateRoot;
@@ -145,15 +156,16 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         lastTeeVerifiedBatch = 0;
         l1MsgCount[0] = 0;
         l2MsgRoots[0] = bytes32(0);
-        emit CommitBatch( 0, _batchHash);
+        emit CommitBatch(0, _batchHash);
     }
 
     /// @inheritdoc IRollup
-    function commitBatch(
-        uint8 _version,
-        uint256 _batchIndex,
-        uint256 _totalL1MessagePopped
-    ) external override OnlyRelayer whenNotPaused {
+    function commitBatch(uint8 _version, uint256 _batchIndex, uint256 _totalL1MessagePopped)
+        external
+        override
+        OnlyRelayer
+        whenNotPaused
+    {
         require(_batchIndex == lastCommittedBatch + 1, "INVALID_PARAMETER : commit batch one by one");
 
         uint256 BATCH_HEADER_LENGTH = BatchHeaderCodec.BATCH_HEADER_FIXED_LENGTH;
@@ -166,20 +178,14 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
 
         BatchHeaderCodec.storeVersion(batchPtr, _version);
         BatchHeaderCodec.storeBatchIndex(batchPtr, _batchIndex);
-        BatchHeaderCodec.storeL1RollingHash(
-            batchPtr,
-            IL1MailQueue(l1_mail_box).getMsg(_totalL1MessagePopped)
-        );
+        BatchHeaderCodec.storeL1RollingHash(batchPtr, IL1MailQueue(l1_mail_box).getMsg(_totalL1MessagePopped));
         BatchHeaderCodec.storeDataHash(batchPtr, _getBlobDataHash());
         BatchHeaderCodec.storeParentBatchHash(batchPtr, committedBatches[_batchIndex - 1]);
         // compute batch hash
-        bytes32 _batchHash = BatchHeaderCodec.computeBatchHash(
-            batchPtr,
-            BatchHeaderCodec.BATCH_HEADER_FIXED_LENGTH
-        );
+        bytes32 _batchHash = BatchHeaderCodec.computeBatchHash(batchPtr, BatchHeaderCodec.BATCH_HEADER_FIXED_LENGTH);
 
         committedBatches[_batchIndex] = _batchHash;
-        lastCommittedBatch =  _batchIndex;
+        lastCommittedBatch = _batchIndex;
         l1MsgCount[_batchIndex] = _totalL1MessagePopped;
         emit CommitBatch(_batchIndex, _batchHash);
     }
@@ -197,16 +203,23 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         uint256 _verifiedBatchIndex = _prove_type == 0 ? lastZkVerifiedBatch : lastTeeVerifiedBatch;
 
         // compute pending batch hash and verify
-        (
-            ,
-            uint256 _batchIndex,
-            bytes32 _batchHash,
-        ) = _loadBatchHeader(_batchHeader);
-        require(_batchIndex == _verifiedBatchIndex + 1, "INVALID_PARAMETER : invalid verify batch index, must one by one");
-        require(committedBatches[_batchIndex] != bytes32(0) && committedBatches[_batchIndex] ==  _batchHash, "INVALID_PARAMETER : invalid commit batch hash");
-        require(finalizedStateRoots[_batchIndex] == bytes32(0) || finalizedStateRoots[_batchIndex] == _postStateRoot, "INVALID_PARAMETER : invalid verify state root");
-        require(l2MsgRoots[_batchIndex] == bytes32(0) || l2MsgRoots[_batchIndex] == _l2MsgRoot, "INVALID_PARAMETER : invalid verify l2 msg root");
-        
+        (, uint256 _batchIndex, bytes32 _batchHash,) = _loadBatchHeader(_batchHeader);
+        require(
+            _batchIndex == _verifiedBatchIndex + 1, "INVALID_PARAMETER : invalid verify batch index, must one by one"
+        );
+        require(
+            committedBatches[_batchIndex] != bytes32(0) && committedBatches[_batchIndex] == _batchHash,
+            "INVALID_PARAMETER : invalid commit batch hash"
+        );
+        require(
+            finalizedStateRoots[_batchIndex] == bytes32(0) || finalizedStateRoots[_batchIndex] == _postStateRoot,
+            "INVALID_PARAMETER : invalid verify state root"
+        );
+        require(
+            l2MsgRoots[_batchIndex] == bytes32(0) || l2MsgRoots[_batchIndex] == _l2MsgRoot,
+            "INVALID_PARAMETER : invalid verify l2 msg root"
+        );
+
         bytes memory _publicInput = abi.encodePacked(
             layer2ChainId,
             finalizedStateRoots[_verifiedBatchIndex], // _prevStateRoot
@@ -221,14 +234,14 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         }
 
         // TODO : add finalize check
-//        if ((_prove_type == 0 && lastTeeVerifiedBatch >= _batchIndex) || (_prove_type == 1 && lastZkVerifiedBatch >= _batchIndex)) {
+        //        if ((_prove_type == 0 && lastTeeVerifiedBatch >= _batchIndex) || (_prove_type == 1 && lastZkVerifiedBatch >= _batchIndex)) {
         // after verify update contract storage
         if (finalizedStateRoots[_batchIndex] == bytes32(0)) {
             finalizedStateRoots[_batchIndex] = _postStateRoot;
         }
         l2MsgRoots[_batchIndex] = _l2MsgRoot;
         IL1MailQueue(l1_mail_box).popMsgs(l1MsgCount[_batchIndex]);
-//        }
+        //        }
         emit VerifyBatch(_prove_type, _batchIndex, _batchHash, _postStateRoot, _l2MsgRoot);
     }
 
@@ -237,10 +250,22 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     ///      make sure to revert recent batches first.
     /// can only revert L2; L1 can not be revert;
     function revertBatches(uint256 _newLastBatchIndex) external override onlyOwner {
-        require(_newLastBatchIndex < lastCommittedBatch, "INVALID_PARAMETER : revert lastCommitBatchIndex must smaller than current");
-        require(lastCommittedBatch - _newLastBatchIndex <= 100, "INVALID_PARAMETER : revert block number must smaller than 100 for gas limit");
-        require(_newLastBatchIndex >= lastZkVerifiedBatch, "INVALID_PARAMETER : revert block number bigger than last zk verify block number");
-        require(_newLastBatchIndex >= lastTeeVerifiedBatch, "INVALID_PARAMETER : revert block number bigger than last tee verify block number");
+        require(
+            _newLastBatchIndex < lastCommittedBatch,
+            "INVALID_PARAMETER : revert lastCommitBatchIndex must smaller than current"
+        );
+        require(
+            lastCommittedBatch - _newLastBatchIndex <= 100,
+            "INVALID_PARAMETER : revert block number must smaller than 100 for gas limit"
+        );
+        require(
+            _newLastBatchIndex >= lastZkVerifiedBatch,
+            "INVALID_PARAMETER : revert block number bigger than last zk verify block number"
+        );
+        require(
+            _newLastBatchIndex >= lastTeeVerifiedBatch,
+            "INVALID_PARAMETER : revert block number bigger than last tee verify block number"
+        );
 
         // actual revert
         for (uint256 _batchIndex = lastCommittedBatch; _batchIndex > _newLastBatchIndex; --_batchIndex) {
@@ -261,9 +286,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
             let i := 0
             for {} lt(i, blobNumberLimit) { i := add(i, 1) } {
                 let hash := blobhash(i)
-                if iszero(hash) {
-                    break
-                }
+                if iszero(hash) { break }
                 mstore(add(dataStart, offset), hash)
                 offset := add(offset, 0x20)
             }
@@ -282,9 +305,11 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     /// @return _batchIndex The index of the loaded batch header.
     /// @return _batchHash The hash of the loaded batch header.
     /// @return _l1MsgRollingHash The rolling hash of L1 msg on this batch.
-    function _loadBatchHeader(
-        bytes calldata _batchHeader
-    ) internal pure returns (uint256 memPtr, uint256 _batchIndex, bytes32 _batchHash, bytes32 _l1MsgRollingHash) {
+    function _loadBatchHeader(bytes calldata _batchHeader)
+        internal
+        pure
+        returns (uint256 memPtr, uint256 _batchIndex, bytes32 _batchHash, bytes32 _l1MsgRollingHash)
+    {
         // load to memory
         uint256 _length;
         (memPtr, _length) = BatchHeaderCodec.loadAndValidate(_batchHeader);
@@ -302,9 +327,11 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         lastTeeVerifiedBatch = lastTeeVerifiedBatch + 1;
     }
 
-    /************************
+    /**
+     *
      * Restricted Functions *
-     ************************/
+     *
+     */
 
     /// @notice Add an account to the relayer list.
     /// @param _account The address of account to add.

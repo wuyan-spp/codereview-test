@@ -12,18 +12,7 @@ interface IL2Mailbox is IMailBoxBase {
      * @param nonce_ message nonce value
      * @param msg_ message content sent to target_ for execution
      */
-    function relayMsg(
-        address sender_,
-        address target_,
-        uint256 value_,
-        uint256 nonce_,
-        bytes calldata msg_
-    ) external;
+    function relayMsg(address sender_, address target_, uint256 value_, uint256 nonce_, bytes calldata msg_) external;
 
-    function claimAmount(
-        address refundAddress,
-        uint256 amount,
-        uint256 nonce_,
-        bytes32 msgHash_
-    ) external;
+    function claimAmount(address refundAddress, uint256 amount, uint256 nonce_, bytes32 msgHash_) external;
 }

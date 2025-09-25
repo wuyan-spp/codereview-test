@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-
 // File: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/proxy/Proxy.sol
-
 
 // OpenZeppelin Contracts (last updated v4.6.0) (proxy/Proxy.sol)
 
@@ -39,12 +37,8 @@ abstract contract Proxy {
 
             switch result
             // delegatecall returns 0 on error.
-            case 0 {
-                revert(0, returndatasize())
-            }
-            default {
-                return(0, returndatasize())
-            }
+            case 0 { revert(0, returndatasize()) }
+            default { return(0, returndatasize()) }
         }
     }
 
@@ -91,9 +85,7 @@ abstract contract Proxy {
 
 // File: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/proxy/beacon/IBeacon.sol
 
-
 // OpenZeppelin Contracts v4.4.1 (proxy/beacon/IBeacon.sol)
-
 
 /**
  * @dev This is the interface that {BeaconProxy} expects of its beacon.
@@ -108,7 +100,6 @@ interface IBeacon {
 }
 
 // File: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC1967.sol
-
 
 // OpenZeppelin Contracts (last updated v4.9.0) (interfaces/IERC1967.sol)
 
@@ -136,7 +127,6 @@ interface IERC1967 {
 
 // File: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/draft-IERC1822.sol
 
-
 // OpenZeppelin Contracts (last updated v4.5.0) (interfaces/draft-IERC1822.sol)
 
 /**
@@ -157,9 +147,7 @@ interface IERC1822Proxiable {
 
 // File: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/utils/Address.sol
 
-
 // OpenZeppelin Contracts (last updated v4.9.0) (utils/Address.sol)
-
 
 /**
  * @dev Collection of functions related to the address type
@@ -222,7 +210,7 @@ library Address {
     function sendValue(address payable recipient, uint256 amount) internal {
         require(address(this).balance >= amount, "Address: insufficient balance");
 
-        (bool success, ) = recipient.call{value: amount}("");
+        (bool success,) = recipient.call{value: amount}("");
         require(success, "Address: unable to send value, recipient may have reverted");
     }
 
@@ -254,11 +242,10 @@ library Address {
      *
      * _Available since v3.1._
      */
-    function functionCall(
-        address target,
-        bytes memory data,
-        string memory errorMessage
-    ) internal returns (bytes memory) {
+    function functionCall(address target, bytes memory data, string memory errorMessage)
+        internal
+        returns (bytes memory)
+    {
         return functionCallWithValue(target, data, 0, errorMessage);
     }
 
@@ -283,12 +270,10 @@ library Address {
      *
      * _Available since v3.1._
      */
-    function functionCallWithValue(
-        address target,
-        bytes memory data,
-        uint256 value,
-        string memory errorMessage
-    ) internal returns (bytes memory) {
+    function functionCallWithValue(address target, bytes memory data, uint256 value, string memory errorMessage)
+        internal
+        returns (bytes memory)
+    {
         require(address(this).balance >= value, "Address: insufficient balance for call");
         (bool success, bytes memory returndata) = target.call{value: value}(data);
         return verifyCallResultFromTarget(target, success, returndata, errorMessage);
@@ -310,11 +295,11 @@ library Address {
      *
      * _Available since v3.3._
      */
-    function functionStaticCall(
-        address target,
-        bytes memory data,
-        string memory errorMessage
-    ) internal view returns (bytes memory) {
+    function functionStaticCall(address target, bytes memory data, string memory errorMessage)
+        internal
+        view
+        returns (bytes memory)
+    {
         (bool success, bytes memory returndata) = target.staticcall(data);
         return verifyCallResultFromTarget(target, success, returndata, errorMessage);
     }
@@ -335,11 +320,10 @@ library Address {
      *
      * _Available since v3.4._
      */
-    function functionDelegateCall(
-        address target,
-        bytes memory data,
-        string memory errorMessage
-    ) internal returns (bytes memory) {
+    function functionDelegateCall(address target, bytes memory data, string memory errorMessage)
+        internal
+        returns (bytes memory)
+    {
         (bool success, bytes memory returndata) = target.delegatecall(data);
         return verifyCallResultFromTarget(target, success, returndata, errorMessage);
     }
@@ -374,11 +358,11 @@ library Address {
      *
      * _Available since v4.3._
      */
-    function verifyCallResult(
-        bool success,
-        bytes memory returndata,
-        string memory errorMessage
-    ) internal pure returns (bytes memory) {
+    function verifyCallResult(bool success, bytes memory returndata, string memory errorMessage)
+        internal
+        pure
+        returns (bytes memory)
+    {
         if (success) {
             return returndata;
         } else {
@@ -403,10 +387,8 @@ library Address {
 
 // File: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/utils/StorageSlot.sol
 
-
 // OpenZeppelin Contracts (last updated v4.9.0) (utils/StorageSlot.sol)
 // This file was procedurally generated from scripts/generate/templates/StorageSlot.js.
-
 
 /**
  * @dev Library for reading and writing primitive types to specific storage slots.
@@ -543,9 +525,7 @@ library StorageSlot {
 
 // File: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/proxy/ERC1967/ERC1967Upgrade.sol
 
-
 // OpenZeppelin Contracts (last updated v4.9.0) (proxy/ERC1967/ERC1967Upgrade.sol)
-
 
 /**
  * @dev This abstract contract provides getters and event emitting update functions for
@@ -673,8 +653,7 @@ abstract contract ERC1967Upgrade is IERC1967 {
     function _setBeacon(address newBeacon) private {
         require(Address.isContract(newBeacon), "ERC1967: new beacon is not a contract");
         require(
-            Address.isContract(IBeacon(newBeacon).implementation()),
-            "ERC1967: beacon implementation is not a contract"
+            Address.isContract(IBeacon(newBeacon).implementation()), "ERC1967: beacon implementation is not a contract"
         );
         StorageSlot.getAddressSlot(_BEACON_SLOT).value = newBeacon;
     }
@@ -696,9 +675,7 @@ abstract contract ERC1967Upgrade is IERC1967 {
 
 // File: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/proxy/ERC1967/ERC1967Proxy.sol
 
-
 // OpenZeppelin Contracts (last updated v4.7.0) (proxy/ERC1967/ERC1967Proxy.sol)
-
 
 /**
  * @dev This contract implements an upgradeable proxy. It is upgradeable because calls are delegated to an
@@ -726,7 +703,6 @@ contract ERC1967Proxy is Proxy, ERC1967Upgrade {
 }
 
 // File: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/proxy/transparent/TransparentUpgradeableProxy.sol
-
 
 // OpenZeppelin Contracts (last updated v4.9.0) (proxy/transparent/TransparentUpgradeableProxy.sol)
 

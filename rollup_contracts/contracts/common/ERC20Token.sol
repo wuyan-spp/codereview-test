@@ -8,11 +8,16 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgrad
 import "./interfaces/IERC20Token.sol";
 
 /**
-* @title Asset Token Contract
-* @notice Asset token contract, used to manage assets
-* @dev inherit ERC20BurnableUpgradeable, ERC20CappedUpgradeable, AccessControlEnumerableUpgradeable
+ * @title Asset Token Contract
+ * @notice Asset token contract, used to manage assets
+ * @dev inherit ERC20BurnableUpgradeable, ERC20CappedUpgradeable, AccessControlEnumerableUpgradeable
  */
-contract ERC20Token is AccessControlEnumerableUpgradeable, ERC20BurnableUpgradeable, ERC20CappedUpgradeable, IERC20Token {
+contract ERC20Token is
+    AccessControlEnumerableUpgradeable,
+    ERC20BurnableUpgradeable,
+    ERC20CappedUpgradeable,
+    IERC20Token
+{
     //roles
     bytes32 public constant MINTER_ROLE = keccak256(abi.encodePacked("MINTER_ROLE"));
     bytes32 public constant BURNER_ROLE = keccak256(abi.encodePacked("BURNER_ROLE"));
@@ -22,7 +27,10 @@ contract ERC20Token is AccessControlEnumerableUpgradeable, ERC20BurnableUpgradea
         _disableInitializers();
     }
 
-    function initialize(string calldata name_, string calldata symbol_, uint256 cap_, address admin_) external initializer {
+    function initialize(string calldata name_, string calldata symbol_, uint256 cap_, address admin_)
+        external
+        initializer
+    {
         __Context_init_unchained();
         __AccessControl_init_unchained();
         __ERC20_init_unchained(name_, symbol_);
@@ -40,14 +48,20 @@ contract ERC20Token is AccessControlEnumerableUpgradeable, ERC20BurnableUpgradea
         _grantRole(DEFAULT_ADMIN_ROLE, admin_);
     }
 
-    function hasRole(bytes32 role, address account) public view virtual override(AccessControlUpgradeable, IAccessControlUpgradeable) returns (bool) {
+    function hasRole(bytes32 role, address account)
+        public
+        view
+        virtual
+        override(AccessControlUpgradeable, IAccessControlUpgradeable)
+        returns (bool)
+    {
         return super.hasRole(role, account) || super.hasRole(getRoleAdmin(role), account);
     }
 
     /**
      * @dev See {ERC20-_mint}.
      */
-    function _mint(address account, uint256 amount) internal override (ERC20Upgradeable, ERC20CappedUpgradeable) {
+    function _mint(address account, uint256 amount) internal override(ERC20Upgradeable, ERC20CappedUpgradeable) {
         super._mint(account, amount);
     }
 

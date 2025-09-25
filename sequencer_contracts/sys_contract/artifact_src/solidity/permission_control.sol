@@ -4,13 +4,13 @@ pragma solidity 0.8.27;
 
 contract PermissionControl {
     address private administrator_;
-    address [] private grantees_;
+    address[] private grantees_;
 
     constructor() {
         administrator_ = msg.sender;
     }
 
-    function checkSuperPermission(address _addr) private view returns(bool) {
+    function checkSuperPermission(address _addr) private view returns (bool) {
         if (_addr == administrator_ || _addr == address(0)) {
             return true;
         }
@@ -18,7 +18,7 @@ contract PermissionControl {
         return false;
     }
 
-    function checkGrantPermission(address _addr) private view returns(bool) {
+    function checkGrantPermission(address _addr) private view returns (bool) {
         for (uint256 i = 0; i < grantees_.length; i++) {
             if (grantees_[i] == _addr) {
                 return true;
@@ -28,10 +28,8 @@ contract PermissionControl {
         return false;
     }
 
-    event SuperTransferred(
-        address indexed old_administrator_,
-        address indexed new_administrator_
-    );
+    event SuperTransferred(address indexed old_administrator_, address indexed new_administrator_);
+
     function tranferSuperAdmin(address _new_admin) external {
         require(checkSuperPermission(msg.sender), "Permission denied");
         require(_new_admin != address(0), "Permission denied, zero address");
@@ -48,13 +46,12 @@ contract PermissionControl {
     }
 
     // return administrator_
-    function getGranteeAdmin() external view returns ( address[] memory) {
+    function getGranteeAdmin() external view returns (address[] memory) {
         return grantees_;
     }
 
-    event AdminGranted(
-        address indexed grantee
-    );
+    event AdminGranted(address indexed grantee);
+
     function grantAdmin(address _addr) external {
         require(checkSuperPermission(msg.sender), "Permission denied");
         require(_addr != address(0), "Permission denied, zero address");
@@ -63,9 +60,9 @@ contract PermissionControl {
         grantees_.push(_addr);
         emit AdminGranted(_addr);
     }
-    event AdminRevoked(
-        address indexed revoked
-    );
+
+    event AdminRevoked(address indexed revoked);
+
     function revokeAdmin(address _addr) external {
         require(checkSuperPermission(msg.sender), "Permission denied");
         require(checkGrantPermission(_addr), "Address not exist in grantees");

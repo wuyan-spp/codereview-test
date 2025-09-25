@@ -48,11 +48,14 @@ contract L1GasOracle is OwnableUpgradeable {
     // the max limit of blob gas used, mainnet is 6blobs;
     uint256 public maxL1BlobGasUsedLimit;
 
-    constructor(){
+    constructor() {
         _disableInitializers();
     }
 
-    function initialize(uint256 _lastBatchDaFee, uint256 _lastBatchExecFee, uint256 _lastBatchByteLength) external initializer {
+    function initialize(uint256 _lastBatchDaFee, uint256 _lastBatchExecFee, uint256 _lastBatchByteLength)
+        external
+        initializer
+    {
         OwnableUpgradeable.__Ownable_init();
         lastBatchDaFee = _lastBatchDaFee;
         lastBatchExecFee = _lastBatchExecFee;
@@ -73,7 +76,10 @@ contract L1GasOracle is OwnableUpgradeable {
     }
 
     function CalcL1FeePerByte() internal {
-        l1FeePerByte = (((lastBatchDaFee * blobBaseFeeScala / 100) + (lastBatchExecFee * baseFeeScala / 100) + l1Profit) / lastBatchByteLength);
+        l1FeePerByte = (
+            ((lastBatchDaFee * blobBaseFeeScala / 100) + (lastBatchExecFee * baseFeeScala / 100) + l1Profit)
+                / lastBatchByteLength
+        );
         l1FeePerByte = l1FeePerByte * totalScala / 100;
     }
 
@@ -99,9 +105,11 @@ contract L1GasOracle is OwnableUpgradeable {
 
     event RemoveRelayer(address oldRelayer);
 
-    function setNewBatchBlobFeeAndTxFee(uint256 _lastBatchDaFee,
+    function setNewBatchBlobFeeAndTxFee(
+        uint256 _lastBatchDaFee,
         uint256 _lastBatchExecFee,
-        uint256 _lastBatchByteLength) onlyRelayer external {
+        uint256 _lastBatchByteLength
+    ) external onlyRelayer {
         if (_lastBatchByteLength < MIN_TX_LENGTH_LIMIT) {
             _lastBatchByteLength = MIN_TX_LENGTH_LIMIT;
         }
@@ -122,8 +130,7 @@ contract L1GasOracle is OwnableUpgradeable {
         emit SetNewBatchBlobFeeAndTxFee(_lastBatchDaFee, _lastBatchExecFee, _lastBatchByteLength);
     }
 
-    function setBlobBaseFeeScalaAndTxFeeScala(uint256 _baseFeeScala,
-        uint256 _blobBaseFeeScala) onlyRelayer external {
+    function setBlobBaseFeeScalaAndTxFeeScala(uint256 _baseFeeScala, uint256 _blobBaseFeeScala) external onlyRelayer {
         require(_baseFeeScala != 0 && _blobBaseFeeScala != 0, "scala must not be zero");
         baseFeeScala = _baseFeeScala;
         blobBaseFeeScala = _blobBaseFeeScala;
@@ -131,47 +138,47 @@ contract L1GasOracle is OwnableUpgradeable {
         emit SetBlobBaseFeeScalaAndTxFeeScala(_baseFeeScala, _blobBaseFeeScala);
     }
 
-    function setL1Profit(uint256 _l1Profit) onlyOwner external {
+    function setL1Profit(uint256 _l1Profit) external onlyOwner {
         l1Profit = _l1Profit;
         CalcL1FeePerByte();
 
         emit SetL1Profit(_l1Profit);
     }
 
-    function setTotalScala(uint256 _totalScala) onlyOwner external {
+    function setTotalScala(uint256 _totalScala) external onlyOwner {
         totalScala = _totalScala;
         CalcL1FeePerByte();
 
         emit SetTotalScala(_totalScala);
     }
 
-    function setMaxL1ExecGasUsedLimit(uint256 _maxL1ExecGasUsedLimit) onlyOwner external {
+    function setMaxL1ExecGasUsedLimit(uint256 _maxL1ExecGasUsedLimit) external onlyOwner {
         maxL1ExecGasUsedLimit = _maxL1ExecGasUsedLimit;
         CalcL1FeePerByte();
 
         emit SetMaxL1ExecGasUsedLimit(_maxL1ExecGasUsedLimit);
     }
 
-    function setMaxL1BlobGasUsedLimit(uint256 _maxL1BlobGasUsedLimit) onlyOwner external {
+    function setMaxL1BlobGasUsedLimit(uint256 _maxL1BlobGasUsedLimit) external onlyOwner {
         maxL1BlobGasUsedLimit = _maxL1BlobGasUsedLimit;
         CalcL1FeePerByte();
 
         emit SetMaxL1BlobGasUsedLimit(_maxL1BlobGasUsedLimit);
     }
 
-    function addRelayer(address _newRelayer) onlyOwner external {
+    function addRelayer(address _newRelayer) external onlyOwner {
         isRelayer[_newRelayer] = true;
 
         emit AddRelayer(_newRelayer);
     }
 
-    function removeRelayer(address _oldRelayer) onlyOwner external {
+    function removeRelayer(address _oldRelayer) external onlyOwner {
         isRelayer[_oldRelayer] = false;
 
         emit RemoveRelayer(_oldRelayer);
     }
 
-    function getTxL1Fee(uint256 txLength) external view returns(uint256){
+    function getTxL1Fee(uint256 txLength) external view returns (uint256) {
         return l1FeePerByte * txLength;
     }
 }

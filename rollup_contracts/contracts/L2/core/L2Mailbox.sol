@@ -12,7 +12,7 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
 
     mapping(bytes32 => bool) public receiveMsgStatus;
 
-    constructor(){
+    constructor() {
         _disableInitializers();
     }
 
@@ -35,21 +35,20 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         _initializeMerkleTree();
     }
 
-
-    function setL1MailBox(address l1MailBox_) whenPaused external onlyOwner {
+    function setL1MailBox(address l1MailBox_) external whenPaused onlyOwner {
         require(l1MailBox_ != address(0), "Invalid address");
         l1MailBox = l1MailBox_;
     }
 
-    function sendMsg(
-        address target_,
-        uint256 value_,
-        bytes calldata msg_,
-        uint256 gasLimit_,
-        address refundAddress_
-    ) external payable override onlyBridge whenNotPaused nonReentrant {
+    function sendMsg(address target_, uint256 value_, bytes calldata msg_, uint256 gasLimit_, address refundAddress_)
+        external
+        payable
+        override
+        onlyBridge
+        whenNotPaused
+        nonReentrant
+    {
         require(refundAddress_ != address(0), "L2Mailbox: refundAddress is zero address");
-
         // compute the actual cross domain message calldata.
         uint256 nonce_ = _nextMsgIndex;
         bytes memory data_ = _encodeCall(_msgSender(), target_, value_, nonce_, msg_);
@@ -70,7 +69,7 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         unchecked {
             uint256 refund_ = msg.value - fee_ - value_;
             if (refund_ > 0) {
-                (bool success_,) = refundAddress_.call{value : refund_}("");
+                (bool success_,) = refundAddress_.call{value: refund_}("");
                 require(success_, "Failed to refund the fee");
             }
         }
@@ -84,13 +83,12 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
      * @param nonce_ message queue nonce
      * @param msg_ message content sent to target_ execution
      */
-    function relayMsg(
-        address sender_,
-        address target_,
-        uint256 value_,
-        uint256 nonce_,
-        bytes calldata msg_
-    ) external override whenNotPaused nonReentrant {
+    function relayMsg(address sender_, address target_, uint256 value_, uint256 nonce_, bytes calldata msg_)
+        external
+        override
+        whenNotPaused
+        nonReentrant
+    {
         // here l1MailBox will be set as L2Relayer 0x5100000000000000000000000000000000000000
         require(_msgSender() == l1MailBox, "Caller is not L1Mailbox");
 
@@ -98,7 +96,7 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         bytes32 rollinghash = _getRollingHash(hash_);
         emit RollingHash(rollinghash);
         _receiveMsgCheck(hash_);
-        (bool success,) = target_.call{value : value_}(msg_);
+        (bool success,) = target_.call{value: value_}(msg_);
         if (success) {
             _receiveMsgSuccess(hash_);
             emit FinalizeDepositETHSuccess(hash_, nonce_);
@@ -109,15 +107,16 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         emit RelayedMsg(hash_, nonce_);
     }
 
-    function claimAmount(
-        address refundAddress_,
-        uint256 amount_,
-        uint256 nonce_,
-        bytes32 msgHash_
-    ) external override onlyBridge whenNotPaused nonReentrant {
+    function claimAmount(address refundAddress_, uint256 amount_, uint256 nonce_, bytes32 msgHash_)
+        external
+        override
+        onlyBridge
+        whenNotPaused
+        nonReentrant
+    {
         require(refundAddress_ != address(0), "L2Mailbox: refundAddress is zero address");
         _checkMsgClaimValid(msgHash_);
-        (bool success,) = refundAddress_.call{value : amount_}("");
+        (bool success,) = refundAddress_.call{value: amount_}("");
         require(success, "claim amount failed when transfer to refund");
         _finalizeClaimMsg(msgHash_);
 
@@ -155,5 +154,4 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         require(!receiveMsgStatus[hash_], "ClaimMsg : L2 msg must exec failed before");
         receiveMsgStatus[hash_] = true;
     }
-
 }

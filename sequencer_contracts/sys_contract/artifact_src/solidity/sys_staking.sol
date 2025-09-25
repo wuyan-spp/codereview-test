@@ -1235,11 +1235,7 @@ library SignedMath {
      * However, the compiler may optimize Solidity ternary operations (i.e. `a ? b : c`) to only compute
      * one branch when needed, making this function more expensive.
      */
-    function ternary(
-        bool condition,
-        int256 a,
-        int256 b
-    ) internal pure returns (int256) {
+    function ternary(bool condition, int256 a, int256 b) internal pure returns (int256) {
         unchecked {
             // branchless ternary works because:
             // b ^ (a ^ b) == a
@@ -1303,15 +1299,13 @@ library Math {
         Ceil, // Toward positive infinity
         Trunc, // Toward zero
         Expand // Away from zero
+
     }
 
     /**
      * @dev Returns the addition of two unsigned integers, with an success flag (no overflow).
      */
-    function tryAdd(
-        uint256 a,
-        uint256 b
-    ) internal pure returns (bool success, uint256 result) {
+    function tryAdd(uint256 a, uint256 b) internal pure returns (bool success, uint256 result) {
         unchecked {
             uint256 c = a + b;
             if (c < a) return (false, 0);
@@ -1322,10 +1316,7 @@ library Math {
     /**
      * @dev Returns the subtraction of two unsigned integers, with an success flag (no overflow).
      */
-    function trySub(
-        uint256 a,
-        uint256 b
-    ) internal pure returns (bool success, uint256 result) {
+    function trySub(uint256 a, uint256 b) internal pure returns (bool success, uint256 result) {
         unchecked {
             if (b > a) return (false, 0);
             return (true, a - b);
@@ -1335,10 +1326,7 @@ library Math {
     /**
      * @dev Returns the multiplication of two unsigned integers, with an success flag (no overflow).
      */
-    function tryMul(
-        uint256 a,
-        uint256 b
-    ) internal pure returns (bool success, uint256 result) {
+    function tryMul(uint256 a, uint256 b) internal pure returns (bool success, uint256 result) {
         unchecked {
             // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
             // benefit is lost if 'b' is also tested.
@@ -1353,10 +1341,7 @@ library Math {
     /**
      * @dev Returns the division of two unsigned integers, with a success flag (no division by zero).
      */
-    function tryDiv(
-        uint256 a,
-        uint256 b
-    ) internal pure returns (bool success, uint256 result) {
+    function tryDiv(uint256 a, uint256 b) internal pure returns (bool success, uint256 result) {
         unchecked {
             if (b == 0) return (false, 0);
             return (true, a / b);
@@ -1366,10 +1351,7 @@ library Math {
     /**
      * @dev Returns the remainder of dividing two unsigned integers, with a success flag (no division by zero).
      */
-    function tryMod(
-        uint256 a,
-        uint256 b
-    ) internal pure returns (bool success, uint256 result) {
+    function tryMod(uint256 a, uint256 b) internal pure returns (bool success, uint256 result) {
         unchecked {
             if (b == 0) return (false, 0);
             return (true, a % b);
@@ -1383,11 +1365,7 @@ library Math {
      * However, the compiler may optimize Solidity ternary operations (i.e. `a ? b : c`) to only compute
      * one branch when needed, making this function more expensive.
      */
-    function ternary(
-        bool condition,
-        uint256 a,
-        uint256 b
-    ) internal pure returns (uint256) {
+    function ternary(bool condition, uint256 a, uint256 b) internal pure returns (uint256) {
         unchecked {
             // branchless ternary works because:
             // b ^ (a ^ b) == a
@@ -1448,11 +1426,7 @@ library Math {
      * Original credit to Remco Bloemen under MIT license (https://xn--2-umb.com/21/muldiv) with further edits by
      * Uniswap Labs also under MIT license.
      */
-    function mulDiv(
-        uint256 x,
-        uint256 y,
-        uint256 denominator
-    ) internal pure returns (uint256 result) {
+    function mulDiv(uint256 x, uint256 y, uint256 denominator) internal pure returns (uint256 result) {
         unchecked {
             // 512-bit multiply [prod1 prod0] = x * y. Compute the product mod 2²⁵⁶ and mod 2²⁵⁶ - 1, then use
             // the Chinese Remainder Theorem to reconstruct the 512 bit result. The result is stored in two 256
@@ -1474,13 +1448,7 @@ library Math {
 
             // Make sure the result is less than 2²⁵⁶. Also prevents denominator == 0.
             if (denominator <= prod1) {
-                Panic.panic(
-                    ternary(
-                        denominator == 0,
-                        Panic.DIVISION_BY_ZERO,
-                        Panic.UNDER_OVERFLOW
-                    )
-                );
+                Panic.panic(ternary(denominator == 0, Panic.DIVISION_BY_ZERO, Panic.UNDER_OVERFLOW));
             }
 
             ///////////////////////////////////////////////
@@ -1542,17 +1510,8 @@ library Math {
     /**
      * @dev Calculates x * y / denominator with full precision, following the selected rounding direction.
      */
-    function mulDiv(
-        uint256 x,
-        uint256 y,
-        uint256 denominator,
-        Rounding rounding
-    ) internal pure returns (uint256) {
-        return
-            mulDiv(x, y, denominator) +
-            SafeCast.toUint(
-                unsignedRoundsUp(rounding) && mulmod(x, y, denominator) > 0
-            );
+    function mulDiv(uint256 x, uint256 y, uint256 denominator, Rounding rounding) internal pure returns (uint256) {
+        return mulDiv(x, y, denominator) + SafeCast.toUint(unsignedRoundsUp(rounding) && mulmod(x, y, denominator) > 0);
     }
 
     /**
@@ -1642,11 +1601,7 @@ library Math {
      * the underlying function will succeed given the lack of a revert, but the result may be incorrectly
      * interpreted as 0.
      */
-    function modExp(
-        uint256 b,
-        uint256 e,
-        uint256 m
-    ) internal view returns (uint256) {
+    function modExp(uint256 b, uint256 e, uint256 m) internal view returns (uint256) {
         (bool success, uint256 result) = tryModExp(b, e, m);
         if (!success) {
             Panic.panic(Panic.DIVISION_BY_ZERO);
@@ -1664,11 +1619,7 @@ library Math {
      * https://eips.ethereum.org/EIPS/eip-198[EIP-198]. Otherwise, the underlying function will succeed given the lack
      * of a revert, but the result may be incorrectly interpreted as 0.
      */
-    function tryModExp(
-        uint256 b,
-        uint256 e,
-        uint256 m
-    ) internal view returns (bool success, uint256 result) {
+    function tryModExp(uint256 b, uint256 e, uint256 m) internal view returns (bool success, uint256 result) {
         if (m == 0) return (false, 0);
         assembly ("memory-safe") {
             let ptr := mload(0x40)
@@ -1697,11 +1648,7 @@ library Math {
     /**
      * @dev Variant of {modExp} that supports inputs of arbitrary length.
      */
-    function modExp(
-        bytes memory b,
-        bytes memory e,
-        bytes memory m
-    ) internal view returns (bytes memory) {
+    function modExp(bytes memory b, bytes memory e, bytes memory m) internal view returns (bytes memory) {
         (bool success, bytes memory result) = tryModExp(b, e, m);
         if (!success) {
             Panic.panic(Panic.DIVISION_BY_ZERO);
@@ -1712,11 +1659,11 @@ library Math {
     /**
      * @dev Variant of {tryModExp} that supports inputs of arbitrary length.
      */
-    function tryModExp(
-        bytes memory b,
-        bytes memory e,
-        bytes memory m
-    ) internal view returns (bool success, bytes memory result) {
+    function tryModExp(bytes memory b, bytes memory e, bytes memory m)
+        internal
+        view
+        returns (bool success, bytes memory result)
+    {
         if (_zeroBytes(m)) return (false, new bytes(0));
 
         uint256 mLen = m.length;
@@ -1727,14 +1674,7 @@ library Math {
         assembly ("memory-safe") {
             let dataPtr := add(result, 0x20)
             // Write result on top of args to avoid allocating extra memory.
-            success := staticcall(
-                gas(),
-                0x05,
-                dataPtr,
-                mload(result),
-                dataPtr,
-                mLen
-            )
+            success := staticcall(gas(), 0x05, dataPtr, mload(result), dataPtr, mLen)
             // Overwrite the length.
             // result.length > returndatasize() is guaranteed because returndatasize() == m.length
             mstore(result, mLen)
@@ -1871,17 +1811,10 @@ library Math {
     /**
      * @dev Calculates sqrt(a), following the selected rounding direction.
      */
-    function sqrt(
-        uint256 a,
-        Rounding rounding
-    ) internal pure returns (uint256) {
+    function sqrt(uint256 a, Rounding rounding) internal pure returns (uint256) {
         unchecked {
             uint256 result = sqrt(a);
-            return
-                result +
-                SafeCast.toUint(
-                    unsignedRoundsUp(rounding) && result * result < a
-                );
+            return result + SafeCast.toUint(unsignedRoundsUp(rounding) && result * result < a);
         }
     }
 
@@ -1930,17 +1863,10 @@ library Math {
      * @dev Return the log in base 2, following the selected rounding direction, of a positive value.
      * Returns 0 if given 0.
      */
-    function log2(
-        uint256 value,
-        Rounding rounding
-    ) internal pure returns (uint256) {
+    function log2(uint256 value, Rounding rounding) internal pure returns (uint256) {
         unchecked {
             uint256 result = log2(value);
-            return
-                result +
-                SafeCast.toUint(
-                    unsignedRoundsUp(rounding) && 1 << result < value
-                );
+            return result + SafeCast.toUint(unsignedRoundsUp(rounding) && 1 << result < value);
         }
     }
 
@@ -1986,17 +1912,10 @@ library Math {
      * @dev Return the log in base 10, following the selected rounding direction, of a positive value.
      * Returns 0 if given 0.
      */
-    function log10(
-        uint256 value,
-        Rounding rounding
-    ) internal pure returns (uint256) {
+    function log10(uint256 value, Rounding rounding) internal pure returns (uint256) {
         unchecked {
             uint256 result = log10(value);
-            return
-                result +
-                SafeCast.toUint(
-                    unsignedRoundsUp(rounding) && 10 ** result < value
-                );
+            return result + SafeCast.toUint(unsignedRoundsUp(rounding) && 10 ** result < value);
         }
     }
 
@@ -2035,17 +1954,10 @@ library Math {
      * @dev Return the log in base 256, following the selected rounding direction, of a positive value.
      * Returns 0 if given 0.
      */
-    function log256(
-        uint256 value,
-        Rounding rounding
-    ) internal pure returns (uint256) {
+    function log256(uint256 value, Rounding rounding) internal pure returns (uint256) {
         unchecked {
             uint256 result = log256(value);
-            return
-                result +
-                SafeCast.toUint(
-                    unsignedRoundsUp(rounding) && 1 << (result << 3) < value
-                );
+            return result + SafeCast.toUint(unsignedRoundsUp(rounding) && 1 << (result << 3) < value);
         }
     }
 
@@ -2104,14 +2016,8 @@ library Strings {
     /**
      * @dev Converts a `int256` to its ASCII `string` decimal representation.
      */
-    function toStringSigned(
-        int256 value
-    ) internal pure returns (string memory) {
-        return
-            string.concat(
-                value < 0 ? "-" : "",
-                toString(SignedMath.abs(value))
-            );
+    function toStringSigned(int256 value) internal pure returns (string memory) {
+        return string.concat(value < 0 ? "-" : "", toString(SignedMath.abs(value)));
     }
 
     /**
@@ -2126,10 +2032,7 @@ library Strings {
     /**
      * @dev Converts a `uint256` to its ASCII `string` hexadecimal representation with fixed length.
      */
-    function toHexString(
-        uint256 value,
-        uint256 length
-    ) internal pure returns (string memory) {
+    function toHexString(uint256 value, uint256 length) internal pure returns (string memory) {
         uint256 localValue = value;
         bytes memory buffer = new bytes(2 * length + 2);
         buffer[0] = "0";
@@ -2156,9 +2059,7 @@ library Strings {
      * @dev Converts an `address` with fixed length of 20 bytes to its checksummed ASCII `string` hexadecimal
      * representation, according to EIP-55.
      */
-    function toChecksumHexString(
-        address addr
-    ) internal pure returns (string memory) {
+    function toChecksumHexString(address addr) internal pure returns (string memory) {
         bytes memory buffer = bytes(toHexString(addr));
 
         // hash the hex part of buffer (skip length + 2 bytes, length 40)
@@ -2181,13 +2082,8 @@ library Strings {
     /**
      * @dev Returns true if the two strings are equal.
      */
-    function equal(
-        string memory a,
-        string memory b
-    ) internal pure returns (bool) {
-        return
-            bytes(a).length == bytes(b).length &&
-            keccak256(bytes(a)) == keccak256(bytes(b));
+    function equal(string memory a, string memory b) internal pure returns (bool) {
+        return bytes(a).length == bytes(b).length && keccak256(bytes(a)) == keccak256(bytes(b));
     }
 
     /**
@@ -2209,11 +2105,7 @@ library Strings {
      * - The substring must be formatted as `[0-9]*`
      * - The result must fit into an `uint256` type
      */
-    function parseUint(
-        string memory input,
-        uint256 begin,
-        uint256 end
-    ) internal pure returns (uint256) {
+    function parseUint(string memory input, uint256 begin, uint256 end) internal pure returns (uint256) {
         (bool success, uint256 value) = tryParseUint(input, begin, end);
         if (!success) revert StringsInvalidChar();
         return value;
@@ -2224,9 +2116,7 @@ library Strings {
      *
      * NOTE: This function will revert if the result does not fit in a `uint256`.
      */
-    function tryParseUint(
-        string memory input
-    ) internal pure returns (bool success, uint256 value) {
+    function tryParseUint(string memory input) internal pure returns (bool success, uint256 value) {
         return _tryParseUintUncheckedBounds(input, 0, bytes(input).length);
     }
 
@@ -2236,11 +2126,11 @@ library Strings {
      *
      * NOTE: This function will revert if the result does not fit in a `uint256`.
      */
-    function tryParseUint(
-        string memory input,
-        uint256 begin,
-        uint256 end
-    ) internal pure returns (bool success, uint256 value) {
+    function tryParseUint(string memory input, uint256 begin, uint256 end)
+        internal
+        pure
+        returns (bool success, uint256 value)
+    {
         if (end > bytes(input).length || begin > end) return (false, 0);
         return _tryParseUintUncheckedBounds(input, begin, end);
     }
@@ -2249,11 +2139,11 @@ library Strings {
      * @dev Implementation of {tryParseUint} that does not check bounds. Caller should make sure that
      * `begin <= end <= input.length`. Other inputs would result in undefined behavior.
      */
-    function _tryParseUintUncheckedBounds(
-        string memory input,
-        uint256 begin,
-        uint256 end
-    ) private pure returns (bool success, uint256 value) {
+    function _tryParseUintUncheckedBounds(string memory input, uint256 begin, uint256 end)
+        private
+        pure
+        returns (bool success, uint256 value)
+    {
         bytes memory buffer = bytes(input);
 
         uint256 result = 0;
@@ -2290,10 +2180,7 @@ library Strings {
      * NOTE: making this function internal would mean it could be used with memory unsafe offset, and marking the
      * assembly block as such would prevent some optimizations.
      */
-    function _unsafeReadBytesOffset(
-        bytes memory buffer,
-        uint256 offset
-    ) private pure returns (bytes32 value) {
+    function _unsafeReadBytesOffset(bytes memory buffer, uint256 offset) private pure returns (bytes32 value) {
         // This is not memory safe in the general case, but all calls to this private function are within bounds.
         assembly ("memory-safe") {
             value := mload(add(buffer, add(0x20, offset)))
@@ -2328,9 +2215,7 @@ contract ReentrancyGuard {
 
 interface SysChainCfg {
     function set_config(string[] calldata keys, string[] calldata values) external;
-    function get_config(
-        string calldata key
-    ) external view returns (string memory);
+    function get_config(string calldata key) external view returns (string memory);
 }
 
 contract DPoSValidatorManager is ReentrancyGuard {
@@ -2358,10 +2243,8 @@ contract DPoSValidatorManager is ReentrancyGuard {
     uint256 public currentEpoch;
     uint256 public totalStake;
 
-    address public constant SYS_CHAIN_CFG =
-        0x3100000000000000000000000000000000000000;
-    address public constant INTRINSIC_SYS =
-        0x1111111111111111111111111111111111111111;
+    address public constant SYS_CHAIN_CFG = 0x3100000000000000000000000000000000000000;
+    address public constant INTRINSIC_SYS = 0x1111111111111111111111111111111111111111;
 
     event EpochChange(
         uint256 indexed epochNumber,
@@ -2376,10 +2259,7 @@ contract DPoSValidatorManager is ReentrancyGuard {
         _;
     }
 
-    function isArrayContains(
-        bytes32[] memory array,
-        bytes32 element
-    ) internal pure returns (bool) {
+    function isArrayContains(bytes32[] memory array, bytes32 element) internal pure returns (bool) {
         for (uint256 i = 0; i < array.length; i++) {
             if (array[i] == element) {
                 return true;
@@ -2392,13 +2272,7 @@ contract DPoSValidatorManager is ReentrancyGuard {
         setChainEpochBlock();
         currentEpoch++;
 
-        emit EpochChange(
-            currentEpoch,
-            block.number,
-            block.timestamp,
-            totalStake,
-            activePoolIds
-        );
+        emit EpochChange(currentEpoch, block.number, block.timestamp, totalStake, activePoolIds);
     }
 
     function setChainEpochBlock() internal {

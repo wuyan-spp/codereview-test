@@ -18,8 +18,18 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
      * @param gasLimit_ gas limit
      * @param msg_ data
      */
+<<<<<<< HEAD
     function withdraw(address to_, uint256 amount_, uint256 gasLimit_, bytes memory msg_) external payable override nonReentrant whenNotPaused {
         require(to_ != address(0), "L2ETHBridge: to is zero address");
+=======
+    function withdraw(address to_, uint256 amount_, uint256 gasLimit_, bytes memory msg_)
+        external
+        payable
+        override
+        nonReentrant
+        whenNotPaused
+    {
+>>>>>>> 0554ed0 (fix sequencer N015, Inconsistent Code Formatting)
         require(msg.value > 0, "withdraw zero eth");
         require(amount_ > 0, "withdraw zero amount");
 
@@ -33,7 +43,6 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
         emit WithdrawETH(sender_, to_, amount_, message_);
     }
 
-
     /**
      * Complete the transfer of L1 assets
      * @param sender_ transfer initiator
@@ -41,6 +50,7 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
      * @param amount_ transfer amount
      * @param msg_ data
      */
+<<<<<<< HEAD
     function finalizeDeposit(address sender_, address to_, uint256 amount_, bytes calldata msg_) external payable override nonReentrant onlyMailBox whenNotPaused {
         require(to_ != address(0), "L2ETHBridge: to is zero address");
         require(msg.value == amount_, "msg.value mismatch");
@@ -49,26 +59,49 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
         uint256 post_call_reserve_gas = 5000 + 8 * msg_.length;
         require(gasleft() > post_call_reserve_gas, "L2ETHBridge.finalizeDeposit: not enough gas");
         (bool success_,) = to_.call{value : amount_, gas : gasleft() - post_call_reserve_gas}("");
+=======
+    function finalizeDeposit(address sender_, address to_, uint256 amount_, bytes calldata msg_)
+        external
+        payable
+        override
+        nonReentrant
+        onlyMailBox
+        whenNotPaused
+    {
+        require(msg.value == amount_, "msg.value mismatch");
+        balance += amount_;
+
+        (bool success_,) = to_.call{value: amount_, gas: gasleft() / 2}("");
+>>>>>>> 0554ed0 (fix sequencer N015, Inconsistent Code Formatting)
         require(success_, "ETH transfer failed");
-// TODO : add call msg with deposit
-//        _doCallback(to_, msg_);
+        // TODO : add call msg with deposit
+        //        _doCallback(to_, msg_);
 
         emit FinalizeDepositETH(sender_, to_, amount_, msg_);
     }
 
     function claimDeposit(bytes calldata msg_) external override nonReentrant whenNotPaused {
-        (address l1bridge, address l2bridge, uint256 value, uint256 nonce, bytes memory depositMsg) = abi.decode(msg_[4:], (address, address, uint256, uint256, bytes));
-        bytes memory newDepositMsg = BytesLib.slice(depositMsg, 4, depositMsg.length-4);
-        (address sender, address target, uint256 amount, bytes memory data) = abi.decode(newDepositMsg, (address, address, uint256, bytes));
+        (address l1bridge, address l2bridge, uint256 value, uint256 nonce, bytes memory depositMsg) =
+            abi.decode(msg_[4:], (address, address, uint256, uint256, bytes));
+        bytes memory newDepositMsg = BytesLib.slice(depositMsg, 4, depositMsg.length - 4);
+        (address sender, address target, uint256 amount, bytes memory data) =
+            abi.decode(newDepositMsg, (address, address, uint256, bytes));
         bytes32 depositHash = keccak256(msg_);
         balance += amount;
-        IL2Mailbox(mailBox).claimAmount(target, amount, nonce,depositHash);
+        IL2Mailbox(mailBox).claimAmount(target, amount, nonce, depositHash);
     }
 
-    function claimDeposit(bytes calldata msg_, address new_refund_address_) external override nonReentrant whenNotPaused {
-        (address l1bridge, address l2bridge, uint256 value, uint256 nonce, bytes memory depositMsg) = abi.decode(msg_[4:], (address, address, uint256, uint256, bytes));
-        bytes memory newDepositMsg = BytesLib.slice(depositMsg, 4, depositMsg.length-4);
-        (address sender, address target, uint256 amount, bytes memory data) = abi.decode(newDepositMsg, (address, address, uint256, bytes));
+    function claimDeposit(bytes calldata msg_, address new_refund_address_)
+        external
+        override
+        nonReentrant
+        whenNotPaused
+    {
+        (address l1bridge, address l2bridge, uint256 value, uint256 nonce, bytes memory depositMsg) =
+            abi.decode(msg_[4:], (address, address, uint256, uint256, bytes));
+        bytes memory newDepositMsg = BytesLib.slice(depositMsg, 4, depositMsg.length - 4);
+        (address sender, address target, uint256 amount, bytes memory data) =
+            abi.decode(newDepositMsg, (address, address, uint256, bytes));
         bytes32 depositHash = keccak256(msg_);
         balance += amount;
         require(msg.sender == sender, "claimDeposit change refund must called by origin sender");

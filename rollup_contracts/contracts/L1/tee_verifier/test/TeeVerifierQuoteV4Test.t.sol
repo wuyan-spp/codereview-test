@@ -21,8 +21,7 @@ contract AutomataDcapOnChainAttestationTest is PCCSSetupBaseV4 {
     TEECacheVerifier cacheVerifier;
     TEEVerifierProxy proxy;
 
-    bytes constant platformCrlDer =
-        hex""; // TODO: fill for test
+    bytes constant platformCrlDer = hex""; // TODO: fill for test
 
     function setUp() public override {
         super.setUp();
@@ -81,17 +80,17 @@ contract AutomataDcapOnChainAttestationTest is PCCSSetupBaseV4 {
 
         // verify the quote
         vm.prank(admin);
-        
+
         // expecting a revert due to CRL expiration,because there is no overlap in expire date between platformCrlDer and cbInfo
         vm.expectRevert(abi.encodeWithSelector(PCCSRouter.CrlExpiredOrNotFound.selector, CA.PLATFORM));
-        
+
         (uint32 success,) = proxy.verifyProof(sampleQuote);
 
         assertEq(success, 0);
     }
 
     function testTDXQuoteV4WithCache() public {
-         // platformCrlDer pinned July 27th,2024 Midnight UTC
+        // platformCrlDer pinned July 27th,2024 Midnight UTC
         vm.warp(1719560171);
         pcsDao.upsertPckCrl(CA.PLATFORM, platformCrlDer);
 
@@ -102,8 +101,7 @@ contract AutomataDcapOnChainAttestationTest is PCCSSetupBaseV4 {
         V4QuoteVerifier quoteVerifier;
 
         // TODO: fill for test
-        bytes memory sampleQuote =
-            hex"";
+        bytes memory sampleQuote = hex"";
 
         vm.startPrank(admin);
         router = new DcapAttestationRouter(address(attestation), address(mrDao), address(cacheVerifier));
@@ -138,5 +136,4 @@ contract AutomataDcapOnChainAttestationTest is PCCSSetupBaseV4 {
         // need to get tcbinfo( "fmspc":"00806f050000") for sample quote.
         // assert(cacheVerifier.isInitialized(ecdsaAttestationKey));
     }
-
 }

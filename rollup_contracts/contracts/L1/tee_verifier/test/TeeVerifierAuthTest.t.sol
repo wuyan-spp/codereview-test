@@ -22,18 +22,12 @@ contract TEEVerifyTest is PCCSSetupBase {
     uint16 constant MAX_BP = 10_000;
 
     // TODO: fill for test
-    bytes public sampleQuote5_1 =
-        hex"";
-    bytes public sampleQuote5_2 =
-        hex"";
-    bytes public sampleQuote5_3 =
-        hex"";
-    bytes public sampleQuote3_1 =
-        hex"";
-    bytes public sampleQuote3_2 =
-        hex"";
-    bytes public sampleQuote3_3 =
-        hex"";
+    bytes public sampleQuote5_1 = hex"";
+    bytes public sampleQuote5_2 = hex"";
+    bytes public sampleQuote5_3 = hex"";
+    bytes public sampleQuote3_1 = hex"";
+    bytes public sampleQuote3_2 = hex"";
+    bytes public sampleQuote3_3 = hex"";
 
     AutomataDcapAttestationFee attestation;
     PCCSRouter pccsRouter;
@@ -93,8 +87,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.stopPrank();
     }
 
-    bytes constant platformCrlDer =
-        hex""; // TODO: fill for test
+    bytes constant platformCrlDer = hex""; // TODO: fill for test
 
     /**
      * TEEVerifierProxy Auth

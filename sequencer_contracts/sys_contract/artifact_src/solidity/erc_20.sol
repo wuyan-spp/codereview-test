@@ -44,7 +44,6 @@ contract ERC20 is IERC20 {
         return _balances[account];
     }
 
-
     function mint(address recipient, uint256 amount) public onlyOwner returns (bool) {
         _totalSupply += amount;
         _balances[recipient] += amount;
@@ -61,7 +60,7 @@ contract ERC20 is IERC20 {
     }
 
     function approve(address spender, uint256 amount) public override returns (bool) {
-       _allowances[msg.sender][spender] = amount;
+        _allowances[msg.sender][spender] = amount;
         emit Approval(msg.sender, spender, amount);
         return true;
     }

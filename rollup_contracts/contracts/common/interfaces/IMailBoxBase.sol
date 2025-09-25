@@ -52,11 +52,7 @@ interface IMailBoxBase {
      * @param gasLimit_; gaslimit on target chain
      * @param refundAddress_; refund address after value and gaslimit
      */
-    function sendMsg(
-        address target_,
-        uint256 value_,
-        bytes calldata msg_,
-        uint256 gasLimit_,
-        address refundAddress_
-    ) external payable;
+    function sendMsg(address target_, uint256 value_, bytes calldata msg_, uint256 gasLimit_, address refundAddress_)
+        external
+        payable;
 }

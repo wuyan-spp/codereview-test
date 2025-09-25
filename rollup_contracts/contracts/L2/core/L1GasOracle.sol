@@ -129,7 +129,8 @@ contract L1GasOracle is OwnableUpgradeable {
         emit SetNewBatchBlobFeeAndTxFee(_lastBatchDaFee, _lastBatchExecFee, _lastBatchByteLength);
     }
 
-    function setBlobBaseFeeScalaAndTxFeeScala(uint256 _baseFeeScala, uint256 _blobBaseFeeScala) external onlyRelayer {
+    function setBlobBaseFeeScalaAndTxFeeScala(uint256 _baseFeeScala,
+        uint256 _blobBaseFeeScala) external onlyRelayer {
         require(_baseFeeScala != 0 && _blobBaseFeeScala != 0, "scala must not be zero");
         baseFeeScala = _baseFeeScala;
         blobBaseFeeScala = _blobBaseFeeScala;

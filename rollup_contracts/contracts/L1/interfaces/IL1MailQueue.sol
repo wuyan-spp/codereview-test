@@ -5,11 +5,6 @@ interface IL1MailQueue {
     event PopMsgs(uint256 finalizeMsgIndex);
 
     /**
-     * @notice Returns next message index
-     */
-    function nextMsgIndex() external view returns (uint256);
-
-    /**
      * @dev Returns the message at the given index.
      * @param _index The index of the message to be returned.
      */

@@ -11,7 +11,7 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
     /// @notice The address of L1MailBox contract.
     address public l1MailBox;
 
-    mapping(bytes32 => bool) public receiveMsgStatus;
+    mapping(bytes32 msgHash => bool status) public receiveMsgStatus;
 
     constructor() {
         _disableInitializers();

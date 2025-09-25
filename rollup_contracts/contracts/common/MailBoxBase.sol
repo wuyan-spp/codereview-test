@@ -25,14 +25,14 @@ abstract contract MailBoxBase is
 {
     bytes32 public rollingHash;
 
-    mapping(bytes32 => bool) public sendMsgMap;
+    mapping(bytes32 msgHash => bool) public sendMsgMap;
 
-    mapping(bytes32 => bool) public receiveMsgMap;
+    mapping(bytes32 msgHash => bool) public receiveMsgMap;
 
     uint256 public baseFee;
 
     /// @notice The address of Bridge contract.
-    mapping(address => bool) public isBridge;
+    mapping(address bridgeAddress => bool) public isBridge;
 
     modifier onlyBridge() {
         require(isBridge[_msgSender()], "INVALID_PERMISSION : sender is not bridge");

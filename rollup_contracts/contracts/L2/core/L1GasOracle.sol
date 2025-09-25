@@ -27,7 +27,7 @@ contract L1GasOracle is OwnableUpgradeable {
     uint256 public totalScala;
 
     // relayer is who can send L1 fee to jovay
-    mapping(address => bool) public isRelayer;
+    mapping(address relayerAddress => bool) public isRelayer;
 
     // the lower limit of tx length in one batch
     uint256 private constant MIN_TX_LENGTH_LIMIT = 6 * 128 * 1024;

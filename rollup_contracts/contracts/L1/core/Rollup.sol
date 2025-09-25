@@ -46,13 +46,13 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     uint256 public lastTeeVerifiedBatch;
 
     // Record the batchhash corresponding to the batch
-    mapping(uint256 => bytes32) public committedBatches;
+    mapping(uint256 batchIndex => bytes32 batchHash) public committedBatches;
 
     // Record the stateroot corresponding to each batch of L2 and the stateroot of the last block of the batch
-    mapping(uint256 => bytes32) public finalizedStateRoots;
+    mapping(uint256 batchIndex => bytes32 stateRoot) public finalizedStateRoots;
 
     // batchindex corresponds to the root of the L2withroot message tree; it is used to verify L2 transactions;
-    mapping(uint256 => bytes32) public l2MsgRoots;
+    mapping(uint256 batchIndex => bytes32 msgCount) public l2MsgRoots;
 
     // total pop l1msg of batch;
     mapping(uint256 => uint256) public l1MsgCount;
@@ -62,7 +62,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     address public l1_mail_box; // mail box address; L1 Msg Rolling hash storage in it
 
     /// @notice Whether an account is a relayer.
-    mapping(address => bool) public isRelayer;
+    mapping(address relayerAddress => bool) public isRelayer;
 
     /**
      *

@@ -164,8 +164,8 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         address target_,
         uint256 value_,
         uint256 nonce_,
-        bytes memory msg_,
-        L2MsgProof memory proof_
+        bytes calldata msg_,
+        L2MsgProof calldata proof_
     ) external payable whenNotPaused nonReentrant {
         require(target_ != address(0), "L1Mailbox: target is zero address");
         require(sender_ == IBridge(target_).toBridge(), "Invalid sender");

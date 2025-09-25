@@ -9,7 +9,6 @@ import {IL1BridgeProof} from "./interfaces/IL1BridgeProof.sol";
 contract L1BridgeProof is BridgeBase, IL1BridgeProof {
     function relayMsgWithProof(uint256 value_, uint256 nonce_, bytes memory msg_, IL1Mailbox.L2MsgProof memory proof_)
         external
-        payable
         whenNotPaused
     {
         mailBoxCall(

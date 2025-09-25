@@ -10,7 +10,6 @@ import {L2Mailbox} from "../core/L2Mailbox.sol";
 
 contract L2ETHBridge is BridgeBase, IL2ETHBridge {
     uint256 public balance;
-    uint256 private constant POST_CALL_RESERVE = 10000;
 
     /**
      * The sender account transfers to tokenbridge to lock the assets;
@@ -43,8 +42,9 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
         require(msg.value == amount_, "msg.value mismatch");
         balance += amount_;
 
-        require(gasleft() > POST_CALL_RESERVE, "L2ETHBridge.finalizeDeposit: not enough gas");
-        (bool success_,) = to_.call{value : amount_, gas : gasleft() - POST_CALL_RESERVE}("");
+        uint256 post_call_reserve_gas = 5000 + 8 * msg_.length;
+        require(gasleft() > post_call_reserve_gas, "L2ETHBridge.finalizeDeposit: not enough gas");
+        (bool success_,) = to_.call{value : amount_, gas : gasleft() - post_call_reserve_gas}("");
         require(success_, "ETH transfer failed");
 // TODO : add call msg with deposit
 //        _doCallback(to_, msg_);

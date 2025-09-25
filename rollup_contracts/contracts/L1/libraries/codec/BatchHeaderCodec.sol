@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.16;
+pragma solidity 0.8.28;
 
 // solhint-disable no-inline-assembly
 /// @dev Below is the encoding for `Chunk`, total 40*n+1+m bytes.

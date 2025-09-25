@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity 0.8.28;
 
 interface IGasPriceOracle {
     event BaseFeeChanged(uint256 oldL2BaseFee, uint256 newL2BaseFee);

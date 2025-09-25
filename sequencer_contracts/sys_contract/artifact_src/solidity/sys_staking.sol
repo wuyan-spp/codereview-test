@@ -2641,12 +2641,6 @@ contract DPoSValidatorManager is ReentrancyGuard {
         return pendingExitPoolIds;
     }
 
-    function getWithdrawEffectiveWindow() internal view returns (uint8) {
-        string memory key = "staking.withdraw_effective_epoch";
-        string memory value = getChainCfg(key);
-        return uint8(Strings.parseUint(value));
-    }
-
     function getChainCfg(
         string memory key
     ) internal view returns (string memory) {

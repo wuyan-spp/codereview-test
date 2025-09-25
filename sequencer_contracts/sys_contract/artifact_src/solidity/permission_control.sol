@@ -72,7 +72,7 @@ contract PermissionControl {
         emit AdminGranted(_addr);
     }
     event AdminRevoked(
-        address revoker
+        address revoked
     );
     function revokeAdmin(address _addr) external {
         require(checkSuperPermission(msg.sender), "Permission denied");

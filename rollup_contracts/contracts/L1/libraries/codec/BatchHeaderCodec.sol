@@ -38,7 +38,7 @@ pragma solidity 0.8.28;
 /// ```
 library BatchHeaderCodec {
     /// @dev The length of fixed parts of the batch header.
-    uint256 internal constant BATCH_HEADER_FIXED_LENGTH = 105;
+    uint256 internal constant BATCH_HEADER_FIXED_LENGTH = 128; // 105 used, aligned to 128
 
     /// @notice Load batch header in calldata to memory.
     /// @param _batchHeader The encoded batch header bytes in calldata.

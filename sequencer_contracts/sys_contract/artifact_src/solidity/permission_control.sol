@@ -18,14 +18,6 @@ contract PermissionControl {
         return false;
     }
 
-    function checkAdminPermission(address _addr) internal view returns(bool) {
-        if (checkSuperPermission(_addr) || checkGrantPermission(_addr)) {
-            return true;
-        }
-
-        return false;
-    }
-
     function checkGrantPermission(address _addr) internal view returns(bool) {
         for (uint256 i = 0; i < grantees_.length; i++) {
             if (grantees_[i] == _addr) {

@@ -2371,8 +2371,6 @@ contract DPoSValidatorManager is ReentrancyGuard {
         bytes32[] activeValidators
     );
 
-    constructor() {}
-
     modifier onlyOwner() {
         require(msg.sender == intrinsicSys, "Not owner");
         _;

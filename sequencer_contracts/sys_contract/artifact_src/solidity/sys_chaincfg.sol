@@ -22,9 +22,6 @@ contract ChainCfg {
     address public constant sysStaking = 0x4100000000000000000000000000000000000000;
     address public constant intrinsicSys = 0x1111111111111111111111111111111111111111;
 
-    constructor() {
-    }
-
     modifier onlyOwner() {
         require(msg.sender == rootSys || msg.sender == sysStaking || msg.sender == intrinsicSys, "Not owner");
         _;

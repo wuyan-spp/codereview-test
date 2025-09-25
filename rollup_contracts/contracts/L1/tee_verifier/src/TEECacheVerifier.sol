@@ -28,6 +28,21 @@ contract TEECacheVerifier is P256Verifier, Ownable {
     error InvalidKeyLength();
     error ZeroKey();
 
+    /// @notice Event emitted when authorization status is changed
+    event AuthorizationSet(address indexed caller, bool authorized);
+    
+    /// @notice Event emitted when caller restriction is enabled
+    event CallerRestrictionEnabled();
+    
+    /// @notice Event emitted when a verification key is initialized in the cache
+    event CacheInitialized(bytes indexed key);
+    
+    /// @notice Event emitted when a verification key is deleted from the cache
+    event KeyDeleted(bytes indexed key);
+    
+    /// @notice Event emitted when all verification keys are cleared from the cache
+    event AllKeysCleared();
+
     modifier onlyAuthorized() {
         if (_isCallerRestricted && !_authorized[msg.sender]) {
             revert Forbidden();
@@ -49,6 +64,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
     function setAuthorized(address caller, bool authorized) external onlyOwner {
         if (caller == address(0)) revert InvalidAddress();
         _authorized[caller] = authorized;
+        emit AuthorizationSet(caller, authorized);
     }
 
     /**
@@ -56,6 +72,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
      */
     function enableCallerRestriction() external onlyOwner {
         _isCallerRestricted = true;
+        emit CallerRestrictionEnabled();
     }
 
     /**
@@ -80,6 +97,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
         _verificationCache[key] = true;
         _initializedKeys.push(key);
         _keyIndex[key] = _initializedKeys.length;
+        emit CacheInitialized(key);
     }
 
     /**
@@ -99,6 +117,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
 
         _initializedKeys.pop();
         delete _keyIndex[key];
+        emit KeyDeleted(key);
     }
 
     /**
@@ -110,6 +129,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
             delete _keyIndex[_initializedKeys[i]];
         }
         delete _initializedKeys;
+        emit AllKeysCleared();
     }
 
     /**

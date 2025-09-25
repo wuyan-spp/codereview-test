@@ -52,6 +52,30 @@ contract DcapAttestationRouter is Ownable {
     error MrValidationFailed();
     error MRTDValidationFailed();
 
+    /// @notice Event emitted when authorization status is changed
+    event AuthorizationSet(address indexed caller, bool authorized);
+    
+    /// @notice Event emitted when caller restriction is enabled
+    event CallerRestrictionEnabled();
+    
+    /// @notice Event emitted when caller restriction is disabled
+    event CallerRestrictionDisabled();
+    
+    /// @notice Event emitted when configuration is updated
+    event ConfigUpdated(
+        address indexed dcapAttestation,
+        address indexed measurementDao,
+        bool toVerifyMr,
+        address indexed cacheVerifierAddr,
+        bool cacheOption
+    );
+    
+    /// @notice Event emitted when MRTD verification is enabled
+    event VerifyMRTDEnabled();
+    
+    /// @notice Event emitted when MRTD verification is disabled
+    event VerifyMRTDDisabled();
+
     modifier onlyAuthorized() {
         if (_isCallerRestricted && !_authorized[msg.sender]) {
             revert Forbidden();
@@ -89,6 +113,7 @@ contract DcapAttestationRouter is Ownable {
      */
     function setAuthorized(address caller, bool authorized) external onlyOwner {
         _authorized[caller] = authorized;
+        emit AuthorizationSet(caller, authorized);
     }
 
    /**
@@ -96,6 +121,7 @@ contract DcapAttestationRouter is Ownable {
      */
     function enableCallerRestriction() external onlyOwner {
         _isCallerRestricted = true;
+        emit CallerRestrictionEnabled();
     }
 
 	
@@ -143,7 +169,8 @@ contract DcapAttestationRouter is Ownable {
         measurementDao = _measurementDao;
         toVerifyMr = _toVerifyMr;
         cacheVerifierAddr = _cacheVerifierAddr;
-        cacheOption = _cacheOption;
+        CacheOption = _CacheOption;
+        emit ConfigUpdated(_dcapAttestation, _measurementDao, _toVerifyMr, _cacheVerifierAddr, _CacheOption);
     }
 
     /**
@@ -151,6 +178,7 @@ contract DcapAttestationRouter is Ownable {
      */
     function enableVerifyMrtd() external onlyOwner {
         toVerifyMrtd = true;
+        emit VerifyMRTDEnabled();
     }
 
     /**
@@ -158,6 +186,7 @@ contract DcapAttestationRouter is Ownable {
      */
     function disableVerifyMrtd() external onlyOwner {
         toVerifyMrtd = false;
+        emit VerifyMRTDDisabled();
     }
 
     /**

@@ -23,6 +23,15 @@ contract TEEVerifierProxy is ITeeRollupVerifier, Ownable {
     error Forbidden();
     error InvalidAddress();
 
+    /// @notice Event emitted when authorization status is changed
+    event AuthorizationSet(address indexed caller, bool authorized);
+    
+    /// @notice Event emitted when caller restriction is enabled
+    event CallerRestrictionEnabled();
+    
+    /// @notice Event emitted when configuration is updated
+    event ConfigUpdated(address indexed dcapAttestationRouter);
+
     modifier onlyAuthorized() {
         if (_isCallerRestricted && !_authorized[msg.sender]) {
             revert Forbidden();
@@ -58,6 +67,7 @@ contract TEEVerifierProxy is ITeeRollupVerifier, Ownable {
     function setAuthorized(address caller, bool authorized) external onlyOwner {
         if (caller == address(0)) revert InvalidAddress();
         _authorized[caller] = authorized;
+        emit AuthorizationSet(caller, authorized);
     }
 
     /**
@@ -65,6 +75,7 @@ contract TEEVerifierProxy is ITeeRollupVerifier, Ownable {
      */
     function enableCallerRestriction() external onlyOwner {
         _isCallerRestricted = true;
+        emit CallerRestrictionEnabled();
     }
 
     function disableCallerRestriction() external onlyOwner {
@@ -92,5 +103,6 @@ contract TEEVerifierProxy is ITeeRollupVerifier, Ownable {
      */
     function _setConfig(address _dcapAttestationRouter) private {
         dcapAttestationRouter = _dcapAttestationRouter;
+        emit ConfigUpdated(_dcapAttestationRouter);
     }
 }

@@ -42,6 +42,33 @@ contract MeasurementDao is Ownable {
     error InvalidLength();
     error ZeroValue();
 
+    /// @notice Event emitted when a new MR_ENCLAVE and MR_SIGNER pair is added
+    event MrEnclaveAdded(bytes32 indexed mrEnclave, bytes32 indexed mrSigner);
+    
+    /// @notice Event emitted when an MR_ENCLAVE is deleted
+    event MrEnclaveDeleted(bytes32 indexed mrEnclave);
+    
+    /// @notice Event emitted when all MR_ENCLAVE mappings are cleared
+    event MrEnclaveCleared();
+    
+    /// @notice Event emitted when a new RTMR value is added
+    event RtMrAdded(bytes indexed rtmr3);
+    
+    /// @notice Event emitted when an RTMR value is deleted
+    event RtMrDeleted(bytes indexed rtmr3);
+    
+    /// @notice Event emitted when all RTMR mappings are cleared
+    event RtMrCleared();
+    
+    /// @notice Event emitted when a new MRTD value is added
+    event MrtdAdded(bytes indexed mrtd);
+    
+    /// @notice Event emitted when an MRTD value is deleted
+    event MrtdDeleted(bytes indexed mrtd);
+    
+    /// @notice Event emitted when all MRTD mappings are cleared
+    event MrtdCleared();
+
     constructor() {
         _initializeOwner(msg.sender);
     }
@@ -58,6 +85,7 @@ contract MeasurementDao is Ownable {
         mr[mrEnclaveVersion][_mrEnclave] = _mrSigner;
         mrEnclaveList[mrEnclaveVersion].push(_mrEnclave);
         mrEnclaveIndex[mrEnclaveVersion][_mrEnclave] = mrEnclaveList[mrEnclaveVersion].length;
+        emit MrEnclaveAdded(_mrEnclave, _mrSigner);
     }
 
     /**
@@ -76,6 +104,7 @@ contract MeasurementDao is Ownable {
         
         mrEnclaveList[mrEnclaveVersion].pop();
         delete mrEnclaveIndex[mrEnclaveVersion][_mrEnclave];
+        emit MrEnclaveDeleted(_mrEnclave);
     }
 
     /**
@@ -92,6 +121,7 @@ contract MeasurementDao is Ownable {
      */
     function clearMrEnclave() external onlyOwner {
         mrEnclaveVersion += 1;
+        emit MrEnclaveCleared();
     }
 
     /**
@@ -105,6 +135,7 @@ contract MeasurementDao is Ownable {
         rtmr[rtMrVersion][rtmr3] = true;
         rtmrList[rtMrVersion].push(rtmr3);
         rtmrIndex[rtMrVersion][rtmr3] = rtmrList[rtMrVersion].length;
+        emit RtMrAdded(rtmr3);
     }
 
     /**
@@ -122,6 +153,7 @@ contract MeasurementDao is Ownable {
         rtmrIndex[rtMrVersion][lastElement] = index;   
         rtmrList[rtMrVersion].pop();
         delete rtmrIndex[rtMrVersion][rtmr3];
+        emit RtMrDeleted(rtmr3);
     }
 
     /**
@@ -138,6 +170,7 @@ contract MeasurementDao is Ownable {
      */
     function clearRtmr() external onlyOwner {
         rtMrVersion += 1;
+        emit RtMrCleared();
     }
 
     /**
@@ -151,6 +184,7 @@ contract MeasurementDao is Ownable {
         mrtdMap[mrtdVersion][mrtd] = true;
         mrtdList[mrtdVersion].push(mrtd);
         mrtdIndex[mrtdVersion][mrtd] = mrtdList[mrtdVersion].length;
+        emit MrtdAdded(mrtd);
     }
 
     /**
@@ -168,6 +202,7 @@ contract MeasurementDao is Ownable {
         mrtdIndex[mrtdVersion][lastElement] = index;
         mrtdList[mrtdVersion].pop();
         delete mrtdIndex[mrtdVersion][mrtd];
+        emit MrtdDeleted(mrtd);
     }
 
     /**
@@ -184,6 +219,7 @@ contract MeasurementDao is Ownable {
      */
     function clearMrtd() external onlyOwner {
         mrtdVersion += 1;
+        emit MrtdCleared();
     }
 
     /**

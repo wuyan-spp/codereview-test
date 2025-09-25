@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import {Ownable} from "solady/auth/Ownable.sol";
 import "dcap-attestation/types/Constants.sol";
 import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
-// import "forge-std/console.sol";
 
 contract MeasurementDao is Ownable {
     using BytesUtils for bytes;

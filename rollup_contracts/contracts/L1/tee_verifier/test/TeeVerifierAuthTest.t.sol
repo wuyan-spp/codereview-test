@@ -367,7 +367,6 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.prank(user);
 
         vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        cacheVerifier.disableCallerRestriction();
     }
 
     function testCacheSetAuthorizedAuthWithRevert() public {

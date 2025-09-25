@@ -76,7 +76,6 @@ contract L1ERC20Bridge is TokenBridge, L1BridgeProof, IL1ERC20Bridge {
     function _transferERC20(address token_, uint256 amount_) internal {
         require(amount_ > 0, "deposit zero amount");
         address sender_ = _msgSender();
-        // common practice to handle fee on transfer token.
         IERC20Upgradeable(token_).safeTransferFrom(sender_, address(this), amount_);
         _increaseBalance(token_, amount_);
         require(IERC20Upgradeable(token_).balanceOf(address(this)) >= balanceOf[token_], "balance not match");

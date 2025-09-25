@@ -8,6 +8,7 @@ import {WithdrawTrieVerifier} from "../libraries/verifier/WithdrawTrieVerifier.s
 import {IL1MailQueue} from "../interfaces/IL1MailQueue.sol";
 import {DoubleEndedQueue} from "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 
+/// @custom:security-contact enxi.zys@antgroup.com
 contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
 

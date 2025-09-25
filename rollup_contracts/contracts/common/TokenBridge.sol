@@ -9,7 +9,7 @@ abstract contract TokenBridge is BridgeBase, ITokenBridge {
 
     mapping(address => uint256) public balanceOf;
 
-    function setTokenMapping(address token_, address tokenTo_) public payable virtual override onlyOwner whenNotPaused {
+    function setTokenMapping(address token_, address tokenTo_) public payable virtual override whenNotPaused {
         tokenMapping[token_] = tokenTo_;
         emit TokenMappingChanged(token_, tokenTo_);
     }

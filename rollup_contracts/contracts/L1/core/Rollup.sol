@@ -204,6 +204,8 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         require(_batchIndex == _verifiedBatchIndex + 1, "INVALID_PARAMETER : invalid verify batch index, must one by one");
         require(committedBatches[_batchIndex] != bytes32(0) && committedBatches[_batchIndex] ==  _batchHash, "INVALID_PARAMETER : invalid commit batch hash");
         require(finalizedStateRoots[_batchIndex] == bytes32(0) || finalizedStateRoots[_batchIndex] == _postStateRoot, "INVALID_PARAMETER : invalid verify state root");
+        require(l2MsgRoots[_batchIndex] == bytes32(0) || l2MsgRoots[_batchIndex] == _l2MsgRoot, "INVALID_PARAMETER : invalid verify l2 msg root");
+        
         bytes memory _publicInput = abi.encodePacked(
             layer2ChainId,
             finalizedStateRoots[_verifiedBatchIndex], // _prevStateRoot

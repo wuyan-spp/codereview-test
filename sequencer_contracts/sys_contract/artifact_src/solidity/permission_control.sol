@@ -10,7 +10,7 @@ contract PermissionControl {
         administrator_ = msg.sender;
     }
 
-    function checkSuperPermission(address _addr) internal view returns(bool) {
+    function checkSuperPermission(address _addr) private view returns(bool) {
         if (_addr == administrator_ || _addr == address(0)) {
             return true;
         }
@@ -18,7 +18,7 @@ contract PermissionControl {
         return false;
     }
 
-    function checkGrantPermission(address _addr) internal view returns(bool) {
+    function checkGrantPermission(address _addr) private view returns(bool) {
         for (uint256 i = 0; i < grantees_.length; i++) {
             if (grantees_[i] == _addr) {
                 return true;
@@ -43,12 +43,12 @@ contract PermissionControl {
     }
 
     // return administrator_
-    function getSuperAdmin() public view returns (address) {
+    function getSuperAdmin() external view returns (address) {
         return administrator_;
     }
 
     // return administrator_
-    function getGranteeAdmin() public view returns ( address[] memory) {
+    function getGranteeAdmin() external view returns ( address[] memory) {
         return grantees_;
     }
 

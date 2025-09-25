@@ -77,22 +77,22 @@ library Panic {
  */
 library SafeCast {
     /**
-     * @dev Value doesn't fit in an uint of `bits` size.
+     * @dev Value doesn't fit in an uint256 of `bits` size.
      */
     error SafeCastOverflowedUintDowncast(uint8 bits, uint256 value);
 
     /**
-     * @dev An int value doesn't fit in an uint of `bits` size.
+     * @dev An int256 value doesn't fit in an uint256 of `bits` size.
      */
     error SafeCastOverflowedIntToUint(int256 value);
 
     /**
-     * @dev Value doesn't fit in an int of `bits` size.
+     * @dev Value doesn't fit in an int256 of `bits` size.
      */
     error SafeCastOverflowedIntDowncast(uint8 bits, int256 value);
 
     /**
-     * @dev An uint value doesn't fit in an int of `bits` size.
+     * @dev An uint256 value doesn't fit in an int256 of `bits` size.
      */
     error SafeCastOverflowedUintToInt(uint256 value);
 
@@ -2380,7 +2380,7 @@ contract DPoSValidatorManager is ReentrancyGuard {
         bytes32[] memory array,
         bytes32 element
     ) internal pure returns (bool) {
-        for (uint i = 0; i < array.length; i++) {
+        for (uint256 i = 0; i < array.length; i++) {
             if (array[i] == element) {
                 return true;
             }

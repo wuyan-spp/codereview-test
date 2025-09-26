@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.27;
 
 // node_modules/@openzeppelin/contracts/utils/Panic.sol
 

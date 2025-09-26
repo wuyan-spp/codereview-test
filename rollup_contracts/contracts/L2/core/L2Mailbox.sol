@@ -99,10 +99,10 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         (bool success,) = target_.call{value: value_}(msg_);
         if (success) {
             _receiveMsgSuccess(hash_);
-            emit FinalizeDepositETHSuccess(hash_, nonce_);
+            emit RelayMsgSuccess(hash_, nonce_);
         } else {
             _receiveMsgFailed(hash_);
-            emit FinalizeDepositETHFailed(hash_, nonce_);
+            emit RelayMsgFailed(hash_, nonce_);
         }
         emit RelayedMsg(hash_, nonce_);
     }

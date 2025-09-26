@@ -21,6 +21,8 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
     function withdraw(address to_, uint256 amount_, uint256 gasLimit_, bytes memory msg_) external payable override nonReentrant whenNotPaused {
         require(to_ != address(0), "L2ETHBridge: to is zero address");
         require(msg.value > 0, "withdraw zero eth");
+        require(amount_ > 0, "withdraw zero amount");
+
         require(balance >= amount_, "insufficient balance");
 
         address sender_ = _msgSender();

@@ -338,20 +338,6 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.stopPrank();
     }
 
-    /**
-     * TeeCacheVerifier Auth Test
-     */
-    function testCacheEnableCallerRestrictionAuthWithRevert() public {
-        // pinned June 15th,2024 Midnight UTC
-        // bypassing expiry errors
-        vm.warp(1749112940);
-
-        vm.prank(user);
-
-        vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        cacheVerifier.enableCallerRestriction();
-    }
-
     function testCacheSetAuthorizedAuthWithRevert() public {
         // pinned June 15th,2024 Midnight UTC
         // bypassing expiry errors

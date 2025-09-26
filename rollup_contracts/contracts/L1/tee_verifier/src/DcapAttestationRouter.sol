@@ -137,6 +137,7 @@ contract DcapAttestationRouter is Ownable {
      */
     function disableCallerRestriction() external onlyOwner {
         _isCallerRestricted = false;
+        emit CallerRestrictionDisabled();
     }
 
 	

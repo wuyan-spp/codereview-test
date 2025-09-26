@@ -400,12 +400,6 @@ contract DeployAll is Script {
         TEEVerifierProxy(proxyAddr).setConfig(routerAddr);
     }
 
-    function _configCacheVerifierAuth() public broadcastKey(deployerKey) {
-        TEECacheVerifier attestation = TEECacheVerifier(cacheVerifierAddr);
-        attestation.enableCallerRestriction();
-        attestation.setAuthorized(routerAddr, true);
-    }
-
     function _configRouterAuth() public broadcastKey(deployerKey) {
         DcapAttestationRouter router = DcapAttestationRouter(routerAddr);
         router.enableCallerRestriction();

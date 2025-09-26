@@ -30,6 +30,9 @@ contract TEEVerifierProxy is ITeeRollupVerifier, Ownable {
     /// @notice Event emitted when caller restriction is enabled
     event CallerRestrictionEnabled();
     
+    /// @notice Event emitted when caller restriction is disabled
+    event CallerRestrictionDisabled();
+    
     /// @notice Event emitted when configuration is updated
     event ConfigUpdated(address indexed dcapAttestationRouter);
 
@@ -82,6 +85,7 @@ contract TEEVerifierProxy is ITeeRollupVerifier, Ownable {
      */
     function disableCallerRestriction() external onlyOwner {
         _isCallerRestricted = false;
+        emit CallerRestrictionDisabled();
     }
 
     /**

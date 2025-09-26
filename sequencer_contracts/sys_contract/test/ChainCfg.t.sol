@@ -7,6 +7,11 @@ contract ChainCfgTest is Test {
     ChainCfg public chainCfg;
     address public constant SYS_STAKING = 0x4100000000000000000000000000000000000000;
     address public constant INTRINSIC_SYS = 0x1111111111111111111111111111111111111111;
+
+    error NotOwner();
+
+    error KeysAndValuesLengthMismatch();
+
     function setUp() public {
         chainCfg = new ChainCfg();
     }
@@ -35,7 +40,7 @@ contract ChainCfgTest is Test {
         keys[0] = "test.key";
         values[0] = "test.value";
         vm.prank(address(0x1234));
-        vm.expectRevert("Not owner");
+        vm.expectRevert(abi.encodeWithSelector(NotOwner.selector));
         chainCfg.set_config(keys, values);
     }
     function test_setConfigKeysValuesMismatch() public {
@@ -45,7 +50,7 @@ contract ChainCfgTest is Test {
         values[0] = "value1";
         values[1] = "value2";
         vm.prank(INTRINSIC_SYS);
-        vm.expectRevert("KVs are not match");
+        vm.expectRevert(abi.encodeWithSelector(KeysAndValuesLengthMismatch.selector));
         chainCfg.set_config(keys, values);
     }
     function test_getNonExistentConfig() public view {

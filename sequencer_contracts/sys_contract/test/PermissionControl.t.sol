@@ -7,6 +7,13 @@ contract PermissionControlTest is Test {
     address public owner;
     address public grantee1;
     address public grantee2;
+
+    error PermissionDenied();
+    error InvalidAddress();
+    error SameAddress();
+    error AddressAlreadyExists();
+    error AddressNotFound();
+
     function setUp() public {
         permissionControl = new PermissionControl();
         owner = address(this);
@@ -26,13 +33,13 @@ contract PermissionControlTest is Test {
     }
     function test_grantAdminAsNonOwner() public {
         vm.prank(grantee1);
-        vm.expectRevert("Permission denied");
+        vm.expectRevert(abi.encodeWithSelector(PermissionDenied.selector));
         permissionControl.grantAdmin(grantee2);
     }
     function test_grantAdminDuplicate() public {
         permissionControl.grantAdmin(grantee1);
         
-        vm.expectRevert("Address already exist in grantees");
+        vm.expectRevert(abi.encodeWithSelector(AddressAlreadyExists.selector));
         permissionControl.grantAdmin(grantee1);
     }
     function test_revokeAdminAsOwner() public {
@@ -46,11 +53,11 @@ contract PermissionControlTest is Test {
         permissionControl.grantAdmin(grantee1);
         
         vm.prank(grantee1);
-        vm.expectRevert("Permission denied");
+        vm.expectRevert(abi.encodeWithSelector(PermissionDenied.selector));
         permissionControl.revokeAdmin(grantee1);
     }
     function test_revokeNonExistentAdmin() public {
-        vm.expectRevert("Address not exist in grantees");
+        vm.expectRevert(abi.encodeWithSelector(AddressNotFound.selector));
         permissionControl.revokeAdmin(grantee1);
     }
     function test_transferSuperAdminAsOwner() public {
@@ -60,11 +67,11 @@ contract PermissionControlTest is Test {
     }
     function test_transferSuperAdminAsNonOwner() public {
         vm.prank(grantee1);
-        vm.expectRevert("Permission denied");
+        vm.expectRevert(abi.encodeWithSelector(PermissionDenied.selector));
         permissionControl.tranferSuperAdmin(grantee2);
     }
     function test_transferSuperAdminToSameAddress() public {
-        vm.expectRevert("Permission denied, same address");
+        vm.expectRevert(abi.encodeWithSelector(SameAddress.selector));
         permissionControl.tranferSuperAdmin(owner);
     }
     function test_adminManagementFlow() public {

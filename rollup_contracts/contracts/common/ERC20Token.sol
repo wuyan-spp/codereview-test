@@ -14,7 +14,6 @@ import "./interfaces/IERC20Token.sol";
  */
 contract ERC20Token is AccessControlEnumerableUpgradeable, ERC20BurnableUpgradeable, ERC20CappedUpgradeable, IERC20Token {
     //roles
-    bytes32 public constant ADMIN_ROLE = keccak256(abi.encodePacked("ADMIN_ROLE"));
     bytes32 public constant MINTER_ROLE = keccak256(abi.encodePacked("MINTER_ROLE"));
     bytes32 public constant BURNER_ROLE = keccak256(abi.encodePacked("BURNER_ROLE"));
     bytes32 public constant TRANSFER_ROLE = keccak256(abi.encodePacked("TRANSFER_ROLE"));
@@ -33,11 +32,12 @@ contract ERC20Token is AccessControlEnumerableUpgradeable, ERC20BurnableUpgradea
 
         require(admin_ != address(0), "ERC20Token: admin is zero address");
 
-        _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
-        _setRoleAdmin(MINTER_ROLE, ADMIN_ROLE);
-        _setRoleAdmin(BURNER_ROLE, ADMIN_ROLE);
-        _setRoleAdmin(TRANSFER_ROLE, ADMIN_ROLE);
-        _grantRole(ADMIN_ROLE, admin_);
+        require(admin_ != address(0), "ERC20Token: admin is zero address");
+
+        _setRoleAdmin(MINTER_ROLE, DEFAULT_ADMIN_ROLE);
+        _setRoleAdmin(BURNER_ROLE, DEFAULT_ADMIN_ROLE);
+        _setRoleAdmin(TRANSFER_ROLE, DEFAULT_ADMIN_ROLE);
+        _grantRole(DEFAULT_ADMIN_ROLE, admin_);
     }
 
     function hasRole(bytes32 role, address account) public view virtual override(AccessControlUpgradeable, IAccessControlUpgradeable) returns (bool) {

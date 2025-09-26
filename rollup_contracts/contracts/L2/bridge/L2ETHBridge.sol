@@ -44,7 +44,9 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
         require(msg.value == amount_, "msg.value mismatch");
         balance += amount_;
 
-        (bool success_,) = to_.call{value : amount_, gas : gasleft() / 2}("");
+        uint256 post_call_reserve_gas = 5000 + 8 * msg_.length;
+        require(gasleft() > post_call_reserve_gas, "L2ETHBridge.finalizeDeposit: not enough gas");
+        (bool success_,) = to_.call{value : amount_, gas : gasleft() - post_call_reserve_gas}("");
         require(success_, "ETH transfer failed");
 // TODO : add call msg with deposit
 //        _doCallback(to_, msg_);

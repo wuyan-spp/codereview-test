@@ -67,7 +67,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
             revert InvalidInitAddress();
         }
 
-        if (_l2GasLimit < _l2FinalizeDepositGasUsed) {
+        if (_l2GasLimit <= _l2FinalizeDepositGasUsed) {
             revert InvalidL2GasLimit();
         }
         __MailBox_init();
@@ -174,7 +174,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
      * @notice Set new L2 Gas limit for deposit
      */
     function setL2GasLimit(uint256 _l2GasLimit) external onlyOwner {
-        if (l2FinalizeDepositGasUsed > _l2GasLimit) {
+        if (l2FinalizeDepositGasUsed >= _l2GasLimit) {
             revert SetL2GasLimitSmallerThanGasUsed();
         }
         uint256 oldL2GasLimit = l2GasLimit;
@@ -186,7 +186,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
      * @notice Set new L2 Gas used for finalize deposit
      */
     function setL2FinalizeDepositGasUsed(uint256 _l2FinalizeDepositGasUsed) external onlyOwner {
-        if (_l2FinalizeDepositGasUsed > l2GasLimit) {
+        if (_l2FinalizeDepositGasUsed >= l2GasLimit) {
             revert SetL2FinalizeDepositGasUsedBiggerThanGasLimit();
         }
         uint256 oldL2FinalizeDepositGasUsed = l2FinalizeDepositGasUsed;

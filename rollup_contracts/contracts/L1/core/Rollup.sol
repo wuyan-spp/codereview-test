@@ -267,6 +267,9 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
                 mstore(add(dataStart, offset), hash)
                 offset := add(offset, 0x20)
             }
+            if iszero(offset) {
+                revert(0, 0)
+            }
             _blobDataHash := keccak256(dataStart, offset)
             mstore(0x40, add(dataStart, offset))
         }

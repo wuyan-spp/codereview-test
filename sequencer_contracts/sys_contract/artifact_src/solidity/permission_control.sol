@@ -7,6 +7,12 @@ contract PermissionControl {
     address private administrator_;
     address[] private grantees_;
 
+    error PermissionDenied();
+    error InvalidAddress();
+    error SameAddress();
+    error AddressAlreadyExists();
+    error AddressNotFound();
+
     constructor() {
         administrator_ = msg.sender;
     }
@@ -32,9 +38,9 @@ contract PermissionControl {
     event SuperTransferred(address indexed old_administrator_, address indexed new_administrator_);
 
     function tranferSuperAdmin(address _new_admin) external {
-        require(checkSuperPermission(msg.sender), "Permission denied");
-        require(_new_admin != address(0), "Permission denied, zero address");
-        require(administrator_ != _new_admin, "Permission denied, same address");
+        if (!checkSuperPermission(msg.sender)) revert PermissionDenied();
+        if (_new_admin == address(0)) revert InvalidAddress();
+        if (administrator_ == _new_admin) revert SameAddress();
 
         address old_admin = administrator_;
         administrator_ = _new_admin;
@@ -54,9 +60,9 @@ contract PermissionControl {
     event AdminGranted(address indexed grantee);
 
     function grantAdmin(address _addr) external {
-        require(checkSuperPermission(msg.sender), "Permission denied");
-        require(_addr != address(0), "Permission denied, zero address");
-        require(!checkGrantPermission(_addr), "Address already exist in grantees");
+        if (!checkSuperPermission(msg.sender)) revert PermissionDenied();
+        if (_addr == address(0)) revert InvalidAddress();
+        if (checkGrantPermission(_addr)) revert AddressAlreadyExists();
 
         grantees_.push(_addr);
         emit AdminGranted(_addr);
@@ -65,8 +71,8 @@ contract PermissionControl {
     event AdminRevoked(address indexed revoked);
 
     function revokeAdmin(address _addr) external {
-        require(checkSuperPermission(msg.sender), "Permission denied");
-        require(checkGrantPermission(_addr), "Address not exist in grantees");
+        if (!checkSuperPermission(msg.sender)) revert PermissionDenied();
+        if (!checkGrantPermission(_addr)) revert AddressNotFound();
 
         for (uint256 i = 0; i < grantees_.length; i++) {
             if (grantees_[i] == _addr) {

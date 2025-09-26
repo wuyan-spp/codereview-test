@@ -41,10 +41,16 @@ contract ChainCfg {
     /// @notice A special system address with owner-like privileges.
     address public constant INTRINSIC_SYS = 0x1111111111111111111111111111111111111111;
 
+    /// @notice Error returned when a function is called by an address that is not the owner.
+    error NotOwner();
+
+    /// @notice Error returned when the lengths of keys and values arrays do not match.
+    error KeysAndValuesLengthMismatch();
+
     /// @notice Modifier to restrict function access to authorized system addresses.
     /// @dev Throws if the caller is not the `rootSys`, `SYS_STAKING`, or `INTRINSIC_SYS`.
     modifier onlyOwner() {
-        require(msg.sender == rootSys || msg.sender == SYS_STAKING || msg.sender == INTRINSIC_SYS, "Not owner");
+        if (msg.sender != rootSys && msg.sender != SYS_STAKING && msg.sender != INTRINSIC_SYS) revert NotOwner();
         _;
     }
 
@@ -160,7 +166,7 @@ contract ChainCfg {
     /// @param keys An array of configuration keys to update.
     /// @param values An array of corresponding values.
     function set_config(string[] calldata keys, string[] calldata values) external onlyOwner {
-        require(keys.length == values.length, "KVs are not match");
+        if (keys.length != values.length) revert KeysAndValuesLengthMismatch();
         // Config will be inited in genesis block and will be effective at block 0, so this if block
         // will not be entered. This block is write for Defensive Programming.
         if (configCps.length == 0) {

@@ -81,10 +81,13 @@ contract DPoSValidatorManager is ReentrancyGuard {
         bytes32[] activeValidators
     );
 
+    /// @notice Error returned when a function is called by an address that is not the owner.
+    error NotOwner();
+
     /// @notice Modifier to restrict function access to the `INTRINSIC_SYS` address.
     /// @dev Throws if the caller is not the `INTRINSIC_SYS`.
     modifier onlyOwner() {
-        require(msg.sender == INTRINSIC_SYS, "Not owner");
+        if (msg.sender != INTRINSIC_SYS) revert NotOwner();
         _;
     }
 

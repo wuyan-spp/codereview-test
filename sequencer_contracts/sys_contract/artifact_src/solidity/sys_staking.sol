@@ -91,6 +91,16 @@ contract DPoSValidatorManager is ReentrancyGuard {
         _;
     }
 
+    /// @notice Advances the system to a new epoch.
+    /// @dev This function can only be called by the `INTRINSIC_SYS` address.
+    /// It updates the epoch-related information in the `SysChainCfg` contract and emits an `EpochChange` event.
+    function advanceEpoch() external onlyOwner {
+        setChainEpochBlock();
+        currentEpoch++;
+
+        emit EpochChange(currentEpoch, block.number, block.timestamp, totalStake, activePoolIds);
+    }
+
     /// @notice Checks if a given element is present in an array of `bytes32`.
     /// @param array The array to search in.
     /// @param element The element to search for.
@@ -102,16 +112,6 @@ contract DPoSValidatorManager is ReentrancyGuard {
             }
         }
         return false;
-    }
-
-    /// @notice Advances the system to a new epoch.
-    /// @dev This function can only be called by the `INTRINSIC_SYS` address.
-    /// It updates the epoch-related information in the `SysChainCfg` contract and emits an `EpochChange` event.
-    function advanceEpoch() external onlyOwner {
-        setChainEpochBlock();
-        currentEpoch++;
-
-        emit EpochChange(currentEpoch, block.number, block.timestamp, totalStake, activePoolIds);
     }
 
     /// @notice Internal function to update the epoch start block and timestamp in the `SysChainCfg` contract.

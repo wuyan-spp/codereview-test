@@ -13,8 +13,56 @@ contract PermissionControl {
     error AddressAlreadyExists();
     error AddressNotFound();
 
+    event SuperTransferred(address indexed old_administrator_, address indexed new_administrator_);
+    event AdminGranted(address indexed grantee);
+    event AdminRevoked(address indexed revoked);
+
     constructor() {
         administrator_ = msg.sender;
+    }
+
+    function tranferSuperAdmin(address _new_admin) external {
+        if (!checkSuperPermission(msg.sender)) revert PermissionDenied();
+        if (_new_admin == address(0)) revert InvalidAddress();
+        if (administrator_ == _new_admin) revert SameAddress();
+
+        address old_admin = administrator_;
+        administrator_ = _new_admin;
+        emit SuperTransferred(old_admin, _new_admin);
+    }
+
+    function grantAdmin(address _addr) external {
+        if (!checkSuperPermission(msg.sender)) revert PermissionDenied();
+        if (_addr == address(0)) revert InvalidAddress();
+        if (checkGrantPermission(_addr)) revert AddressAlreadyExists();
+
+        grantees_.push(_addr);
+        emit AdminGranted(_addr);
+    }
+
+    function revokeAdmin(address _addr) external {
+        if (!checkSuperPermission(msg.sender)) revert PermissionDenied();
+        if (!checkGrantPermission(_addr)) revert AddressNotFound();
+
+        for (uint256 i = 0; i < grantees_.length; i++) {
+            if (grantees_[i] == _addr) {
+                grantees_[i] = grantees_[grantees_.length - 1];
+                grantees_.pop();
+                break;
+            }
+        }
+
+        emit AdminRevoked(_addr);
+    }
+
+    // return administrator_
+    function getSuperAdmin() external view returns (address) {
+        return administrator_;
+    }
+
+    // return grantees
+    function getGranteeAdmin() external view returns (address[] memory) {
+        return grantees_;
     }
 
     function checkSuperPermission(address _addr) private view returns (bool) {
@@ -33,55 +81,5 @@ contract PermissionControl {
         }
 
         return false;
-    }
-
-    event SuperTransferred(address indexed old_administrator_, address indexed new_administrator_);
-
-    function tranferSuperAdmin(address _new_admin) external {
-        if (!checkSuperPermission(msg.sender)) revert PermissionDenied();
-        if (_new_admin == address(0)) revert InvalidAddress();
-        if (administrator_ == _new_admin) revert SameAddress();
-
-        address old_admin = administrator_;
-        administrator_ = _new_admin;
-        emit SuperTransferred(old_admin, _new_admin);
-    }
-
-    // return administrator_
-    function getSuperAdmin() external view returns (address) {
-        return administrator_;
-    }
-
-    // return grantees
-    function getGranteeAdmin() external view returns (address[] memory) {
-        return grantees_;
-    }
-
-    event AdminGranted(address indexed grantee);
-
-    function grantAdmin(address _addr) external {
-        if (!checkSuperPermission(msg.sender)) revert PermissionDenied();
-        if (_addr == address(0)) revert InvalidAddress();
-        if (checkGrantPermission(_addr)) revert AddressAlreadyExists();
-
-        grantees_.push(_addr);
-        emit AdminGranted(_addr);
-    }
-
-    event AdminRevoked(address indexed revoked);
-
-    function revokeAdmin(address _addr) external {
-        if (!checkSuperPermission(msg.sender)) revert PermissionDenied();
-        if (!checkGrantPermission(_addr)) revert AddressNotFound();
-
-        for (uint256 i = 0; i < grantees_.length; i++) {
-            if (grantees_[i] == _addr) {
-                grantees_[i] = grantees_[grantees_.length - 1];
-                grantees_.pop();
-                break;
-            }
-        }
-
-        emit AdminRevoked(_addr);
     }
 }

@@ -43,6 +43,7 @@ contract PermissionControl {
     );
     function tranferSuperAdmin(address _new_admin) external {
         require(checkSuperPermission(msg.sender), "Permission denied");
+        require(_new_admin != address(0), "Permission denied, zero address");
         require(administrator_ != _new_admin, "Permission denied, same address");
 
         address old_admin = administrator_;
@@ -65,6 +66,7 @@ contract PermissionControl {
     );
     function grantAdmin(address _addr) external {
         require(checkSuperPermission(msg.sender), "Permission denied");
+        require(_addr != address(0), "Permission denied, zero address");
         require(!checkGrantPermission(_addr), "Address already exist in grantees");
 
         grantees_.push(_addr);

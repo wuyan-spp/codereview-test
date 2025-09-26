@@ -1,0 +1,21 @@
+# Foundry output
+out/
+cache/
+# editors
+.vscode/
+.idea/
+# OS files
+.DS_Store
+Thumbs.db
+# coverage info
+coverage/
+lcov.info
+# deploy history
+broadcast/
+# private keys
+.env
+.env.local
+.env.*.local
+# build target
+artifacts/
+node_modules/

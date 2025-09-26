@@ -1,6 +1,8 @@
 [profile.default]
 src = 'artifact_src/solidity'
 out = 'artifact'
+libs = ["lib"]
 optimizer = true
 optimizer_runs = 10000
 via_ir = true
+solc_version = "0.8.27"

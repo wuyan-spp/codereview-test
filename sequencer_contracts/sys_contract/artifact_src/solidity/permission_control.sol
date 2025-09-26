@@ -77,7 +77,6 @@ contract PermissionControl {
     );
     function revokeAdmin(address _addr) external {
         require(checkSuperPermission(msg.sender), "Permission denied");
-        require(_addr != address(0), "Permission denied, zero address");
         require(checkGrantPermission(_addr), "Address not exist in grantees");
 
         for (uint256 i = 0; i < grantees_.length; i++) {

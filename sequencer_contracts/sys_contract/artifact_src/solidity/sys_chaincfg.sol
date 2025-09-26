@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.27;
 
+/// @custom:security-contact liyuwen.lyw@antgroup.com
 contract ChainCfg {
     struct Config {
         string key;

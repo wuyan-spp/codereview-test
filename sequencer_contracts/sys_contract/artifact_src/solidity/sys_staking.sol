@@ -2213,6 +2213,7 @@ contract ReentrancyGuard {
     }
 }
 
+/// @custom:security-contact liyuwen.lyw@antgroup.com
 interface SysChainCfg {
     function set_config(string[] calldata keys, string[] calldata values) external;
     function get_config(string calldata key) external view returns (string memory);

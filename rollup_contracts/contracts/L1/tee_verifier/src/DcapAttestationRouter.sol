@@ -15,6 +15,7 @@ import "dcap-attestation/types/Constants.sol";
  * @title DcapAttestationRouter
  * @notice Contract for verifying TEE attestation quotes from rollup using Intel DCAP attestation
  * @dev This contract acts as a router to verify TEE quotes and optionally verify measurements
+ * @custom:security-contact mintian.hym@antgroup.com
  */
 contract DcapAttestationRouter is Ownable {
     using BytesUtils for bytes;

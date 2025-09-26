@@ -10,6 +10,7 @@ import {Ownable} from "solady/auth/Ownable.sol";
 /**
  * @title  TEECacheVerifier
  * @notice Provides on-chain verification for Intel DCAP attestation.
+ * @custom:security-contact mintian.hym@antgroup.com
  */
 contract TEECacheVerifier is P256Verifier, Ownable {
     uint16 private constant DATA_OFFSET = 526;

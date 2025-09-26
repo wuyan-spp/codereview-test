@@ -9,6 +9,7 @@ import {DcapAttestationRouter} from "./DcapAttestationRouter.sol";
  * @title TEEVerifierProxy
  * @notice Proxy contract for TEE attestation verification that delegates to DcapAttestationRouter
  * @dev This contract acts as a proxy interface for verifying TEE attestation proofs
+ * @custom:security-contact mintian.hym@antgroup.com
  */
 contract TEEVerifierProxy is ITeeRollupVerifier, Ownable {
     /// @notice Address of the DcapAttestationRouter contract

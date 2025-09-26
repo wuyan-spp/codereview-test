@@ -35,6 +35,7 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         _initializeMerkleTree();
     }
 
+
     function setL1MailBox(address l1MailBox_) whenPaused external onlyOwner {
         require(l1MailBox_ != address(0), "Invalid address");
         l1MailBox = l1MailBox_;

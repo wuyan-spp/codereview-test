@@ -172,7 +172,7 @@ contract ChainCfg {
         // Have both effective and pending configs
         ConfigCheckpoint storage latestCp = configCps[1];
         // Build merged configuration using helper function
-        Config[] memory baseConfigs = (block.number >= latestCp.effectiveBlockNum) ? configCps[0].configs : latestCp.configs;
+        Config[] memory baseConfigs = latestCp.configs;
         Config[] memory mergedConfigs = _buildMergedConfig(baseConfigs, keys, values);
         
         if (block.number >= latestCp.effectiveBlockNum) {

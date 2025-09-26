@@ -19,6 +19,4 @@ interface IL1MailQueue {
     /// @notice Emitted when a batch is verified.
     /// @param _l1MsgIndex The index of the batch.
     function popMsgs(uint256 _l1MsgIndex) external;
-
-    function queueSize() external view returns(uint256);
 }

@@ -356,14 +356,6 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         rollupTimeLimit = _rollupTimeLimit;
     }
 
-    /// @notice Set setL2ChainId
-    /// @param _layer2ChainId The chain Id of L2.
-    function setL2ChainId(uint64 _layer2ChainId) external onlyOwner {
-        uint256 unverifed = IL1MailQueue(l1_mail_box).queueSize();
-        require(unverifed == 0, "INVALID_PARAMETER : l1_mail_box must be empty");
-        layer2ChainId = _layer2ChainId;
-    }
-
     /// @notice Set tee_verifier
     /// @param _teeVerifierAddress The verifier address of tee.
     function setTeeVerifierAddress(address _teeVerifierAddress) external onlyOwner whenPaused {

@@ -101,6 +101,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         PausableUpgradeable.__Pausable_init();
 
         require(_zk_verifier != address(0) || _tee_verifier != address(0), "INVALID_PARAMETER : must specify one verifier address");
+        require(_l1_mail_box != address(0), "Rollup: l1_mail_box is zero address");
         layer2ChainId = _chainId;
         zk_verifier = _zk_verifier;
         tee_verifier = _tee_verifier;

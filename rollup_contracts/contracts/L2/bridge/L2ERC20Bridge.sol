@@ -63,6 +63,7 @@ contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
     function finalizeDeposit(address l1Token_, address l2Token_, address sender_, address to_, uint256 amount_, bytes calldata msg_) external payable override nonReentrant onlyMailBox whenNotPaused {
         require(msg.value == 0, "nonzero msg.value");
         require(l1Token_ != address(0), "token address cannot be 0");
+        require(l2Token_ != address(0), "L2ERC20Bridge: l2Token is zero address");
         require(l1Token_ == tokenMapping[l2Token_], "l1 token mismatch");
 
         IERC20Token(l2Token_).mint(to_, amount_);

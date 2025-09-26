@@ -31,6 +31,8 @@ contract ERC20Token is AccessControlEnumerableUpgradeable, ERC20BurnableUpgradea
         __ERC20Burnable_init_unchained();
         __ERC20Capped_init_unchained(cap_);
 
+        require(admin_ != address(0), "ERC20Token: admin is zero address");
+
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         _setRoleAdmin(MINTER_ROLE, ADMIN_ROLE);
         _setRoleAdmin(BURNER_ROLE, ADMIN_ROLE);

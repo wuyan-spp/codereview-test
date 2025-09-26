@@ -17,6 +17,7 @@ contract L2CoinBase is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardU
     }
 
     function initialize(address _l2EthBridge) external initializer {
+        require(_l2EthBridge != address(0), "L2CoinBase: l2EthBridge is zero address");
         OwnableUpgradeable.__Ownable_init();
         l2EthBridge = _l2EthBridge;
     }
@@ -54,6 +55,7 @@ contract L2CoinBase is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardU
     event CoinBaseWithdraw(address indexed _target, uint256 indexed amount);
 
     function setL2EthBridge(address _newL2EthBridge) whenPaused onlyOwner external {
+        require(_newL2EthBridge != address(0), "L2CoinBase: newL2EthBridge is zero address");
         l2EthBridge = _newL2EthBridge;
         emit SetL2EthBridge(_newL2EthBridge);
     }

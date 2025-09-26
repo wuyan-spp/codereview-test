@@ -47,6 +47,7 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         uint256 gasLimit_,
         address refundAddress_
     ) external payable override onlyBridge whenNotPaused nonReentrant {
+        require(refundAddress_ != address(0), "L2Mailbox: refundAddress is zero address");
 
         // compute the actual cross domain message calldata.
         uint256 nonce_ = _nextMsgIndex;
@@ -113,6 +114,7 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         uint256 nonce_,
         bytes32 msgHash_
     ) external override onlyBridge whenNotPaused nonReentrant {
+        require(refundAddress_ != address(0), "L2Mailbox: refundAddress is zero address");
         _checkMsgClaimValid(msgHash_);
         (bool success,) = refundAddress_.call{value : amount_}("");
         require(success, "claim amount failed when transfer to refund");

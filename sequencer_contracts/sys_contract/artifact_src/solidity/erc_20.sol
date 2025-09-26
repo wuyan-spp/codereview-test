@@ -22,10 +22,17 @@ contract ERC20 is IERC20 {
     mapping(address => uint256) private _balances;
     mapping(address => mapping(address => uint256)) private _allowances;
     uint256 private _totalSupply;
+    address public owner;
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "ERC20: caller is not the owner");
+        _;
+    }
 
     constructor(uint256 initialSupply) {
         _totalSupply = initialSupply;
         _balances[msg.sender] = initialSupply;
+        owner = msg.sender;
         emit Transfer(address(0), msg.sender, initialSupply);
     }
 
@@ -38,7 +45,7 @@ contract ERC20 is IERC20 {
     }
 
 
-    function mint(address recipient, uint256 amount) public returns (bool) {
+    function mint(address recipient, uint256 amount) public onlyOwner returns (bool) {
         _totalSupply += amount;
         _balances[recipient] += amount;
         emit Transfer(address(0), recipient, amount);

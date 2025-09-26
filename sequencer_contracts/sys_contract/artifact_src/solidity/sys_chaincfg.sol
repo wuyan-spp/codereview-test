@@ -50,14 +50,14 @@ contract ChainCfg {
 
     /// @notice Changes the root system owner address.
     /// @param _newOwner The address of the new owner.
-    function changeSys(address _newOwner) public onlyOwner {
+    function changeSys(address _newOwner) external onlyOwner {
         rootSys = _newOwner;
     }
 
     /// @notice Retrieves the value of a configuration parameter for a given key.
     /// @param key The key of the configuration parameter to retrieve.
     /// @return value The value of the configuration parameter. Returns an empty string if the key is not found or no configuration is effective.
-    function get_config(string memory key) public view returns (string memory) {
+    function get_config(string memory key) external view returns (string memory) {
         // If there are no configuration checkpoints, no config is set.
         if (configCps.length == 0) {
             return "";
@@ -114,7 +114,7 @@ contract ChainCfg {
 
     /// @notice Retrieves all current effective configuration parameters.
     /// @return An array of `Config` structs representing the current key-value pairs.
-    function get_configs() public view returns (Config[] memory) {
+    function get_configs() external view returns (Config[] memory) {
         // If there are no configuration checkpoints, return an empty array.
         if (configCps.length == 0) {
             Config[] memory emptyConfigs;

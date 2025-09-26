@@ -92,7 +92,7 @@ contract DPoSValidatorManager is ReentrancyGuard {
     /// @param array The array to search in.
     /// @param element The element to search for.
     /// @return `true` if the element is found, `false` otherwise.
-    function isArrayContains(bytes32[] memory array, bytes32 element) internal pure returns (bool) {
+    function isArrayContains(bytes32[] memory array, bytes32 element) private pure returns (bool) {
         for (uint256 i = 0; i < array.length; i++) {
             if (array[i] == element) {
                 return true;
@@ -104,7 +104,7 @@ contract DPoSValidatorManager is ReentrancyGuard {
     /// @notice Advances the system to a new epoch.
     /// @dev This function can only be called by the `INTRINSIC_SYS` address.
     /// It updates the epoch-related information in the `SysChainCfg` contract and emits an `EpochChange` event.
-    function advanceEpoch() public onlyOwner {
+    function advanceEpoch() external onlyOwner {
         setChainEpochBlock();
         currentEpoch++;
 
@@ -112,7 +112,7 @@ contract DPoSValidatorManager is ReentrancyGuard {
     }
 
     /// @notice Internal function to update the epoch start block and timestamp in the `SysChainCfg` contract.
-    function setChainEpochBlock() internal {
+    function setChainEpochBlock() private {
         SysChainCfg sys_chain_cfg = SysChainCfg(SYS_CHAIN_CFG);
         string[] memory keys = new string[](2);
         string[] memory values = new string[](2);

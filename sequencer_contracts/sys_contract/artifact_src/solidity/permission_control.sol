@@ -45,7 +45,7 @@ contract PermissionControl {
         return administrator_;
     }
 
-    // return administrator_
+    // return grantees
     function getGranteeAdmin() external view returns (address[] memory) {
         return grantees_;
     }

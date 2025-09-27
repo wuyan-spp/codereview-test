@@ -9,7 +9,7 @@ import {Ownable} from "solady/auth/Ownable.sol";
 
 /**
  * @title  TEECacheVerifier
- * @notice Provides full on-chain verification for Intel DCAP attestation.
+ * @notice Provides on-chain verification for Intel DCAP attestation.
  */
 contract TEECacheVerifier is P256Verifier, Ownable {
     uint16 private constant DATA_OFFSET = 526;
@@ -39,19 +39,36 @@ contract TEECacheVerifier is P256Verifier, Ownable {
         _authorized[msg.sender] = true;
     }
 
+    /**
+     * @notice Set authorization status for a caller
+     * @param caller Address to set authorization for
+     * @param authorized Whether the caller is authorized
+     */
     function setAuthorized(address caller, bool authorized) external onlyOwner {
         if (caller == address(0)) revert InvalidAddress();
         _authorized[caller] = authorized;
     }
 
+    /**
+     * @notice Enable caller restriction (only authorized callers can call functions)
+     */
     function enableCallerRestriction() external onlyOwner {
         _isCallerRestricted = true;
     }
 
+    /**
+     * @notice Check if a verification key has been initialized in the cache
+     * @param key The verification key to check
+     * @return True if the key is initialized, false otherwise
+     */
     function isInitialized(bytes calldata key) external view returns (bool) {
         return _verificationCache[key];
     }
 
+    /**
+     * @notice Initialize a verification key in the cache
+     * @param key The verification key to initialize
+     */
     function initializeCache(bytes calldata key) external onlyAuthorized {
          // Limit the number of iterations to prevent malicious injection and gas exhaustion
         if (_initializedKeys.length >= 10000) revert ListTooLong();
@@ -60,6 +77,10 @@ contract TEECacheVerifier is P256Verifier, Ownable {
         _keyIndex[key] = _initializedKeys.length;
     }
 
+    /**
+     * @notice Delete a verification key from the cache
+     * @param key The verification key to delete
+     */
     function deleteKey(bytes calldata key) external onlyOwner {
         require(_verificationCache[key], KeyNotInitialized());
         _verificationCache[key] = false;
@@ -75,6 +96,9 @@ contract TEECacheVerifier is P256Verifier, Ownable {
         delete _keyIndex[key];
     }
 
+    /**
+     * @notice Clear all verification keys from the cache
+     */
     function clearupAllKey() external onlyOwner {
         for (uint256 i = 0; i < _initializedKeys.length; ++i) {
             delete _verificationCache[_initializedKeys[i]];
@@ -83,10 +107,21 @@ contract TEECacheVerifier is P256Verifier, Ownable {
         delete _initializedKeys;
     }
 
+    /**
+     * @notice Get all initialized verification keys
+     * @return Array of all verification keys
+     */
     function getAllKey() external view returns (bytes[] memory) {
         return _initializedKeys;
     }
 
+    /**
+     * @notice Parse attestation key from raw quote data
+     * @param rawQuote The raw TEE attestation quote
+     * @param version The quote version (3, 4, or 5)
+     * @return ecdsa256BitSignature The ECDSA signature from the quote
+     * @return ecdsaAttestationKey The ECDSA attestation key from the quote
+     */
     function parseAttestationKey(bytes calldata rawQuote, uint256 version)
         external
         pure
@@ -103,6 +138,15 @@ contract TEECacheVerifier is P256Verifier, Ownable {
         }
     }
 
+    /**
+     * @notice Verify and attest quote on-chain using cached verification
+     * @param rawQuote The raw TEE attestation quote
+     * @param ecdsa256BitSignature The ECDSA signature for verification
+     * @param ecdsaAttestationKey The ECDSA attestation key for verification
+     * @param version The quote version (3, 4, or 5)
+     * @return _error_code Error code (0 for success, non-zero for failure)
+     * @return commitment The extracted commitment from the quote
+     */
     function verifyAndAttestOnChain(
         bytes calldata rawQuote,
         bytes calldata ecdsa256BitSignature,

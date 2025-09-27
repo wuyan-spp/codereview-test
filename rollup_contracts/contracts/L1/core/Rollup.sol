@@ -70,7 +70,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     mapping(uint256 batchIndex => bytes32 msgCount) public l2MsgRoots;
 
     // total pop l1msg of batch;
-    mapping(uint256 => uint256) public l1MsgCount;
+    mapping(uint256 batchIndex => uint256 msgCount) public l1MsgCount;
 
     address public zk_verifier; // zk_verifier contract address, compatibility operations such as upgrades are handled by the verifier contract
     address public tee_verifier; // tee_verifier contract address, compatibility operations such as upgrades are handled by the verifier contract

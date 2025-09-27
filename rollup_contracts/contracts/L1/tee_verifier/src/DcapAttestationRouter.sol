@@ -1,4 +1,4 @@
-pragma solidity ^0.8.0;
+pragma solidity 0.8.27;
 
 import {Ownable} from "solady/auth/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";

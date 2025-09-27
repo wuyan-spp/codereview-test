@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.27;
 
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {BELE} from "dcap-attestation/utils/BELE.sol";

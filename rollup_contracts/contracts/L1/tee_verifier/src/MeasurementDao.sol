@@ -56,7 +56,6 @@ contract MeasurementDao is Ownable {
      */
     function delete_mr_enclave(bytes32 _mrEnclave) external onlyOwner {
         if (_mrEnclave == bytes32(0)) revert ZeroValue();
-        if (mr[_mrEnclave] == bytes32(0)) revert NotExists();
         delete mr[_mrEnclave];
 
         uint256 index = mrEnclaveIndex[_mrEnclave];
@@ -94,7 +93,6 @@ contract MeasurementDao is Ownable {
      */
     function add_rtMr(bytes calldata rtmr3) external onlyOwner {
         if (rtmr3.length != 48) revert InvalidLength();
-        if (rtmr3.length == 0 || keccak256(rtmr3) == keccak256(bytes(""))) revert ZeroValue();
         if (rtmr[rtmr3]) revert AlreadyExists();
         rtmr[rtmr3] = true;
         rtmrList.push(rtmr3);
@@ -142,7 +140,6 @@ contract MeasurementDao is Ownable {
      */
     function add_mrtd(bytes calldata mrtd) external onlyOwner {
         if (mrtd.length != 48) revert InvalidLength();
-        if (mrtd.length == 0 || keccak256(mrtd) == keccak256(bytes(""))) revert ZeroValue();
         if (mrtdMap[mrtd]) revert AlreadyExists();
         mrtdMap[mrtd] = true;
         mrtdList.push(mrtd);

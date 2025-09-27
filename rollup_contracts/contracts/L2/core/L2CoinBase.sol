@@ -22,6 +22,7 @@ contract L2CoinBase is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardU
         PausableUpgradeable.__Pausable_init();
         ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
         l2EthBridge = _l2EthBridge;
+        emit Initliazed(_l2EthBridge);
     }
 
     // Withdrawal permission account
@@ -55,6 +56,8 @@ contract L2CoinBase is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardU
     event RemoveWhiteAddress(address indexed whiteAddress);
 
     event CoinBaseWithdraw(address indexed _target, uint256 indexed amount);
+
+    event Initliazed(address indexed l2EthBridge);
 
     function setL2EthBridge(address _newL2EthBridge) external whenPaused onlyOwner {
         require(_newL2EthBridge != address(0), "L2CoinBase: newL2EthBridge is zero address");

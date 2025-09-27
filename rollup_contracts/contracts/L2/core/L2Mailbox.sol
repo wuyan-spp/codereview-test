@@ -11,6 +11,9 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
     /// @notice The address of L1MailBox contract.
     address public l1MailBox;
 
+    event Initialize(address indexed l1MailBox, address indexed owner, uint256 baseFee);
+    event SetL1MailBox(address indexed oldL1MailBox, address indexed newL1MailBox);
+
     mapping(bytes32 msgHash => bool status) public receiveMsgStatus;
 
     constructor() {
@@ -34,11 +37,14 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         baseFee = baseFee_;
         _transferOwnership(owner_);
         _initializeMerkleTree();
+        emit Initialize(l1MailBox_, owner_, baseFee_);
     }
 
     function setL1MailBox(address l1MailBox_) external whenPaused onlyOwner {
         require(l1MailBox_ != address(0), "Invalid address");
+        address oldL1MailBox = l1MailBox;
         l1MailBox = l1MailBox_;
+        emit SetL1MailBox(oldL1MailBox, l1MailBox_);
     }
 
     function sendMsg(address target_, uint256 value_, bytes calldata msg_, uint256 gasLimit_, address refundAddress_)

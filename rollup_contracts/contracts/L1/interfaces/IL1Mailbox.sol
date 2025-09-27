@@ -26,5 +26,5 @@ interface IL1Mailbox is IMailBoxBase {
         uint256 nonce_,
         bytes memory msg_,
         L2MsgProof memory proof_
-    ) external payable;
+    ) external;
 }

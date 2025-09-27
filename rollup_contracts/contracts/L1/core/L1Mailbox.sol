@@ -166,7 +166,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         uint256 nonce_,
         bytes calldata msg_,
         L2MsgProof calldata proof_
-    ) external payable whenNotPaused nonReentrant {
+    ) external whenNotPaused nonReentrant {
         require(target_ != address(0), "L1Mailbox: target is zero address");
         require(sender_ == IBridge(target_).toBridge(), "Invalid sender");
         bytes32 hash_ = keccak256(_encodeCall(sender_, target_, value_, nonce_, msg_));

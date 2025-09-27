@@ -113,7 +113,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         uint32 _maxCallDataInChunk,
         uint32 _maxZkCircleInChunk,
         uint32 _l1BlobNumberLimit,
-        uint32 _rollupTimeLimit
+        uint64 _rollupTimeLimit
     ) public initializer {
         OwnableUpgradeable.__Ownable_init();
         PausableUpgradeable.__Pausable_init();

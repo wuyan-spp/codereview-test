@@ -6,7 +6,6 @@ import {BELE} from "dcap-attestation/utils/BELE.sol";
 import {P256Verifier} from "dcap-attestation/utils/P256Verifier.sol";
 import "dcap-attestation/types/Constants.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
-import {console} from "forge-std/console.sol";
 
 /**
  * @title  TEECacheVerifier
@@ -110,8 +109,6 @@ contract TEECacheVerifier is P256Verifier, Ownable {
         bytes calldata ecdsaAttestationKey,
         uint256 version
     ) external view onlyAuthorized returns (uint32 _error_code, bytes32 commitment) {
-        // Extract the quote version from the raw quote
-        // uint16 version = uint16(BELE.leBytesToBeUint(rawQuote[0:2]));
         if (version == 3) {
             (_error_code, commitment) = _verifyQuoteV3(rawQuote, ecdsa256BitSignature, ecdsaAttestationKey);
         } else if (version == 4) {

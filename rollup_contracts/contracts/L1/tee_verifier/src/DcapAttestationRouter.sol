@@ -1,7 +1,6 @@
 pragma solidity ^0.8.0;
 
 import {Ownable} from "solady/auth/Ownable.sol";
-import {console} from "forge-std/console.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 import {MeasurementDao} from "./MeasurementDao.sol";

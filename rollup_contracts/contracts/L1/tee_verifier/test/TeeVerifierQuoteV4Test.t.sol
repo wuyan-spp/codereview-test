@@ -21,7 +21,7 @@ contract AutomataDcapOnChainAttestationTest is PCCSSetupBaseV4 {
     TEECacheVerifier cacheVerifier;
     TEEVerifierForwarder proxy;
 
-    bytes constant platformCrlDer = hex""; // TODO: fill for test
+    bytes constant platformCrlDer = hex"";
 
     function setUp() public override {
         super.setUp();
@@ -100,8 +100,8 @@ contract AutomataDcapOnChainAttestationTest is PCCSSetupBaseV4 {
 
         V4QuoteVerifier quoteVerifier;
 
-        // TODO: fill for test
-        bytes memory sampleQuote = hex"";
+        bytes memory sampleQuote =
+            hex"";
 
         vm.startPrank(admin);
         router = new DCAPAttestationRouter(address(attestation), address(mrDao), address(cacheVerifier));

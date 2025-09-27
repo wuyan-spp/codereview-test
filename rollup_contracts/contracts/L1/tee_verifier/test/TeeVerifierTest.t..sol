@@ -76,7 +76,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.stopPrank();
     }
 
-    bytes constant platformCrlDer = hex""; // TODO: fill for test
+    bytes constant platformCrlDer = hex"";
 
     function testTDXQuoteV5OnChainAttestationWithFee() public {
         pcsDao.upsertPckCrl(CA.PLATFORM, platformCrlDer);
@@ -125,13 +125,11 @@ contract TEEVerifyTest is PCCSSetupBase {
 
     function testAddRTMR() public {
         vm.startPrank(admin);
-        // TODO: fill for test
         bytes memory rtmr3_1 =
             hex"";
-        mrDao.addRtmr(rtmr3_1);
-        bytes memory rtmr3_2 =
-            hex"";
-        mrDao.addRtmr(rtmr3_2);
+        mrDao.addRtMr(rtmr3_1);
+        bytes memory rtmr3_2 = hex"";
+        mrDao.addRtMr(rtmr3_2);
         // bytes[] memory rtMrList = mrDao.get_rtMr();
         // assertEq(rtMrList.contains(rtmr3_1), true);
     }

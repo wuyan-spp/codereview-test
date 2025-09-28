@@ -11,6 +11,7 @@ import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
 import "../src/DcapAttestationRouter.sol";
 import "../src/TEEVerifierProxy.sol";
 import "../src/TEECacheVerifier.sol";
+import "../src/AccessControl.sol";
 import "../script/utils/DaimoP256Verifier.sol";
 
 contract TEEVerifyTest is PCCSSetupBase {
@@ -146,7 +147,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.stopPrank();
 
         vm.prank(user);
-        vm.expectRevert(abi.encodeWithSelector(TEEVerifierProxy.Forbidden.selector));
+        vm.expectRevert(abi.encodeWithSelector(AccessControl.Forbidden.selector));
         (uint32 success,) = proxy.verifyProof(sampleQuote5_3);
     }
 
@@ -162,7 +163,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.stopPrank();
 
         vm.prank(user);
-        vm.expectRevert(abi.encodeWithSelector(TEEVerifierProxy.Forbidden.selector));
+        vm.expectRevert(abi.encodeWithSelector(AccessControl.Forbidden.selector));
         (uint32 success,) = proxy.verifyProof(sampleQuote5_3);
     }
 
@@ -245,7 +246,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.stopPrank();
 
         vm.prank(user);
-        vm.expectRevert(abi.encodeWithSelector(DcapAttestationRouter.Forbidden.selector));
+        vm.expectRevert(abi.encodeWithSelector(AccessControl.Forbidden.selector));
         (uint32 success,) = proxy.verifyProof(sampleQuote5_3);
     }
 
@@ -391,7 +392,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.warp(1749112940);
 
         vm.prank(user);
-        vm.expectRevert(abi.encodeWithSelector(TEECacheVerifier.Forbidden.selector));
+        vm.expectRevert(abi.encodeWithSelector(AccessControl.Forbidden.selector));
 
         bytes memory tmp =
             hex"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
@@ -405,7 +406,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.warp(1749112940);
 
         vm.prank(user);
-        vm.expectRevert(abi.encodeWithSelector(TEECacheVerifier.Forbidden.selector));
+        vm.expectRevert(abi.encodeWithSelector(AccessControl.Forbidden.selector));
 
         bytes memory cache =
             hex"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
@@ -425,7 +426,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.stopPrank();
 
         vm.prank(user);
-        vm.expectRevert(abi.encodeWithSelector(TEECacheVerifier.Forbidden.selector));
+        vm.expectRevert(abi.encodeWithSelector(AccessControl.Forbidden.selector));
         bytes memory tmp =
             hex"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
 
@@ -444,7 +445,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.stopPrank();
 
         vm.prank(user);
-        vm.expectRevert(abi.encodeWithSelector(TEECacheVerifier.Forbidden.selector));
+        vm.expectRevert(abi.encodeWithSelector(AccessControl.Forbidden.selector));
 
         bytes memory cache =
             hex"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.27;
 
-import {Ownable} from "solady/auth/Ownable.sol";
+import {AccessControl} from "./AccessControl.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 import {MeasurementDao} from "./MeasurementDao.sol";
@@ -17,7 +17,7 @@ import "dcap-attestation/types/Constants.sol";
  * @dev This contract acts as a router to verify TEE quotes and optionally verify measurements
  * @custom:security-contact mintian.hym@antgroup.com
  */
-contract DcapAttestationRouter is Ownable {
+contract DcapAttestationRouter is AccessControl {
     using BytesUtils for bytes;
 
      /// @dev Offset to extract user data from SGX quote v3 output
@@ -47,28 +47,11 @@ contract DcapAttestationRouter is Ownable {
     /// @notice Flag indicating whether to use cache-based verification
     bool public cacheOption;
     
-    /// @notice Mapping of authorized callers
-    mapping(address => bool) private _authorized;
-    
-    /// @notice Flag indicating whether caller restriction is enabled
-    bool private _isCallerRestricted = true;
-    
     /// @notice Flag indicating whether to verify MRTD (TDX only)
     bool public toVerifyMrtd = false;
 
-    error Forbidden();
-    error InvalidAddress();
     error MrValidationFailed();
     error MRTDValidationFailed();
-
-    /// @notice Event emitted when authorization status is changed
-    event AuthorizationSet(address indexed caller, bool authorized);
-    
-    /// @notice Event emitted when caller restriction is enabled
-    event CallerRestrictionEnabled();
-    
-    /// @notice Event emitted when caller restriction is disabled
-    event CallerRestrictionDisabled();
     
     /// @notice Event emitted when configuration is updated
     event ConfigUpdated(
@@ -84,11 +67,6 @@ contract DcapAttestationRouter is Ownable {
     
     /// @notice Event emitted when MRTD verification is disabled
     event VerifyMRTDDisabled();
-
-    modifier onlyAuthorized() {
-        require(!_isCallerRestricted || _authorized[msg.sender], Forbidden());
-        _;
-    }
 
     constructor(address _dcapAttestation, address _measurementDao, address _cacheVerifierAddr) {
         _initializeOwner(msg.sender);
@@ -113,34 +91,6 @@ contract DcapAttestationRouter is Ownable {
         _setConfig(_dcapAttestation, _measurementDao, _toVerifyMr, _cacheVerifierAddr, _cacheOption);
     }
 
-    /**
-     * @notice Set authorization status for a caller
-     * @param caller Address to set authorization for
-     * @param authorized Whether the caller is authorized
-     */
-    function setAuthorized(address caller, bool authorized) external onlyOwner {
-        _authorized[caller] = authorized;
-        emit AuthorizationSet(caller, authorized);
-    }
-
-   /**
-     * @notice Enable caller restriction (only authorized callers can call functions)
-     */
-    function enableCallerRestriction() external onlyOwner {
-        _isCallerRestricted = true;
-        emit CallerRestrictionEnabled();
-    }
-
-	
-    /**
-     * @notice Disable caller restriction (anyone can call functions)
-     */
-    function disableCallerRestriction() external onlyOwner {
-        _isCallerRestricted = false;
-        emit CallerRestrictionDisabled();
-    }
-
-	
     /**
      * @notice Verify proof from rollup
      * @param aggrProof The aggregated proof containing the TEE quote

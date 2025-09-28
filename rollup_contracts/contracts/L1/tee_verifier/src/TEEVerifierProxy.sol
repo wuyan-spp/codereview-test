@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.27;
 
-import {Ownable} from "solady/auth/Ownable.sol";
+import {AccessControl} from "./AccessControl.sol";
 import {ITeeRollupVerifier} from "./interfaces/ITeeRollupVerifier.sol";
 import {DcapAttestationRouter} from "./DcapAttestationRouter.sol";
 
@@ -11,35 +11,12 @@ import {DcapAttestationRouter} from "./DcapAttestationRouter.sol";
  * @dev This contract acts as a proxy interface for verifying TEE attestation proofs
  * @custom:security-contact mintian.hym@antgroup.com
  */
-contract TEEVerifierProxy is ITeeRollupVerifier, Ownable {
+contract TEEVerifierProxy is ITeeRollupVerifier, AccessControl {
     /// @notice Address of the DcapAttestationRouter contract
     address public dcapAttestationRouter;
-    
-    /// @notice Mapping of authorized callers
-    mapping(address => bool) private _authorized;
-    
-    /// @notice Flag indicating whether caller restriction is enabled
-    bool private _isCallerRestricted = true;
 
-    error Forbidden();
-    error InvalidAddress();
-
-    /// @notice Event emitted when authorization status is changed
-    event AuthorizationSet(address indexed caller, bool authorized);
-    
-    /// @notice Event emitted when caller restriction is enabled
-    event CallerRestrictionEnabled();
-    
-    /// @notice Event emitted when caller restriction is disabled
-    event CallerRestrictionDisabled();
-    
     /// @notice Event emitted when configuration is updated
     event ConfigUpdated(address indexed dcapAttestationRouter);
-
-    modifier onlyAuthorized() {
-        require(!_isCallerRestricted || _authorized[msg.sender], Forbidden());
-        _;
-    }
 
     /**
      * @notice Constructor to initialize the proxy with DcapAttestationRouter address
@@ -49,7 +26,6 @@ contract TEEVerifierProxy is ITeeRollupVerifier, Ownable {
         require(_dcapAttestationRouter != address(0), InvalidAddress());
         _initializeOwner(msg.sender);
         _setConfig(_dcapAttestationRouter);
-        _authorized[msg.sender] = true;
     }
 
     /**
@@ -59,33 +35,6 @@ contract TEEVerifierProxy is ITeeRollupVerifier, Ownable {
     function setConfig(address _dcapAttestationRouter) external onlyOwner {
         require(_dcapAttestationRouter != address(0), InvalidAddress());
         _setConfig(_dcapAttestationRouter);
-    }
-
-    /**
-     * @notice Set authorization status for a caller
-     * @param caller Address to set authorization for
-     * @param authorized Whether the caller is authorized
-     */
-    function setAuthorized(address caller, bool authorized) external onlyOwner {
-        require(caller != address(0), InvalidAddress());
-        _authorized[caller] = authorized;
-        emit AuthorizationSet(caller, authorized);
-    }
-
-    /**
-     * @notice Enable caller restriction (only authorized callers can call functions)
-     */
-    function enableCallerRestriction() external onlyOwner {
-        _isCallerRestricted = true;
-        emit CallerRestrictionEnabled();
-    }
-
-    /**
-     * @notice Disable caller restriction (anyone can call functions)
-     */
-    function disableCallerRestriction() external onlyOwner {
-        _isCallerRestricted = false;
-        emit CallerRestrictionDisabled();
     }
 
     /**

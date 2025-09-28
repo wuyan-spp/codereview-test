@@ -5,25 +5,21 @@ import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {BELE} from "dcap-attestation/utils/BELE.sol";
 import {P256Verifier} from "dcap-attestation/utils/P256Verifier.sol";
 import "dcap-attestation/types/Constants.sol";
-import {Ownable} from "solady/auth/Ownable.sol";
+import {AccessControl} from "./AccessControl.sol";
 
 /**
  * @title  TEECacheVerifier
  * @notice Provides on-chain verification for Intel DCAP attestation.
  * @custom:security-contact mintian.hym@antgroup.com
  */
-contract TEECacheVerifier is P256Verifier, Ownable {
+contract TEECacheVerifier is P256Verifier, AccessControl {
     uint16 private constant DATA_OFFSET = 526;
-    mapping(address => bool) private _authorized;
-    bool private _isCallerRestricted = true;
     mapping(bytes => bool) private _verificationCache;
     bytes[] private _initializedKeys;
     mapping(bytes => uint256) private _keyIndex; // Store index, 0 means it doesn't exist
 
-    error Forbidden();
     error KeyNotInitialized();
     error UnsupportedQuoteVersion();
-    error InvalidAddress();
     error ListTooLong();
     error UnknownTdReportType();
     error InvalidKeyLength();
@@ -42,30 +38,13 @@ contract TEECacheVerifier is P256Verifier, Ownable {
     /// @notice Event emitted when all verification keys are cleared from the cache
     event AllKeysCleared();
 
-    modifier onlyAuthorized() {
-        require(!_isCallerRestricted || _authorized[msg.sender], Forbidden());
-        _;
-    }
-
     constructor(address _ecdsaVerifier) P256Verifier(_ecdsaVerifier) {
         require(_ecdsaVerifier != address(0), InvalidAddress());
         _initializeOwner(msg.sender);
-        _authorized[msg.sender] = true;
     }
 
     /**
-     * @notice Set authorization status for a caller
-     * @param caller Address to set authorization for
-     * @param authorized Whether the caller is authorized
-     */
-    function setAuthorized(address caller, bool authorized) external onlyOwner {
-        require(caller != address(0), InvalidAddress());
-        _authorized[caller] = authorized;
-        emit AuthorizationSet(caller, authorized);
-    }
-
-    /**
-     * @notice Check if a verification key exists in the cache
+     * @notice Check if a verification key has been initialized in the cache
      * @param key The verification key to check
      * @return True if the key exists, false otherwise
      */

@@ -89,7 +89,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
         require(key.length == 64, InvalidKeyLength());
         require(key.length != 0 && keccak256(key) != keccak256(bytes("")), ZeroKey());
         // Limit the number of iterations to prevent malicious injection and gas exhaustion
-        require(_initializedKeys.length < 10000, ListTooLong());
+        require(_initializedKeys.length < 1000, ListTooLong());
         _verificationCache[key] = true;
         _initializedKeys.push(key);
         _keyIndex[key] = _initializedKeys.length;

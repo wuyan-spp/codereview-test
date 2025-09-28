@@ -203,6 +203,10 @@ contract MeasurementDao is Ownable {
             return false;
         }
 
+        // Check if the quote is long enough to extract the required data
+        if (quote.length <= mrEnclaveOffset + 32 || quote.length <= mrSignerOffset + 32) {
+            return false;
+        }
         bytes32 mrEnclave = bytes32(quote.substring(mrEnclaveOffset, 32));
         bytes32 mrSigner = bytes32(quote.substring(mrSignerOffset, 32));
         return mrSigner != bytes32(0) && mr[mrEnclave] == mrSigner; //mrSigner not zero
@@ -227,6 +231,10 @@ contract MeasurementDao is Ownable {
             return false;
         }
 
+        // Check if the quote is long enough to extract the required data
+        if (quote.length <= rtmr3Offset + 48) {
+            return false;
+        }
         bytes memory rtmr3 = quote.substring(rtmr3Offset, 48);
         return rtmr[rtmr3];
     }
@@ -250,6 +258,10 @@ contract MeasurementDao is Ownable {
             return false;
         }
 
+        // Check if the quote is long enough to extract the required data
+        if (quote.length <= mrtdOffset + 48) {
+            return false;
+        }
         bytes memory mrtd = quote.substring(mrtdOffset, 48);
         return mrtdMap[mrtd];
     }

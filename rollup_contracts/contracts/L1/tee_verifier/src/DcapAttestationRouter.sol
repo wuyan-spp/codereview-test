@@ -167,6 +167,10 @@ contract DcapAttestationRouter is Ownable {
      * @return True if the measurement is valid, false otherwise
      */
     function _verifyMeasurement(bytes calldata quote, uint16 quoteVersion) private view returns (bool) {
+        // Check if the quote is long enough to extract the TEE type
+        if (quote.length <= 8) {
+            return false;
+        } 
         bytes4 teeType = bytes4(quote.substring(4, 4));
         if (teeType == SGX_TEE) {
             return MeasurementDao(measurementDao).verifyMeasurementSGX(quote, quoteVersion);

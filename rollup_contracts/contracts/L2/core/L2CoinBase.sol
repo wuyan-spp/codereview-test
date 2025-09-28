@@ -102,7 +102,7 @@ contract L2CoinBase is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardU
         emit CoinBaseWithdraw(_target, _amount);
     }
 
-    function withdrawAll(address _target) external onlyWithdrawer {
-        withdraw(_target, address(this).balance);
+    function withdrawAll(address _target) external {
+        withdraw(_target,address(this).balance);
     }
 }

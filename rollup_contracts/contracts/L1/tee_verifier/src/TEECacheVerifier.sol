@@ -74,6 +74,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
         if (key.length != 64) revert InvalidKeyLength();
         // Limit the number of iterations to prevent malicious injection and gas exhaustion
         if (_initializedKeys.length >= 10000) revert ListTooLong();
+        if (_verificationCache[key]) return;
         _verificationCache[key] = true;
         _initializedKeys.push(key);
         _keyIndex[key] = _initializedKeys.length;

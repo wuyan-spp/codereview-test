@@ -126,10 +126,12 @@ contract TEEVerifyTest is PCCSSetupBase {
     function testAddRTMR() public {
         vm.startPrank(admin);
         // TODO: fill for test
-        bytes memory rtmr3_1 = hex"";
-        mrDao.add_rtMr(rtmr3_1);
-        bytes memory rtmr3_2 = hex"";
-        mrDao.add_rtMr(rtmr3_2);
+        bytes memory rtmr3_1 =
+            hex"";
+        mrDao.addRtmr(rtmr3_1);
+        bytes memory rtmr3_2 =
+            hex"";
+        mrDao.addRtmr(rtmr3_2);
         // bytes[] memory rtMrList = mrDao.get_rtMr();
         // assertEq(rtMrList.contains(rtmr3_1), true);
     }

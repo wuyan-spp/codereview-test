@@ -95,23 +95,23 @@ contract TEEVerifyTest is PCCSSetupBase {
 
     function testMRTDOFF() public {
         vm.startPrank(admin);
-        router.disableVerifyMRTD();
+        router.disableVerifyMrtd();
         vm.stopPrank();
         assertEq(router.toVerifyMrtd(), false);
     }
 
     function testMRTDON() public {
         vm.startPrank(admin);
-        router.enableVerifyMRTD();
+        router.enableVerifyMrtd();
         vm.stopPrank();
         assertEq(router.toVerifyMrtd(), true);
     }
 
     function testAddMulMR() public {
         vm.startPrank(admin);
-        mrDao.add_mr_enclave(mrEnclave_1, mrSigner_1);
-        mrDao.add_mr_enclave(mrEnclave_2, mrSigner_2);
-        bytes32[] memory mrEnclaveList = mrDao.get_mr_enclave();
+        mrDao.addMrEnclave(mrEnclave_1, mrSigner_1);
+        mrDao.addMrEnclave(mrEnclave_2, mrSigner_2);
+        bytes32[] memory mrEnclaveList = mrDao.getMrEnclave();
         vm.stopPrank();
         assertEq(mrEnclaveList.contains(mrEnclave_1), true);
         assertEq(mrEnclaveList.contains(mrEnclave_2), true);
@@ -119,28 +119,28 @@ contract TEEVerifyTest is PCCSSetupBase {
 
     function testDeletMR() public {
         vm.startPrank(admin);
-        mrDao.add_mr_enclave(mrEnclave_1, mrSigner_1);
-        mrDao.delete_mr_enclave(mrEnclave_1);
-        bytes32[] memory mrEnclaveList = mrDao.get_mr_enclave();
+        mrDao.addMrEnclave(mrEnclave_1, mrSigner_1);
+        mrDao.deleteMrEnclave(mrEnclave_1);
+        bytes32[] memory mrEnclaveList = mrDao.getMrEnclave();
         vm.stopPrank();
         assertEq(mrEnclaveList.contains(mrEnclave_1), false);
     }
 
     function testClearupMR() public {
         vm.startPrank(admin);
-        mrDao.add_mr_enclave(mrEnclave_1, mrSigner_1);
-        mrDao.add_mr_enclave(mrEnclave_2, mrSigner_2);
-        mrDao.clearup_mr_enclave();
-        bytes32[] memory mrEnclaveList = mrDao.get_mr_enclave();
+        mrDao.addMrEnclave(mrEnclave_1, mrSigner_1);
+        mrDao.addMrEnclave(mrEnclave_2, mrSigner_2);
+        mrDao.clearMrEnclave();
+        bytes32[] memory mrEnclaveList = mrDao.getMrEnclave();
         vm.stopPrank();
         assertEq(mrEnclaveList.length, 0);
     }
 
     function testAddMulRTMR() public {
         vm.startPrank(admin);
-        mrDao.add_rtMr(rtmr3_1);
-        mrDao.add_rtMr(rtmr3_2);
-        bytes[] memory rtMrList = mrDao.get_rtMr();
+        mrDao.addRtmr(rtmr3_1);
+        mrDao.addRtmr(rtmr3_2);
+        bytes[] memory rtMrList = mrDao.getRtmr();
         vm.stopPrank();
         assertEq(rtMrList.contains(rtmr3_1), true);
         assertEq(rtMrList.contains(rtmr3_2), true);
@@ -148,28 +148,28 @@ contract TEEVerifyTest is PCCSSetupBase {
 
     function testDeletRTMR() public {
         vm.startPrank(admin);
-        mrDao.add_rtMr(rtmr3_1);
-        mrDao.delete_rtMr(rtmr3_1);
-        bytes[] memory rtMrList = mrDao.get_rtMr();
+        mrDao.addRtmr(rtmr3_1);
+        mrDao.deleteRtmr(rtmr3_1);
+        bytes[] memory rtMrList = mrDao.getRtmr();
         vm.stopPrank();
         assertEq(rtMrList.contains(rtmr3_1), false);
     }
 
     function testClearupRTMR() public {
         vm.startPrank(admin);
-        mrDao.add_rtMr(rtmr3_1);
-        mrDao.add_rtMr(rtmr3_2);
-        mrDao.clearup_rtMr();
-        bytes[] memory rtMrList = mrDao.get_rtMr();
+        mrDao.addRtmr(rtmr3_1);
+        mrDao.addRtmr(rtmr3_2);
+        mrDao.clearRtmr();
+        bytes[] memory rtMrList = mrDao.getRtmr();
         vm.stopPrank();
         assertEq(rtMrList.length, 0);
     }
 
     function testAddMulMrtd() public {
         vm.startPrank(admin);
-        mrDao.add_mrtd(mrtd_1);
-        mrDao.add_mrtd(mrtd_2);
-        bytes[] memory mrtdList = mrDao.get_mrtd();
+        mrDao.addMrtd(mrtd_1);
+        mrDao.addMrtd(mrtd_2);
+        bytes[] memory mrtdList = mrDao.getMrtd();
         vm.stopPrank();
         assertEq(mrtdList.contains(mrtd_1), true);
         assertEq(mrtdList.contains(mrtd_2), true);
@@ -177,26 +177,26 @@ contract TEEVerifyTest is PCCSSetupBase {
 
     function testDeletMrtd() public {
         vm.startPrank(admin);
-        mrDao.add_mrtd(mrtd_1);
-        mrDao.delete_mrtd(mrtd_1);
-        bytes[] memory mrtdList = mrDao.get_mrtd();
+        mrDao.addMrtd(mrtd_1);
+        mrDao.deleteMrtd(mrtd_1);
+        bytes[] memory mrtdList = mrDao.getMrtd();
         vm.stopPrank();
         assertEq(mrtdList.contains(mrtd_1), false);
     }
 
     function testClearupMrtd() public {
         vm.startPrank(admin);
-        mrDao.add_mrtd(mrtd_1);
-        mrDao.add_mrtd(mrtd_2);
-        mrDao.clearup_mrtd();
-        bytes[] memory mrtdList = mrDao.get_mrtd();
+        mrDao.addMrtd(mrtd_1);
+        mrDao.addMrtd(mrtd_2);
+        mrDao.clearMrtd();
+        bytes[] memory mrtdList = mrDao.getMrtd();
         vm.stopPrank();
         assertEq(mrtdList.length, 0);
     }
 
     function testExceptionNoMrtoVerifyV3() public {
         vm.startPrank(admin);
-        mrDao.clearup_mr_enclave();
+        mrDao.clearMrEnclave();
         router.setConfig(address(attestation), address(mrDao), true, address(cacheVerifier), true);
 
         cacheVerifier.setAuthorized(address(router), true);
@@ -210,8 +210,8 @@ contract TEEVerifyTest is PCCSSetupBase {
 
     function testExceptionUsingWrongMrtoVerifyV3() public {
         vm.startPrank(admin);
-        mrDao.clearup_mr_enclave();
-        mrDao.add_mr_enclave(mrEnclave_1, mrSigner_1);
+        mrDao.clearMrEnclave();
+        mrDao.addMrEnclave(mrEnclave_1, mrSigner_1);
         router.setConfig(address(attestation), address(mrDao), true, address(cacheVerifier), true);
         cacheVerifier.setAuthorized(address(router), true);
 
@@ -224,8 +224,8 @@ contract TEEVerifyTest is PCCSSetupBase {
 
     // function testExceptionMulMRUsingWrongMrtoVerifyV3() public{
     //     vm.startPrank(admin);
-    //     mrDao.clearup_mr_enclave();
-    //     mrDao.add_mr_enclave(mrEnclave_1, mrSigner_1);
+    //     mrDao.clearMrEnclave();
+    //     mrDao.addMrEnclave(mrEnclave_1, mrSigner_1);
     //     router.setConfig(address(attestation), address(mrDao), true, address(cacheVerifier),true);
     //     proxy = new TEEVerifierProxy(address(router));
     //     vm.expectRevert("mr validation fail");
@@ -235,16 +235,16 @@ contract TEEVerifyTest is PCCSSetupBase {
 
     function testExceptionDeleteWrongMr() public {
         vm.startPrank(admin);
-        mrDao.clearup_mr_enclave();
-        mrDao.add_mr_enclave(mrEnclave_1, mrSigner_1);
+        mrDao.clearMrEnclave();
+        mrDao.addMrEnclave(mrEnclave_1, mrSigner_1);
         vm.expectRevert(abi.encodeWithSelector(MeasurementDao.NotExists.selector));
-        mrDao.delete_mr_enclave(mrEnclave_2);
+        mrDao.deleteMrEnclave(mrEnclave_2);
         vm.stopPrank();
     }
 
     function testExceptionNoRTMRtoVerifyV5() public {
         vm.startPrank(admin);
-        mrDao.clearup_rtMr();
+        mrDao.clearRtmr();
         router.setConfig(address(attestation), address(mrDao), true, address(cacheVerifier), true);
         cacheVerifier.setAuthorized(address(router), true);
 
@@ -257,8 +257,8 @@ contract TEEVerifyTest is PCCSSetupBase {
 
     function testExceptionUsingWrongRTMRtoVerifyV5() public {
         vm.startPrank(admin);
-        mrDao.clearup_rtMr();
-        mrDao.add_rtMr(rtmr3_1);
+        mrDao.clearRtmr();
+        mrDao.addRtmr(rtmr3_1);
         router.setConfig(address(attestation), address(mrDao), true, address(cacheVerifier), true);
         cacheVerifier.setAuthorized(address(router), true);
 
@@ -271,8 +271,8 @@ contract TEEVerifyTest is PCCSSetupBase {
 
     // function testExceptionMulMRUsingWrongRTMRtoVerifyV5() public{
     //     vm.startPrank(admin);
-    //     mrDao.clearup_rtMr();
-    //     mrDao.add_rtMr(rtmr3_1);
+    //     mrDao.clearRtmr();
+    //     mrDao.addRtmr(rtmr3_1);
     //     router.setConfig(address(attestation), address(mrDao), true, address(cacheVerifier),true);
     //     proxy = new TEEVerifierProxy(address(router));
     //     vm.expectRevert("mr validation fail");
@@ -282,21 +282,21 @@ contract TEEVerifyTest is PCCSSetupBase {
 
     function testExceptionDeleteWrongRTMR() public {
         vm.startPrank(admin);
-        mrDao.clearup_rtMr();
-        mrDao.add_rtMr(rtmr3_1);
+        mrDao.clearRtmr();
+        mrDao.addRtmr(rtmr3_1);
         vm.expectRevert(abi.encodeWithSelector(MeasurementDao.NotExists.selector));
-        mrDao.delete_rtMr(rtmr3_2);
+        mrDao.deleteRtmr(rtmr3_2);
         vm.stopPrank();
     }
 
     function testExceptionNoMRTDtoVerifyV5() public {
         vm.startPrank(admin);
-        mrDao.clearup_rtMr();
-        mrDao.clearup_mrtd();
-        mrDao.add_rtMr(rtmr3_1);
+        mrDao.clearRtmr();
+        mrDao.clearMrtd();
+        mrDao.addRtmr(rtmr3_1);
 
         router.setConfig(address(attestation), address(mrDao), true, address(cacheVerifier), true);
-        router.enableVerifyMRTD();
+        router.enableVerifyMrtd();
         cacheVerifier.setAuthorized(address(router), true);
 
         proxy = new TEEVerifierProxy(address(router));
@@ -308,13 +308,13 @@ contract TEEVerifyTest is PCCSSetupBase {
 
     function testExceptionUsingWrongMRTDtoVerifyV5() public {
         vm.startPrank(admin);
-        mrDao.clearup_rtMr();
-        mrDao.clearup_mrtd();
-        mrDao.add_rtMr(rtmr3_1);
-        mrDao.add_mrtd(mrtd_2);
+        mrDao.clearRtmr();
+        mrDao.clearMrtd();
+        mrDao.addRtmr(rtmr3_1);
+        mrDao.addMrtd(mrtd_2);
 
         router.setConfig(address(attestation), address(mrDao), true, address(cacheVerifier), true);
-        router.enableVerifyMRTD();
+        router.enableVerifyMrtd();
         cacheVerifier.setAuthorized(address(router), true);
 
         proxy = new TEEVerifierProxy(address(router));

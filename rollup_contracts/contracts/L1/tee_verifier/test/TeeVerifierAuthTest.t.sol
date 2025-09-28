@@ -275,34 +275,34 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
         bytes memory rtmr3_1 =
             hex"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-        mrDao.add_rtMr(rtmr3_1);
+        mrDao.addRtmr(rtmr3_1);
     }
 
     function testAddMrEnclaveAuthWithRevert() public {
         vm.startPrank(user);
         vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        mrDao.add_mr_enclave(bytes32(0), bytes32(0));
+        mrDao.addMrEnclave(bytes32(0), bytes32(0));
         vm.stopPrank();
     }
 
     function testDeleteMrEnclaveAuthWithRevert() public {
         vm.startPrank(user);
         vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        mrDao.delete_mr_enclave(bytes32(0));
+        mrDao.deleteMrEnclave(bytes32(0));
         vm.stopPrank();
     }
 
     function testGetMrEnclaveAuthWithRevert() public {
         vm.startPrank(user);
         // vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        mrDao.get_mr_enclave();
+        mrDao.getMrEnclave();
         vm.stopPrank();
     }
 
     function testClearUpMrEnclaveAuthWithRevert() public {
         vm.startPrank(user);
         vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        mrDao.clearup_mr_enclave();
+        mrDao.clearMrEnclave();
         vm.stopPrank();
     }
 
@@ -311,7 +311,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
         bytes memory rtmr =
             hex"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-        mrDao.add_rtMr(rtmr);
+        mrDao.addRtmr(rtmr);
         vm.stopPrank();
     }
 
@@ -320,21 +320,21 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
         bytes memory rtmr =
             hex"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-        mrDao.delete_rtMr(rtmr);
+        mrDao.deleteRtmr(rtmr);
         vm.stopPrank();
     }
 
     function testGetRtmrAuthWithRevert() public {
         vm.startPrank(user);
         // vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        mrDao.get_rtMr();
+        mrDao.getRtmr();
         vm.stopPrank();
     }
 
     function testClearUpRtmrAuthWithRevert() public {
         vm.startPrank(user);
         vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        mrDao.clearup_rtMr();
+        mrDao.clearRtmr();
         vm.stopPrank();
     }
 
@@ -385,7 +385,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.prank(user);
 
         vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        cacheVerifier.clearupAllKey();
+        cacheVerifier.clearCache();
     }
 
     function testCacheGetAllKeyAuthWithRevert() public {
@@ -396,7 +396,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.prank(user);
 
         // vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        cacheVerifier.getAllKey();
+        cacheVerifier.getCache();
     }
 
     function testVerifyAuthWithRevert() public {
@@ -424,7 +424,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         bytes memory cache =
             hex"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
 
-        cacheVerifier.initializeCache(cache);
+        cacheVerifier.addKey(cache);
     }
 
     function testVerifyAuthWithRevert_user_unauthorized() public {
@@ -463,6 +463,6 @@ contract TEEVerifyTest is PCCSSetupBase {
         bytes memory cache =
             hex"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
 
-        cacheVerifier.initializeCache(cache);
+        cacheVerifier.addKey(cache);
     }
 }

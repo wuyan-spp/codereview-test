@@ -105,7 +105,7 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
         quoteVerifier = new V3QuoteVerifier(P256_VERIFIER, address(pccsRouter));
         attestation.setQuoteVerifier(address(quoteVerifier));
         pccsRouter.setAuthorized(address(quoteVerifier), true);
-        cacheVerifier.initializeCache(v5QuoteKey);
+        cacheVerifier.addKey(v5QuoteKey);
 
         vm.stopPrank();
 
@@ -121,14 +121,14 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
         vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
         cacheVerifier.deleteKey(v3QuoteKey);
         vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        cacheVerifier.clearupAllKey();
+        cacheVerifier.clearCache();
         vm.stopPrank();
     }
 
     function testDeleteUnexistedCacheShouldFail() public {
         // Test user cannot delete key
         vm.startPrank(admin);
-        assert(!cacheVerifier.isInitialized(v3QuoteKey));
+        assert(!cacheVerifier.contains(v3QuoteKey));
         vm.expectRevert(abi.encodeWithSelector(TEECacheVerifier.KeyNotInitialized.selector));
         cacheVerifier.deleteKey(v3QuoteKey);
         vm.stopPrank();

@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
-import "../artifact_src/solidity/sys_chaincfg.sol";
+import {ChainCfg} from "../artifact_src/solidity/ChainCfg.sol";
+
 contract SimpleTest is Test {
     ChainCfg public chainCfg;
     

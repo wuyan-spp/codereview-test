@@ -68,7 +68,6 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
         require(gasleft() > post_call_reserve_gas, "L2ETHBridge.finalizeDeposit: not enough gas");
         (bool success_,) = to_.call{value : amount_, gas : gasleft() - post_call_reserve_gas}("");
         require(success_, "ETH transfer failed");
-//        _doCallback(to_, msg_);
 
         emit FinalizeDepositETH(sender_, to_, amount_, msg_);
     }

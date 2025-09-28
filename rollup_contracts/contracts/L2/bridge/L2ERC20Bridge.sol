@@ -103,7 +103,6 @@ contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
 
         IERC20Token(l2Token_).mint(to_, amount_);
         _increaseBalance(l2Token_, amount_);
-//        _doCallback(to_, msg_);
         require(IERC20Token(l2Token_).totalSupply() == balanceOf[l2Token_], "totalSupply mismatch");
 
         emit FinalizeDepositERC20(l1Token_, l2Token_, sender_, to_, amount_, msg_);

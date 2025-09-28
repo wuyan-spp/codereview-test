@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {IRollup} from "../interfaces/IRollup.sol";
 import {BatchHeaderCodec} from "../libraries/codec/BatchHeaderCodec.sol";
@@ -15,9 +15,9 @@ import {IL1MailQueue} from "../interfaces/IL1MailQueue.sol";
 contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     error NotSupportZkProof();
 
-    event Initialized(uint64 chainId, address zkVerifier, address teeVerifier, address l1MailBox, 
+    event RollupInitialized(uint64 chainId, address zkVerifier, address teeVerifier, address l1MailBox, 
                       uint32 maxTxsInChunk, uint32 maxBlockInChunk, uint32 maxCallDataInChunk, 
-                      uint32 maxZkCircleInChunk, uint32 l1BlobNumberLimit, uint32 rollupTimeLimit);
+                      uint32 maxZkCircleInChunk, uint32 l1BlobNumberLimit, uint64 rollupTimeLimit);
     event BatchesReverted(uint256 newLastBatchIndex);
     event RelayerAdded(address indexed relayer);
     event RelayerRemoved(address indexed relayer);
@@ -133,7 +133,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         l1BlobNumberLimit = _l1BlobNumberLimit;
         rollupTimeLimit = _rollupTimeLimit;
         
-        emit Initialized(_chainId, _zk_verifier, _tee_verifier, _l1_mail_box, 
+        emit RollupInitialized(_chainId, _zk_verifier, _tee_verifier, _l1_mail_box, 
                         _maxTxsInChunk, _maxBlockInChunk, _maxCallDataInChunk, 
                         _maxZkCircleInChunk, _l1BlobNumberLimit, _rollupTimeLimit);
     }

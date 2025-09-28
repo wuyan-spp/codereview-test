@@ -8,7 +8,7 @@ const privateKey = '';
 const ethprivateKey = '';
 
 module.exports = {
-  solidity: "0.8.28",
+  solidity: "0.8.30",
   networks: {
     anvil: {
       url: '', // 输入您的RPC URL

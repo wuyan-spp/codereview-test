@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {IL2ERC20Bridge} from "./interfaces/IL2ERC20Bridge.sol";
 import {IL2Mailbox} from "../interfaces/IL2Mailbox.sol";

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {BridgeBase} from "./BridgeBase.sol";
 import {ITokenBridge} from "./interfaces/ITokenBridge.sol";

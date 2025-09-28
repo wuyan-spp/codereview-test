@@ -19,7 +19,7 @@ abstract contract AppendOnlyMerkleTree {
     /// @notice The list of minimum merkle proofs needed to compute next root.
     /// @dev Only first `n` elements are used, where `n` is the minimum value that `2^{n-1} >= currentMaxNonce + 1`.
     /// It means we only use `currentMaxNonce + 1` leaf nodes to construct the merkle tree.
-    bytes32[MAX_TREE_HEIGHT] public _branches;
+    bytes32[MAX_TREE_HEIGHT] public branches;
 
     function _initializeMerkleTree() internal {
         // Initialize zero hash for height 0
@@ -42,12 +42,12 @@ abstract contract AppendOnlyMerkleTree {
         while (currentMsgIndex != 0) {
             if (currentMsgIndex % 2 == 0) {
                 // it may be used in next round.
-                _branches[height] = hash;
+                branches[height] = hash;
                 // it's a left child, the right child must be null
                 hash = _efficientHash(hash, _zeroHashes[height]);
             } else {
                 // it's a right child, use previously computed hash
-                hash = _efficientHash(_branches[height], hash);
+                hash = _efficientHash(branches[height], hash);
             }
             unchecked {
                 height += 1;
@@ -55,7 +55,7 @@ abstract contract AppendOnlyMerkleTree {
             currentMsgIndex >>= 1;
         }
 
-        _branches[height] = hash;
+        branches[height] = hash;
         _msgRoot = hash;
 
         currentMsgIndex = _nextMsgIndex;

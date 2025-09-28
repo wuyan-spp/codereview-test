@@ -189,7 +189,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
         } else if(teeType == TDX_TEE) {
              offset += TD_REPORT10_LENGTH;
         } else {
-            return (1, bytes32(0));
+            revert UnknownTdReportType();
         }
         offset += 4; // localAuthDataSize
         ecdsa256BitSignature = rawQuote[offset:offset + 64];

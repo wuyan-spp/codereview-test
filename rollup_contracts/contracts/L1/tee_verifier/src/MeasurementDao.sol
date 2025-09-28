@@ -55,7 +55,7 @@ contract MeasurementDao is Ownable {
      * @param _mrEnclave The measurement register of the enclave to delete
      */
     function delete_mr_enclave(bytes32 _mrEnclave) external onlyOwner {
-        if (_mrEnclave == bytes32(0)) revert ZeroValue();
+        if (mr[_mrEnclave] == bytes32(0)) revert NotExists();
         delete mr[_mrEnclave];
 
         uint256 index = mrEnclaveIndex[_mrEnclave];

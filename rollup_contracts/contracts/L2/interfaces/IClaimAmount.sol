@@ -2,17 +2,12 @@
 pragma solidity 0.8.28;
 
 interface IClaim {
-    function claimETH(
+    function claimAmount(
         bytes calldata msg_
     ) external;
 
-    function claimETH(
+    function claimAmount(
         bytes calldata msg_,
         address refundAddress_
-    ) external;
-
-    function claimERC20(
-        uint256 nonce_,
-        bytes32 msgHash_
     ) external;
 }

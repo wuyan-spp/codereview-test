@@ -12,12 +12,7 @@ interface IL2ERC20Bridge {
      * @param data optional execution data passed to L1 to address
      */
     event WithdrawERC20(
-        address indexed l1Token,
-        address indexed l2Token,
-        address indexed from,
-        address to,
-        uint256 amount,
-        bytes data
+        address indexed l1Token, address indexed l2Token, address indexed from, address to, uint256 amount, bytes data
     );
 
     /**
@@ -30,12 +25,7 @@ interface IL2ERC20Bridge {
      * @param msg optional execution data passed to L2 to address
      */
     event FinalizeDepositERC20(
-        address indexed l1Token,
-        address indexed l2Token,
-        address indexed from,
-        address to,
-        uint256 amount,
-        bytes msg
+        address indexed l1Token, address indexed l2Token, address indexed from, address to, uint256 amount, bytes msg
     );
 
     /**
@@ -46,7 +36,9 @@ interface IL2ERC20Bridge {
      * @param gasLimit_ gas limit
      * @param msg_ data
      */
-    function withdraw(address token_, address to_, uint256 amount_, uint256 gasLimit_, bytes memory msg_) external payable;
+    function withdraw(address token_, address to_, uint256 amount_, uint256 gasLimit_, bytes memory msg_)
+        external
+        payable;
 
     /**
      * Complete the transfer of L1 assets
@@ -57,5 +49,12 @@ interface IL2ERC20Bridge {
      * @param amount_ transfer amount
      * @param msg_ data
      */
-    function finalizeDeposit(address l1Token_, address l2Token_, address sender_, address to_, uint256 amount_, bytes calldata msg_) external payable;
+    function finalizeDeposit(
+        address l1Token_,
+        address l2Token_,
+        address sender_,
+        address to_,
+        uint256 amount_,
+        bytes calldata msg_
+    ) external payable;
 }

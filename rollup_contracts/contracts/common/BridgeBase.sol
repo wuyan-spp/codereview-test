@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.28;
 
-
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
@@ -24,7 +23,7 @@ abstract contract BridgeBase is OwnableUpgradeable, PausableUpgradeable, Reentra
         _;
     }
 
-    constructor(){
+    constructor() {
         _disableInitializers();
     }
 
@@ -33,7 +32,10 @@ abstract contract BridgeBase is OwnableUpgradeable, PausableUpgradeable, Reentra
         PausableUpgradeable.__Pausable_init();
         ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
 
-        require(mailBox_ != address(0) && toBridge_ != address(0) && owner != address(0), "initialize contract address must not zero");
+        require(
+            mailBox_ != address(0) && toBridge_ != address(0) && owner != address(0),
+            "initialize contract address must not zero"
+        );
         mailBox = mailBox_;
         toBridge = toBridge_;
         _transferOwnership(owner);

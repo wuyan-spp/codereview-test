@@ -25,7 +25,13 @@ contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
      * @param gasLimit_ gas limit
      * @param msg_ data
      */
-    function withdraw(address token_, address to_, uint256 amount_, uint256 gasLimit_, bytes memory msg_) external payable override nonReentrant whenNotPaused {
+    function withdraw(address token_, address to_, uint256 amount_, uint256 gasLimit_, bytes memory msg_)
+        external
+        payable
+        override
+        nonReentrant
+        whenNotPaused
+    {
         address l1Token_ = tokenMapping[token_];
         require(l1Token_ != address(0), "withdraw erc20 token not exist");
 
@@ -38,10 +44,8 @@ contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
         IERC20Token(token_).burn(sender_, amount_);
 
         // 3. Generate message passed to IL1ERC20Bridge.
-        bytes memory message_ = abi.encodeCall(
-            IL1ERC20Bridge.finalizeWithdraw,
-            (l1Token_, token_, sender_, to_, amount_, msg_)
-        );
+        bytes memory message_ =
+            abi.encodeCall(IL1ERC20Bridge.finalizeWithdraw, (l1Token_, token_, sender_, to_, amount_, msg_));
 
         // 4. send message to L2Mailbox
         mailBoxCall(abi.encodeCall(IMailBoxBase.sendMsg, (toBridge, 0, message_, gasLimit_, sender_)));
@@ -60,7 +64,14 @@ contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
      * @param amount_ transfer amount
      * @param msg_ data
      */
-    function finalizeDeposit(address l1Token_, address l2Token_, address sender_, address to_, uint256 amount_, bytes calldata msg_) external payable override nonReentrant onlyMailBox whenNotPaused {
+    function finalizeDeposit(
+        address l1Token_,
+        address l2Token_,
+        address sender_,
+        address to_,
+        uint256 amount_,
+        bytes calldata msg_
+    ) external payable override nonReentrant onlyMailBox whenNotPaused {
         require(msg.value == 0, "nonzero msg.value");
         require(l1Token_ != address(0), "token address cannot be 0");
         require(l2Token_ != address(0), "L2ERC20Bridge: l2Token is zero address");
@@ -69,7 +80,7 @@ contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
         IERC20Token(l2Token_).mint(to_, amount_);
         _increaseBalance(l2Token_, amount_);
         // TODO : add call msg with deposit
-//        _doCallback(to_, msg_);
+        //        _doCallback(to_, msg_);
         require(IERC20Token(l2Token_).totalSupply() == balanceOf[l2Token_], "totalSupply mismatch");
 
         emit FinalizeDepositERC20(l1Token_, l2Token_, sender_, to_, amount_, msg_);

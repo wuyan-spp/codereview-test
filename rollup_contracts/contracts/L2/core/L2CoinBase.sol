@@ -9,10 +9,9 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 contract L2CoinBase is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     address public l2EthBridge;
 
-    receive() external payable {
-    }
+    receive() external payable {}
 
-    constructor(){
+    constructor() {
         _disableInitializers();
     }
 
@@ -54,47 +53,50 @@ contract L2CoinBase is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardU
 
     event CoinBaseWithdraw(address indexed _target, uint256 indexed amount);
 
-    function setL2EthBridge(address _newL2EthBridge) whenPaused onlyOwner external {
+    function setL2EthBridge(address _newL2EthBridge) external whenPaused onlyOwner {
         require(_newL2EthBridge != address(0), "L2CoinBase: newL2EthBridge is zero address");
         l2EthBridge = _newL2EthBridge;
         emit SetL2EthBridge(_newL2EthBridge);
     }
 
-    function addWithdrawer(address _newWithdrawer) onlyOwner external {
+    function addWithdrawer(address _newWithdrawer) external onlyOwner {
         isWithdrawer[_newWithdrawer] = true;
 
         emit AddWithdrawer(_newWithdrawer);
     }
 
-    function removeWithdrawer(address _oldWithdrawer) onlyOwner external {
+    function removeWithdrawer(address _oldWithdrawer) external onlyOwner {
         isWithdrawer[_oldWithdrawer] = false;
 
         emit RemoveWithdrawer(_oldWithdrawer);
     }
 
-    function addWhiteAddress(address _whiteAddress) onlyOwner external {
+    function addWhiteAddress(address _whiteAddress) external onlyOwner {
         whiteListOnL1[_whiteAddress] = true;
 
         emit AddWhiteAddress(_whiteAddress);
     }
 
-    function removeWhiteAddress(address _whiteAddress) onlyOwner external {
+    function removeWhiteAddress(address _whiteAddress) external onlyOwner {
         whiteListOnL1[_whiteAddress] = false;
 
         emit RemoveWhiteAddress(_whiteAddress);
     }
 
-    function withdraw(address _target, uint256 _amount) onlyWithdrawer whenNotPaused nonReentrant public {
+    function withdraw(address _target, uint256 _amount) public onlyWithdrawer whenNotPaused nonReentrant {
         require(whiteListOnL1[_target], "INVALID_PERMISSION : target is not receiver on L1");
-        require(_amount <= address(this).balance, "INVALID_PERMISSION : withdraw amount must smaller than or equal to balance");
+        require(
+            _amount <= address(this).balance,
+            "INVALID_PERMISSION : withdraw amount must smaller than or equal to balance"
+        );
 
         bytes memory message_ = abi.encodeCall(IL2ETHBridge.withdraw, (_target, _amount, 0, ""));
-        (bool success_, ) = l2EthBridge.call{value : _amount}(message_);
+        (bool success_,) = l2EthBridge.call{value: _amount}(message_);
         require(success_, "withdraw failed in L2EthBridge");
         emit CoinBaseWithdraw(_target, _amount);
     }
 
-    function withdrawAll(address _target) onlyWithdrawer external {
-        withdraw(_target,address(this).balance);
+    function withdrawAll(address _target) external onlyWithdrawer {
+        withdraw(_target, address(this).balance);
     }
 }

@@ -65,7 +65,7 @@ library BatchHeaderCodec {
         }
     }
 
-        /// @notice Get the batch index of the batch.
+    /// @notice Get the batch index of the batch.
     /// @param batchPtr The start memory offset of the batch header in memory.
     /// @return _batchIndex The batch index of the batch.
     function batchIndex(uint256 batchPtr) internal pure returns (uint256 _batchIndex) {

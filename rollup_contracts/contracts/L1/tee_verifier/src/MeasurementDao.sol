@@ -23,7 +23,7 @@ contract MeasurementDao is Ownable {
 
     mapping(bytes => bool) private mrtdMap;
     bytes[] private mrtdList;
-    mapping(bytes => uint256) private mrtdIndex; 
+    mapping(bytes => uint256) private mrtdIndex;
 
     uint16 private constant MR_ENCLAVE_OFFSET = 112;
     uint16 private constant MR_SIGNER_OFFSET = 176;
@@ -63,7 +63,7 @@ contract MeasurementDao is Ownable {
         bytes32 lastElement = mrEnclaveList[mrEnclaveList.length - 1];
         mrEnclaveList[index - 1] = lastElement;
         mrEnclaveIndex[lastElement] = index;
-        
+
         mrEnclaveList.pop();
         delete mrEnclaveIndex[_mrEnclave];
     }
@@ -110,7 +110,7 @@ contract MeasurementDao is Ownable {
         require(index > 0 && index <= rtmrList.length, "Invalid index");
         bytes memory lastElement = rtmrList[rtmrList.length - 1];
         rtmrList[index - 1] = lastElement;
-        rtmrIndex[lastElement] = index; 
+        rtmrIndex[lastElement] = index;
         rtmrList.pop();
         delete rtmrIndex[rtmr3];
     }

@@ -12,16 +12,11 @@ string constant tcbInfoPathV5 = "/script/assets/20250514/tcbinfo_v4.json";
 string constant qeIdPathV5 = "/script/assets/20250514/qeid_v4.json";
 
 // TODO: fill for test
-bytes constant tcbDer =
-    hex"";
-bytes constant rootCaDer =
-    hex"";
-bytes constant platformDer =
-    hex"";
-bytes constant rootCrlDer =
-    hex"";
-bytes constant platformCrlDer =
-    hex"";
+bytes constant tcbDer = hex"";
+bytes constant rootCaDer = hex"";
+bytes constant platformDer = hex"";
+bytes constant rootCrlDer = hex"";
+bytes constant platformCrlDer = hex"";
 
 // Sample quote
 bytes constant sampleQuoteV3 =

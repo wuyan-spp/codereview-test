@@ -8,9 +8,5 @@ interface IZkRollupVerifier {
     /// @notice Verify zk proof.
     /// @param aggrProof The aggregated proof.
     /// @param publicInputHash The public input hash.
-    function verifyProof(
-        bytes calldata aggrProof,
-        bytes calldata publicInputHash
-    ) external view;
-
+    function verifyProof(bytes calldata aggrProof, bytes calldata publicInputHash) external view;
 }

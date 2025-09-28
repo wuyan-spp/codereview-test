@@ -52,7 +52,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         _;
     }
 
-    constructor(){
+    constructor() {
         _disableInitializers();
     }
 
@@ -62,7 +62,13 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
      * @param owner_ contract owner address
      * @param baseFee_ base fee
      */
-    function initialize(address rollup_, address owner_, uint256 baseFee_, uint256 _l2GasLimit, uint256 _l2FinalizeDepositGasUsed) external initializer {
+    function initialize(
+        address rollup_,
+        address owner_,
+        uint256 baseFee_,
+        uint256 _l2GasLimit,
+        uint256 _l2FinalizeDepositGasUsed
+    ) external initializer {
         if (rollup_ == address(0) || owner_ == address(0)) {
             revert InvalidInitAddress();
         }
@@ -104,7 +110,10 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         // Calculate the fee and leave it in the MailBox contract
         uint256 fee_ = estimateMsgFee(gasLimit_);
         require(gasLimit_ < l2GasLimit, "gasLimit must less than L2 config");
-        require(gasLimit_ >= l2FinalizeDepositGasUsed, "gas limit must be bigger than or equal to the tx_fee of finalize deposit on Jovay");
+        require(
+            gasLimit_ >= l2FinalizeDepositGasUsed,
+            "gas limit must be bigger than or equal to the tx_fee of finalize deposit on Jovay"
+        );
         require(msg.value >= fee_ + value_, "Insufficient msg.value");
 
         bytes32 hash_ = keccak256(data_);
@@ -120,7 +129,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         unchecked {
             uint256 refund_ = msg.value - fee_ - value_;
             if (refund_ > 0) {
-                (bool success_,) = refundAddress_.call{value : refund_}("");
+                (bool success_,) = refundAddress_.call{value: refund_}("");
                 require(success_, "Failed to refund the fee");
             }
         }
@@ -150,12 +159,9 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         bytes32 hash_ = keccak256(_encodeCall(sender_, target_, value_, nonce_, msg_));
 
         bytes32 msgRoot_ = IRollup(rollup).getL2MsgRoot(proof_.batchIndex);
-        require(
-            WithdrawTrieVerifier.verifyMerkleProof(msgRoot_, hash_, nonce_, proof_.merkleProof),
-            "Invalid proof"
-        );
+        require(WithdrawTrieVerifier.verifyMerkleProof(msgRoot_, hash_, nonce_, proof_.merkleProof), "Invalid proof");
 
-        (bool success,) = target_.call{value : value_}(msg_);
+        (bool success,) = target_.call{value: value_}(msg_);
         require(success, "RelayMsg Failed");
         _receiveMsgCheck(hash_);
         emit RelayedMsg(hash_, nonce_);
@@ -164,9 +170,11 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
     function withdrawDepositFee(address _target, uint256 _amount) external onlyWithdrawer whenNotPaused {
         require(_target != address(0), "L1Mailbox: target is zero address");
         require(_target.code.length == 0, "INVALID_PARAMETER: withdraw target must be eoa");
-        require(_amount <= feeBalance, "INVALID_PARAMETER : withdraw amount must smaller than or equal to fee in mailbox");
+        require(
+            _amount <= feeBalance, "INVALID_PARAMETER : withdraw amount must smaller than or equal to fee in mailbox"
+        );
         feeBalance -= _amount;
-        (bool success,) = _target.call{value : _amount}("");
+        (bool success,) = _target.call{value: _amount}("");
         require(success, "INTERNAL_ERROR : withdraw fee Failed");
     }
 
@@ -218,7 +226,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
     }
 
     /**
-      * @notice set lastest queue index  called when pause
+     * @notice set lastest queue index  called when pause
      */
     function setLastQueueIndex() external whenPaused onlyOwner {
         lastestQueueIndex = nextFinalizeQueueIndex;
@@ -241,11 +249,10 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         require(_l1MsgCount < pendingQueueIndex + 1, "finalize index must smaller than pendingQueueIndex");
         require(_l1MsgCount >= nextFinalizeQueueIndex, "finalize index must smaller than or equal to l1MsgCount");
         nextFinalizeQueueIndex = _l1MsgCount;
-//        while (nextFinalizeQueueIndex < _l1MsgCount) {
-//            stableRollingHash = msgQueue.popFront();
-//            nextFinalizeQueueIndex++;
-//        }
+        //        while (nextFinalizeQueueIndex < _l1MsgCount) {
+        //            stableRollingHash = msgQueue.popFront();
+        //            nextFinalizeQueueIndex++;
+        //        }
         emit PopMsgs(nextFinalizeQueueIndex);
     }
-
 }

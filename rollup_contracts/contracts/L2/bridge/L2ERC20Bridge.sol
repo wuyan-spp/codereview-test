@@ -65,7 +65,7 @@ contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
      * @param amount_ transfer amount
      * @param msg_ data
      */
-     function finalizeDeposit(
+    function finalizeDeposit(
         address l1Token_,
         address l2Token_,
         address sender_,

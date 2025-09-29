@@ -6,13 +6,13 @@ import "dcap-attestation/types/Constants.sol";
 import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
 
 /**
- * @title MeasurementDao
+ * @title MeasurementRegistry
  * @notice Contract for managing TEE measurements including MR_ENCLAVE, MR_SIGNER, RTMR, and MRTD
  * @dev This contract stores and manages various measurement values used for TEE attestation verification
  * @dev Uses independent version-based storage for each data type to avoid O(n) gas costs when clearing mappings
  * @custom:security-contact mintian.hym@antgroup.com
  */
-contract MeasurementDao is Ownable {
+contract MeasurementRegistry is Ownable {
     using BytesUtils for bytes;
 
     // Independent version numbers for each data type

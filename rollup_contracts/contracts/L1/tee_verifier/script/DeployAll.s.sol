@@ -5,8 +5,8 @@ pragma solidity ^0.8.0;
 import "forge-std/Script.sol";
 import {console2} from "forge-std/console2.sol";
 
-import "../src/DcapAttestationRouter.sol";
-import "../src/TEEVerifierProxy.sol";
+import "../src/DCAPAttestationRouter.sol";
+import "../src/TEEVerifierForwarder.sol";
 import "../src/TEECacheVerifier.sol";
 import "./utils/DaimoP256Verifier.sol";
 
@@ -374,40 +374,40 @@ contract DeployAll is Script {
     }
 
     function _deployDcapRouter() public broadcastKey(deployerKey) {
-        DcapAttestationRouter router = new DcapAttestationRouter(attestationAddr, mrAddr, cacheVerifierAddr);
+        DCAPAttestationRouter router = new DCAPAttestationRouter(attestationAddr, mrAddr, cacheVerifierAddr);
         routerAddr = address(router);
     }
 
     function _configDcap() public broadcastKey(deployerKey) {
-        DcapAttestationRouter(routerAddr).setConfig(attestationAddr, mrAddr, false, cacheVerifierAddr, true);
+        DCAPAttestationRouter(routerAddr).setConfig(attestationAddr, mrAddr, false, cacheVerifierAddr, true);
     }
 
     function _deployMrDao() public broadcastKey(deployerKey) {
-        MeasurementDao mrDao = new MeasurementDao();
+        MeasurementRegistry mrDao = new MeasurementRegistry();
         mrAddr = address(mrDao);
     }
 
     function _deployProxy() public broadcastKey(deployerKey) {
-        TEEVerifierProxy proxy = new TEEVerifierProxy(routerAddr);
+        TEEVerifierForwarder proxy = new TEEVerifierForwarder(routerAddr);
         proxyAddr = address(proxy);
     }
 
     function _setDcapAuth() public broadcastKey(deployerKey) {
-        DcapAttestationRouter(routerAddr).setAuthorized(proxyAddr, true);
+        DCAPAttestationRouter(routerAddr).setAuthorized(proxyAddr, true);
     }
 
     function _configProxy() public broadcastKey(deployerKey) {
-        TEEVerifierProxy(proxyAddr).setConfig(routerAddr);
+        TEEVerifierForwarder(proxyAddr).setConfig(routerAddr);
     }
 
     function _configRouterAuth() public broadcastKey(deployerKey) {
-        DcapAttestationRouter router = DcapAttestationRouter(routerAddr);
+        DCAPAttestationRouter router = DCAPAttestationRouter(routerAddr);
         router.enableCallerRestriction();
         router.setAuthorized(proxyAddr, true);
     }
 
     function _configProxyAuth(address rollupAddr) public broadcastKey(deployerKey) {
-        TEEVerifierProxy proxy = TEEVerifierProxy(proxyAddr);
+        TEEVerifierForwarder proxy = TEEVerifierForwarder(proxyAddr);
         proxy.enableCallerRestriction();
         proxy.setAuthorized(rollupAddr, true);
     }

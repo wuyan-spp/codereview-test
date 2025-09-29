@@ -58,7 +58,7 @@ You must `bash ./compile.sh` first to install patches in `rollup_contracts/contr
 │ │ │     └── WithdrawTrieVerifier.sol
 │ │ └── tee_verifier
 │ │     ├── src
-│ │     │ ├── DcapAttestationRouter.sol
+│ │     │ ├── DCAPAttestationRouter.sol
 │ │     │ ├── interfaces
 │ │     │ │ └── ITeeRollupVerifier.sol
 │ │     │ ├── MeasurementDao.sol

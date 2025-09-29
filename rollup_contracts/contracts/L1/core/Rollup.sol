@@ -3,7 +3,7 @@ pragma solidity 0.8.28;
 
 import "../interfaces/IRollup.sol";
 import "../libraries/codec/BatchHeaderCodec.sol";
-import "../libraries/verifier/ITeeRollupVerifier.sol";
+import "../libraries/verifier/ITEERollupVerifier.sol";
 import "../libraries/verifier/IZkRollupVerifier.sol";
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -318,7 +318,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
 
     function _verifyTeeProof(bytes memory _proof, bytes memory _publicInput) internal {
         bytes32 _commitment = keccak256(_publicInput);
-        (uint32 error_code, bytes32 commitment) = ITeeRollupVerifier(tee_verifier).verifyProof(_proof);
+        (uint32 error_code, bytes32 commitment) = ITEERollupVerifier(tee_verifier).verifyProof(_proof);
         require(error_code == 0, "ERROR : verify failed");
         require(commitment == _commitment, "ERROR : error tee commitment for verify");
         lastTeeVerifiedBatch = lastTeeVerifiedBatch + 1;

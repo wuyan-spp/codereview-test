@@ -2,10 +2,10 @@
 
 pragma solidity 0.8.27;
 
-/// @title ITeeRollupVerifier
+/// @title ITEERollupVerifier
 /// @notice The interface for TEE rollup verifier.
 /// @dev This interface defines the standard for verifying TEE attestation proofs in rollup systems
-interface ITeeRollupVerifier {
+interface ITEERollupVerifier {
     /// @notice Verify TEE attestation proof from rollup
     /// @param aggrProof The aggregated proof containing TEE attestation data
     /// @return _error_code Error code (0 for success, 1 for general failure, other values for specific error types)

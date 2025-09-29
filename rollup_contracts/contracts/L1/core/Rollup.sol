@@ -233,9 +233,6 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
             _verifyTeeProof(_proof, _publicInput);
         }
 
-        // TODO : add finalize check
-        //        if ((_prove_type == 0 && lastTeeVerifiedBatch >= _batchIndex) || (_prove_type == 1 && lastZkVerifiedBatch >= _batchIndex)) {
-        // after verify update contract storage
         if (finalizedStateRoots[_batchIndex] == bytes32(0)) {
             finalizedStateRoots[_batchIndex] = _postStateRoot;
         }

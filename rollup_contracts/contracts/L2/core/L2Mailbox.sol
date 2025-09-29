@@ -99,27 +99,33 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         (bool success,) = target_.call{value: value_}(msg_);
         if (success) {
             _receiveMsgSuccess(hash_);
-            emit FinalizeDepositETHSuccess(hash_, nonce_);
+            emit RelayMsgSuccess(hash_, nonce_);
         } else {
             _receiveMsgFailed(hash_);
-            emit FinalizeDepositETHFailed(hash_, nonce_);
+            emit RelayMsgFailed(hash_, nonce_);
         }
         emit RelayedMsg(hash_, nonce_);
     }
 
-    function claimAmount(address refundAddress_, uint256 amount_, uint256 nonce_, bytes32 msgHash_)
-        external
-        override
-        onlyBridge
-        whenNotPaused
-        nonReentrant
-    {
+    function claimETH(
+        address refundAddress_,
+        uint256 amount_,
+        uint256 nonce_,
+        bytes32 msgHash_
+    ) external override onlyBridge whenNotPaused nonReentrant {
         require(refundAddress_ != address(0), "L2Mailbox: refundAddress is zero address");
         _checkMsgClaimValid(msgHash_);
-        (bool success,) = refundAddress_.call{value: amount_}("");
+        (bool success,) = refundAddress_.call{value : amount_}("");
         require(success, "claim amount failed when transfer to refund");
-        _finalizeClaimMsg(msgHash_);
 
+        emit ClaimMsg(msgHash_, nonce_);
+    }
+
+    function claimERC20(
+        uint256 nonce_,
+        bytes32 msgHash_
+    ) external override onlyBridge whenNotPaused nonReentrant {
+        _checkMsgClaimValid(msgHash_);
         emit ClaimMsg(msgHash_, nonce_);
     }
 
@@ -144,14 +150,16 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         receiveMsgStatus[hash_] = true;
     }
 
-    function _checkMsgClaimValid(bytes32 hash_) internal view {
-        _msgExistCheck(hash_);
-        require(!receiveMsgStatus[hash_], "ClaimMsg : L2 msg must exec failed before");
-    }
-
-    function _finalizeClaimMsg(bytes32 hash_) internal {
+    function _checkMsgClaimValid(bytes32 hash_) internal {
         _msgExistCheck(hash_);
         require(!receiveMsgStatus[hash_], "ClaimMsg : L2 msg must exec failed before");
         receiveMsgStatus[hash_] = true;
     }
+
+    // function _finalizeClaimMsg(bytes32 hash_) internal {
+    //     _msgExistCheck(hash_);
+    //     require(!receiveMsgStatus[hash_], "ClaimMsg : L2 msg must exec failed before");
+    //     receiveMsgStatus[hash_] = true;
+    // }
+
 }

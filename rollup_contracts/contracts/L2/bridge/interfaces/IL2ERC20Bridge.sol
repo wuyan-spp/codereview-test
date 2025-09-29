@@ -49,12 +49,7 @@ interface IL2ERC20Bridge {
      * @param amount_ transfer amount
      * @param msg_ data
      */
-    function finalizeDeposit(
-        address l1Token_,
-        address l2Token_,
-        address sender_,
-        address to_,
-        uint256 amount_,
-        bytes calldata msg_
-    ) external payable;
+    function finalizeDeposit(address l1Token_, address l2Token_, address sender_, address to_, uint256 amount_, bytes calldata msg_) external payable;
+
+    function claimDeposit(bytes calldata msg_) external;
 }

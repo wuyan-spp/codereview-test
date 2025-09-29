@@ -14,5 +14,15 @@ interface IL2Mailbox is IMailBoxBase {
      */
     function relayMsg(address sender_, address target_, uint256 value_, uint256 nonce_, bytes calldata msg_) external;
 
-    function claimAmount(address refundAddress, uint256 amount, uint256 nonce_, bytes32 msgHash_) external;
+    function claimETH(
+        address refundAddress,
+        uint256 amount,
+        uint256 nonce_,
+        bytes32 msgHash_
+    ) external;
+
+    function claimERC20(
+        uint256 nonce_,
+        bytes32 msgHash_
+    ) external;
 }

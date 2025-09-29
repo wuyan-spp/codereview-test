@@ -22,10 +22,10 @@ interface IMailBoxBase {
     );
 
     /// @notice Emitted when a finalize deposit message is relayed failed.
-    event FinalizeDepositETHFailed(bytes32 indexed hash, uint256 nonce);
+    event RelayMsgFailed(bytes32 indexed hash, uint256 nonce);
 
     /// @notice Emitted when a finalize deposit message is relayed success.
-    event FinalizeDepositETHSuccess(bytes32 indexed hash, uint256 nonce);
+    event RelayMsgSuccess(bytes32 indexed hash, uint256 nonce);
 
     /// @notice Emitted when a cross domain message is relayed successfully.
     event RelayedMsg(bytes32 indexed hash, uint256 nonce);

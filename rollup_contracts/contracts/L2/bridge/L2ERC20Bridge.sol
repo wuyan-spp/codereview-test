@@ -6,6 +6,7 @@ import "../interfaces/IL2Mailbox.sol";
 import "../../common/TokenBridge.sol";
 import "../../common/interfaces/IERC20Token.sol";
 import "../../L1/bridge/interfaces/IL1ERC20Bridge.sol";
+import "solidity-bytes-utils/contracts/BytesLib.sol";
 
 contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
     /**
@@ -72,6 +73,27 @@ contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
         uint256 amount_,
         bytes calldata msg_
     ) external payable override nonReentrant onlyMailBox whenNotPaused {
+        _finalizeDeposit(l1Token_, l2Token_, sender_, to_, amount_, msg_);
+    }
+
+    function claimDeposit(bytes calldata msg_) external override nonReentrant whenNotPaused {
+        (address l1bridge, address l2bridge, uint256 value, uint256 nonce, bytes memory depositMsg) = abi.decode(msg_[4:], (address, address, uint256, uint256, bytes));
+        bytes memory newDepositMsg = BytesLib.slice(depositMsg, 4, depositMsg.length-4);
+        (address l1Token_, address l2Token_, address sender_, address to_, uint256 amount_, bytes memory extraMsg_) = abi.decode(newDepositMsg, (address, address, address, address, uint256, bytes));
+        require(msg.sender == sender_, "claimDeposit change refund must called by origin sender");
+        bytes32 depositHash = keccak256(msg_);
+        IL2Mailbox(mailBox).claimERC20(nonce, depositHash);
+        _finalizeDeposit(l1Token_, l2Token_, sender_, to_, amount_, extraMsg_);
+    }
+    
+    function _finalizeDeposit(
+        address l1Token_,
+        address l2Token_,
+        address sender_,
+        address to_,
+        uint256 amount_,
+        bytes memory msg_
+    ) internal {
         require(msg.value == 0, "nonzero msg.value");
         require(l1Token_ != address(0), "token address cannot be 0");
         require(l2Token_ != address(0), "L2ERC20Bridge: l2Token is zero address");

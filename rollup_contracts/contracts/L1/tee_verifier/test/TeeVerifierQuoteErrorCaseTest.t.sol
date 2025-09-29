@@ -9,7 +9,7 @@ import {V3QuoteVerifier} from "dcap-attestation/verifiers/V3QuoteVerifier.sol";
 import {V5QuoteVerifier} from "dcap-attestation/verifiers/V5QuoteVerifier.sol";
 import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
 import "../src/DCAPAttestationRouter.sol";
-import "../src/TEEVerifierForwarder.sol";
+
 import "../src/TEECacheVerifier.sol";
 import "../script/utils/DaimoP256Verifier.sol";
 
@@ -21,7 +21,6 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
     DCAPAttestationRouter router;
     MeasurementRegistry mrDao;
     TEECacheVerifier cacheVerifier;
-    TEEVerifierForwarder proxy;
 
     address user = address(69);
 
@@ -60,8 +59,6 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
 
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierForwarder(address(router));
-        router.setAuthorized(address(proxy), true);
 
         pcsDao.upsertPckCrl(CA.PLATFORM, platformCrlDer);
 
@@ -77,7 +74,7 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
 
         vm.prank(admin);
         vm.expectRevert(abi.encodeWithSelector(TEECacheVerifier.UnsupportedQuoteVersion.selector));
-        (uint32 success,) = proxy.verifyProof(errorVersionQuote);
+        (uint32 success,) = router.verifyProof(errorVersionQuote);
 
         assertEq(success, 0);
     }
@@ -93,9 +90,6 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
 
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierForwarder(address(router));
-        router.setAuthorized(address(proxy), true);
-
         pcsDao.upsertPckCrl(CA.PLATFORM, platformCrlDer);
 
         // collateral upserts
@@ -110,7 +104,7 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
         vm.stopPrank();
 
         vm.prank(admin);
-        (uint32 success,) = proxy.verifyProof(v3QuoteWithWrongKey);
+        (uint32 success,) = router.verifyProof(v3QuoteWithWrongKey);
 
         assertEq(success, 1);
     }

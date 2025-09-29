@@ -6,7 +6,7 @@ import "forge-std/Script.sol";
 import {console2} from "forge-std/console2.sol";
 
 import "../src/DCAPAttestationRouter.sol";
-import "../src/TEEVerifierForwarder.sol";
+
 import "../src/TEECacheVerifier.sol";
 import "./utils/DaimoP256Verifier.sol";
 
@@ -58,7 +58,6 @@ contract DeployAll is Script {
     address routerAddr = vm.envAddress("DCAP_ATTESTATION_ROUTER");
 
     address mrAddr = vm.envAddress("MEASUREMENT_DAO");
-    address proxyAddr = vm.envAddress("TEE_PROXY");
     address cacheVerifierAddr = vm.envAddress("CACHE_VERIFIER");
 
     modifier broadcastKey(uint256 key) {
@@ -218,9 +217,6 @@ contract DeployAll is Script {
         string memory content_3 = string.concat(
             "MEASUREMENT_DAO=",
             vm.toString(mrAddr),
-            "\n",
-            "TEE_PROXY=",
-            vm.toString(proxyAddr),
             "\n",
             "V4_VERIFIER=",
             vm.toString(verifier4Addr),
@@ -387,28 +383,9 @@ contract DeployAll is Script {
         mrAddr = address(mrDao);
     }
 
-    function _deployProxy() public broadcastKey(deployerKey) {
-        TEEVerifierForwarder proxy = new TEEVerifierForwarder(routerAddr);
-        proxyAddr = address(proxy);
-    }
-
-    function _setDcapAuth() public broadcastKey(deployerKey) {
-        DCAPAttestationRouter(routerAddr).setAuthorized(proxyAddr, true);
-    }
-
-    function _configProxy() public broadcastKey(deployerKey) {
-        TEEVerifierForwarder(proxyAddr).setConfig(routerAddr);
-    }
-
-    function _configRouterAuth() public broadcastKey(deployerKey) {
+    function _configRouterAuth(address rollupAddr) public broadcastKey(deployerKey) {
         DCAPAttestationRouter router = DCAPAttestationRouter(routerAddr);
         router.enableCallerRestriction();
-        router.setAuthorized(proxyAddr, true);
-    }
-
-    function _configProxyAuth(address rollupAddr) public broadcastKey(deployerKey) {
-        TEEVerifierForwarder proxy = TEEVerifierForwarder(proxyAddr);
-        proxy.enableCallerRestriction();
-        proxy.setAuthorized(rollupAddr, true);
+        router.setAuthorized(rollupAddr, true);
     }
 }

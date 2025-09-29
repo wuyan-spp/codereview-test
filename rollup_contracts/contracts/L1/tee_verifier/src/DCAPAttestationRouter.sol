@@ -10,6 +10,7 @@ import {BELE} from "dcap-attestation/utils/BELE.sol";
 import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
 import {TEECacheVerifier} from "./TEECacheVerifier.sol";
 import "dcap-attestation/types/Constants.sol";
+import {ITEERollupVerifier} from "./interfaces/ITEERollupVerifier.sol";
 
 /**
  * @title DCAPAttestationRouter
@@ -17,7 +18,7 @@ import "dcap-attestation/types/Constants.sol";
  * @dev This contract acts as a router to verify TEE quotes and optionally verify measurements
  * @custom:security-contact mintian.hym@antgroup.com
  */
-contract DCAPAttestationRouter is AccessControl {
+contract DCAPAttestationRouter is ITEERollupVerifier, AccessControl {
     using BytesUtils for bytes;
 
      /// @dev Offset to extract user data from SGX quote v3 output

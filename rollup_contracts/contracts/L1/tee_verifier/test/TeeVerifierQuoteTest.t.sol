@@ -8,7 +8,7 @@ import {V3QuoteVerifier} from "dcap-attestation/verifiers/V3QuoteVerifier.sol";
 import {V5QuoteVerifier} from "dcap-attestation/verifiers/V5QuoteVerifier.sol";
 import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
 import "../src/DCAPAttestationRouter.sol";
-import "../src/TEEVerifierForwarder.sol";
+
 import "../src/TEECacheVerifier.sol";
 import "../script/utils/DaimoP256Verifier.sol";
 
@@ -20,7 +20,6 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
     DCAPAttestationRouter router;
     MeasurementRegistry mrDao;
     TEECacheVerifier cacheVerifier;
-    TEEVerifierForwarder proxy;
 
     address user = address(69);
 
@@ -60,8 +59,6 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
 
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierForwarder(address(router));
-        router.setAuthorized(address(proxy), true);
 
         pcsDao.upsertPckCrl(CA.PLATFORM, platformCrlDer);
 
@@ -76,7 +73,7 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
         vm.stopPrank();
 
         vm.prank(admin);
-        (uint32 success,) = proxy.verifyProof(sampleQuoteV3);
+        (uint32 success,) = router.verifyProof(sampleQuoteV3);
 
         assertEq(success, 0);
     }
@@ -93,9 +90,6 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
 
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierForwarder(address(router));
-        router.setAuthorized(address(proxy), true);
-
         pcsDao.upsertPckCrl(CA.PLATFORM, platformCrlDer);
 
         qeIdDaoUpsert(5, qeIdPathV5);
@@ -108,7 +102,7 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
         vm.stopPrank();
 
         vm.prank(admin);
-        (uint32 success,) = proxy.verifyProof(sampleQuoteV5);
+        (uint32 success,) = router.verifyProof(sampleQuoteV5);
 
         assertEq(success, 0);
     }
@@ -124,9 +118,6 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
 
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierForwarder(address(router));
-        router.setAuthorized(address(proxy), true);
-
         pcsDao.upsertPckCrl(CA.PLATFORM, platformCrlDer);
 
         qeIdDaoUpsert(3, qeIdPathV3);
@@ -139,12 +130,12 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
         vm.stopPrank();
 
         vm.startPrank(admin);
-        (uint32 success,) = proxy.verifyProof(sampleQuoteV3);
+        (uint32 success,) = router.verifyProof(sampleQuoteV3);
 
         assertEq(success, 0);
 
         assert(cacheVerifier.contains(v3QuoteKey));
-        (success,) = proxy.verifyProof(sampleQuoteV3);
+        (success,) = router.verifyProof(sampleQuoteV3);
 
         assertEq(success, 0);
         vm.stopPrank();
@@ -162,9 +153,6 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
 
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierForwarder(address(router));
-        router.setAuthorized(address(proxy), true);
-
         pcsDao.upsertPckCrl(CA.PLATFORM, platformCrlDer);
 
         qeIdDaoUpsert(5, qeIdPathV5);
@@ -177,12 +165,12 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
         vm.stopPrank();
 
         vm.startPrank(admin);
-        (uint32 success,) = proxy.verifyProof(sampleQuoteV5);
+        (uint32 success,) = router.verifyProof(sampleQuoteV5);
 
         assertEq(success, 0);
 
         assert(cacheVerifier.contains(v5QuoteKey));
-        (success,) = proxy.verifyProof(sampleQuoteV5);
+        (success,) = router.verifyProof(sampleQuoteV5);
         vm.stopPrank();
 
         assertEq(success, 0);
@@ -199,9 +187,6 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
 
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierForwarder(address(router));
-        router.setAuthorized(address(proxy), true);
-
         pcsDao.upsertPckCrl(CA.PLATFORM, platformCrlDer);
 
         qeIdDaoUpsert(3, qeIdPathV3);
@@ -211,7 +196,7 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
         attestation.setQuoteVerifier(address(quoteVerifier));
         pccsRouter.setAuthorized(address(quoteVerifier), true);
 
-        (uint32 success,) = proxy.verifyProof(sampleQuoteV3);
+        (uint32 success,) = router.verifyProof(sampleQuoteV3);
         assertEq(success, 0);
 
         assert(cacheVerifier.contains(v3QuoteKey));
@@ -247,9 +232,6 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
 
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierForwarder(address(router));
-        router.setAuthorized(address(proxy), true);
-
         pcsDao.upsertPckCrl(CA.PLATFORM, platformCrlDer);
 
         qeIdDaoUpsert(5, qeIdPathV5);
@@ -262,7 +244,7 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
         vm.stopPrank();
 
         vm.prank(admin);
-        (uint32 success,) = proxy.verifyProof(sampleQuote5_1);
+        (uint32 success,) = router.verifyProof(sampleQuote5_1);
 
         assertEq(success, 0);
     }

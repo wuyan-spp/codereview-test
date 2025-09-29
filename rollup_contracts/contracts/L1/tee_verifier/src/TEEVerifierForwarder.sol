@@ -2,7 +2,7 @@
 pragma solidity 0.8.27;
 
 import {AccessControl} from "./AccessControl.sol";
-import {ITeeRollupVerifier} from "./interfaces/ITeeRollupVerifier.sol";
+import {ITEERollupVerifier} from "./interfaces/ITEERollupVerifier.sol";
 import {DcapAttestationRouter} from "./DcapAttestationRouter.sol";
 
 /**
@@ -11,7 +11,7 @@ import {DcapAttestationRouter} from "./DcapAttestationRouter.sol";
  * @dev This contract acts as a forwarder interface for verifying TEE attestation proofs
  * @custom:security-contact mintian.hym@antgroup.com
  */
-contract TEEVerifierForwarder is ITeeRollupVerifier, AccessControl {
+contract TEEVerifierForwarder is ITEERollupVerifier, AccessControl {
     /// @notice Address of the DcapAttestationRouter contract
     address public dcapAttestationRouter;
 

@@ -10,6 +10,7 @@ import {Ownable} from "solady/auth/Ownable.sol";
 /**
  * @title  TEECacheVerifier
  * @notice Provides on-chain verification for Intel DCAP attestation.
+ * @custom:security-contact mintian.hym@antgroup.com
  */
 contract TEECacheVerifier is P256Verifier, Ownable {
     uint16 private constant DATA_OFFSET = 526;
@@ -26,16 +27,28 @@ contract TEECacheVerifier is P256Verifier, Ownable {
     error ListTooLong();
     error UnknownTdReportType();
     error InvalidKeyLength();
+    error ZeroKey();
+
+    /// @notice Event emitted when authorization status is changed
+    event AuthorizationSet(address indexed caller, bool authorized);
+    
+    
+    /// @notice Event emitted when a verification key is initialized in the cache
+    event CacheInitialized(bytes indexed key);
+    
+    /// @notice Event emitted when a verification key is deleted from the cache
+    event KeyDeleted(bytes indexed key);
+    
+    /// @notice Event emitted when all verification keys are cleared from the cache
+    event AllKeysCleared();
 
     modifier onlyAuthorized() {
-        if (_isCallerRestricted && !_authorized[msg.sender]) {
-            revert Forbidden();
-        }
+        require(!_isCallerRestricted || _authorized[msg.sender], Forbidden());
         _;
     }
 
     constructor(address _ecdsaVerifier) P256Verifier(_ecdsaVerifier) {
-        if (_ecdsaVerifier == address(0)) revert InvalidAddress();
+        require(_ecdsaVerifier != address(0), InvalidAddress());
         _initializeOwner(msg.sender);
         _authorized[msg.sender] = true;
     }
@@ -46,15 +59,9 @@ contract TEECacheVerifier is P256Verifier, Ownable {
      * @param authorized Whether the caller is authorized
      */
     function setAuthorized(address caller, bool authorized) external onlyOwner {
-        if (caller == address(0)) revert InvalidAddress();
+        require(caller != address(0), InvalidAddress());
         _authorized[caller] = authorized;
-    }
-
-    /**
-     * @notice Enable caller restriction (only authorized callers can call functions)
-     */
-    function enableCallerRestriction() external onlyOwner {
-        _isCallerRestricted = true;
+        emit AuthorizationSet(caller, authorized);
     }
 
     /**
@@ -71,13 +78,14 @@ contract TEECacheVerifier is P256Verifier, Ownable {
      * @param key The verification key to add
      */
     function addKey(bytes calldata key) external onlyAuthorized {
-        if (key.length != 64) revert InvalidKeyLength();
+        require(key.length == 64, InvalidKeyLength());
+        require(key.length != 0 && keccak256(key) != keccak256(bytes("")), ZeroKey());
         // Limit the number of iterations to prevent malicious injection and gas exhaustion
-        if (_initializedKeys.length >= 10000) revert ListTooLong();
-        if (_verificationCache[key]) return;
+        require(_initializedKeys.length < 1000, ListTooLong());
         _verificationCache[key] = true;
         _initializedKeys.push(key);
         _keyIndex[key] = _initializedKeys.length;
+        emit CacheInitialized(key);
     }
 
     /**
@@ -97,6 +105,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
 
         _initializedKeys.pop();
         delete _keyIndex[key];
+        emit KeyDeleted(key);
     }
 
     /**
@@ -108,6 +117,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
             delete _keyIndex[_initializedKeys[i]];
         }
         delete _initializedKeys;
+        emit AllKeysCleared();
     }
 
     /**

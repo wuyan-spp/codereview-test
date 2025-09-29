@@ -16,7 +16,7 @@ index eb8ed43..e53da83 100644
          if (ret.length > 0) {
              (uint64 issuedAt, uint64 expiredAt) = abi.decode(ret, (uint64, uint64));
 -            valid = timestamp >= issuedAt || timestamp <= expiredAt;
-+            valid = timestamp >= issuedAt && timestamp <= expiredAt;
++            valid = issuedAt != 0 && expiredAt != 0 && timestamp >= issuedAt && timestamp <= expiredAt;
          }
      }
  }

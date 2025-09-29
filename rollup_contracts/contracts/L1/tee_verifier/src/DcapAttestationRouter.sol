@@ -15,12 +15,21 @@ import "dcap-attestation/types/Constants.sol";
  * @title DcapAttestationRouter
  * @notice Contract for verifying TEE attestation quotes from rollup using Intel DCAP attestation
  * @dev This contract acts as a router to verify TEE quotes and optionally verify measurements
+ * @custom:security-contact mintian.hym@antgroup.com
  */
 contract DcapAttestationRouter is Ownable {
     using BytesUtils for bytes;
 
+     /// @dev Offset to extract user data from SGX quote v3 output
+    /// @dev Calculation: 13 bytes (DCAP attestation output header) + 320 bytes (offset to report data in enclave report)
     uint16 private constant USER_DATA_V3_OFFSET = 333;
+    
+    /// @dev Offset to extract user data from TDX quote v4 output
+    /// @dev Calculation: 13 bytes (DCAP attestation output header) + 520 bytes (offset to report data in TD report)
     uint16 private constant USER_DATA_V4_OFFSET = 533;
+    
+    /// @dev Offset to extract user data from TDX quote v5 output
+    /// @dev Calculation: 13 bytes (DCAP attestation output header) + 526 bytes (offset to report data in TD report)
     uint16 private constant USER_DATA_V5_OFFSET = 539;
 
     /// @notice Address of the DCAP attestation contract
@@ -52,10 +61,32 @@ contract DcapAttestationRouter is Ownable {
     error MrValidationFailed();
     error MRTDValidationFailed();
 
+    /// @notice Event emitted when authorization status is changed
+    event AuthorizationSet(address indexed caller, bool authorized);
+    
+    /// @notice Event emitted when caller restriction is enabled
+    event CallerRestrictionEnabled();
+    
+    /// @notice Event emitted when caller restriction is disabled
+    event CallerRestrictionDisabled();
+    
+    /// @notice Event emitted when configuration is updated
+    event ConfigUpdated(
+        address indexed dcapAttestation,
+        address indexed measurementDao,
+        bool toVerifyMr,
+        address indexed cacheVerifierAddr,
+        bool cacheOption
+    );
+    
+    /// @notice Event emitted when MRTD verification is enabled
+    event VerifyMRTDEnabled();
+    
+    /// @notice Event emitted when MRTD verification is disabled
+    event VerifyMRTDDisabled();
+
     modifier onlyAuthorized() {
-        if (_isCallerRestricted && !_authorized[msg.sender]) {
-            revert Forbidden();
-        }
+        require(!_isCallerRestricted || _authorized[msg.sender], Forbidden());
         _;
     }
 
@@ -89,6 +120,7 @@ contract DcapAttestationRouter is Ownable {
      */
     function setAuthorized(address caller, bool authorized) external onlyOwner {
         _authorized[caller] = authorized;
+        emit AuthorizationSet(caller, authorized);
     }
 
    /**
@@ -96,6 +128,7 @@ contract DcapAttestationRouter is Ownable {
      */
     function enableCallerRestriction() external onlyOwner {
         _isCallerRestricted = true;
+        emit CallerRestrictionEnabled();
     }
 
 	
@@ -104,6 +137,7 @@ contract DcapAttestationRouter is Ownable {
      */
     function disableCallerRestriction() external onlyOwner {
         _isCallerRestricted = false;
+        emit CallerRestrictionDisabled();
     }
 
 	
@@ -136,14 +170,15 @@ contract DcapAttestationRouter is Ownable {
         address _cacheVerifierAddr,
         bool _cacheOption
     ) private {
-        if (_dcapAttestation == address(0)) revert InvalidAddress();
-        if (_measurementDao == address(0)) revert InvalidAddress();
-        if (_cacheVerifierAddr == address(0)) revert InvalidAddress();
+        require(_dcapAttestation != address(0), InvalidAddress());
+        require(_measurementDao != address(0), InvalidAddress());
+        require(_cacheVerifierAddr != address(0), InvalidAddress());
         dcapAttestation = _dcapAttestation;
         measurementDao = _measurementDao;
         toVerifyMr = _toVerifyMr;
         cacheVerifierAddr = _cacheVerifierAddr;
         cacheOption = _cacheOption;
+        emit ConfigUpdated(_dcapAttestation, _measurementDao, _toVerifyMr, _cacheVerifierAddr, _cacheOption);
     }
 
     /**
@@ -151,6 +186,7 @@ contract DcapAttestationRouter is Ownable {
      */
     function enableVerifyMrtd() external onlyOwner {
         toVerifyMrtd = true;
+        emit VerifyMRTDEnabled();
     }
 
     /**
@@ -158,6 +194,7 @@ contract DcapAttestationRouter is Ownable {
      */
     function disableVerifyMrtd() external onlyOwner {
         toVerifyMrtd = false;
+        emit VerifyMRTDDisabled();
     }
 
     /**
@@ -193,9 +230,7 @@ contract DcapAttestationRouter is Ownable {
     function _verifyProof(bytes calldata aggrProof) private returns (uint32 _error_code, bytes32 commitment) {
         uint16 quoteVersion = SafeCast.toUint16(BELE.leBytesToBeUint(aggrProof[0:2]));
         if (toVerifyMr) {
-            if (!_verifyMeasurement(aggrProof, quoteVersion)) {
-                revert MrValidationFailed();
-            }
+            require(_verifyMeasurement(aggrProof, quoteVersion), MrValidationFailed());
         }
         bytes memory ecdsa256BitSignature;
         bytes memory ecdsaAttestationKey;

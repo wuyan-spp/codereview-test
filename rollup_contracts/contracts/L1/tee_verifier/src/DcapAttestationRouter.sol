@@ -232,14 +232,14 @@ contract DcapAttestationRouter is Ownable {
         if (toVerifyMr) {
             require(_verifyMeasurement(aggrProof, quoteVersion), MrValidationFailed());
         }
+        bytes memory ecdsa256BitSignature;
+        bytes memory ecdsaAttestationKey;
         bool success;
         bytes memory output;
         TEECacheVerifier CacheAttestation = TEECacheVerifier(cacheVerifierAddr);
         bool cacheEnabled = CacheOption;
         
         if (cacheEnabled) {
-            bytes memory ecdsa256BitSignature;
-            bytes memory ecdsaAttestationKey;
             (ecdsa256BitSignature, ecdsaAttestationKey) = CacheAttestation.parseAttestationKey(aggrProof, quoteVersion);
             
             if (CacheAttestation.contains(ecdsaAttestationKey)) {
@@ -255,9 +255,6 @@ contract DcapAttestationRouter is Ownable {
 
         if (success) {
             if (cacheEnabled) {
-                bytes memory ecdsa256BitSignature;
-                bytes memory ecdsaAttestationKey;
-                (ecdsa256BitSignature, ecdsaAttestationKey) = CacheAttestation.parseAttestationKey(aggrProof, quoteVersion);
                 CacheAttestation.addKey(ecdsaAttestationKey);
             }
             _error_code = 0;

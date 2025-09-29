@@ -6,12 +6,12 @@ import {ITeeRollupVerifier} from "./interfaces/ITeeRollupVerifier.sol";
 import {DcapAttestationRouter} from "./DcapAttestationRouter.sol";
 
 /**
- * @title TEEVerifierProxy
- * @notice Proxy contract for TEE attestation verification that delegates to DcapAttestationRouter
- * @dev This contract acts as a proxy interface for verifying TEE attestation proofs
+ * @title TEEVerifierForwarder
+ * @notice Forwarder contract for TEE attestation verification that forwards to DcapAttestationRouter
+ * @dev This contract acts as a forwarder interface for verifying TEE attestation proofs
  * @custom:security-contact mintian.hym@antgroup.com
  */
-contract TEEVerifierProxy is ITeeRollupVerifier, AccessControl {
+contract TEEVerifierForwarder is ITeeRollupVerifier, AccessControl {
     /// @notice Address of the DcapAttestationRouter contract
     address public dcapAttestationRouter;
 

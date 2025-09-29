@@ -7,7 +7,7 @@ import {AutomataDcapAttestationFee} from "dcap-attestation/AutomataDcapAttestati
 import {V4QuoteVerifier} from "dcap-attestation/verifiers/V4QuoteVerifier.sol";
 import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
 import "../src/DcapAttestationRouter.sol";
-import "../src/TEEVerifierProxy.sol";
+import "../src/TEEVerifierForwarder.sol";
 import "../src/TEECacheVerifier.sol";
 import "../script/utils/DaimoP256Verifier.sol";
 
@@ -17,9 +17,9 @@ contract AutomataDcapOnChainAttestationTest is PCCSSetupBaseV4 {
     AutomataDcapAttestationFee attestation;
     PCCSRouter pccsRouter;
     DcapAttestationRouter router;
-    MeasurementDao mrDao;
+    MeasurementRegistry mrDao;
     TEECacheVerifier cacheVerifier;
-    TEEVerifierProxy proxy;
+    TEEVerifierForwarder proxy;
 
     bytes constant platformCrlDer = hex""; // TODO: fill for test
 
@@ -33,7 +33,7 @@ contract AutomataDcapOnChainAttestationTest is PCCSSetupBaseV4 {
 
         // DCAP Contract Deployment
         attestation = new AutomataDcapAttestationFee(admin);
-        mrDao = new MeasurementDao();
+        mrDao = new MeasurementRegistry();
 
         //TEECacheVerifier Deployment
         DaimoP256Verifier p256verifier = new DaimoP256Verifier();
@@ -62,7 +62,7 @@ contract AutomataDcapOnChainAttestationTest is PCCSSetupBaseV4 {
 
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierProxy(address(router));
+        proxy = new TEEVerifierForwarder(address(router));
         router.setAuthorized(address(proxy), true);
 
         // collateral upserts
@@ -109,7 +109,7 @@ contract AutomataDcapOnChainAttestationTest is PCCSSetupBaseV4 {
 
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierProxy(address(router));
+        proxy = new TEEVerifierForwarder(address(router));
         router.setAuthorized(address(proxy), true);
 
         // collateral upserts

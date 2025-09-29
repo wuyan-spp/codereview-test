@@ -10,7 +10,7 @@ import "solady/utils/LibString.sol";
 import {console2} from "forge-std/console2.sol";
 import "dcap-attestation/AutomataDcapAttestationFee.sol";
 import "../src/DcapAttestationRouter.sol";
-import "../src/TEEVerifierProxy.sol";
+import "../src/TEEVerifierForwarder.sol";
 import {AutomataPcsDao} from "on-chain-pccs/automata_pccs/AutomataPcsDao.sol";
 import {CA} from "on-chain-pccs/Common.sol";
 import {
@@ -157,65 +157,65 @@ contract UpsertAll is Script {
         // 0x108E16AE0A8314B1FD49DF012BA555F50930275E12928DAA2274A6942DC21A7C;
         bytes32 mrSigner = 0x83D719E77DEACA1470F6BAF62A4D774303C899DB69020F9C70EE1DFC08C7CE9E;
 
-        MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).addMrEnclave(mrEnclave, mrSigner);
+        MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).addMrEnclave(mrEnclave, mrSigner);
 
         mrEnclave = 0x0dbc8f6a755750926b68d18f12a6eb6340b9cf328c306dc727baf3454ac7c7b1;
         mrSigner = 0xabce240a936d3f02901ca3d45b4791b5c5b4baf2a38b2ca8924405a791ea6149;
-        MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).addMrEnclave(mrEnclave, mrSigner);
+        MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).addMrEnclave(mrEnclave, mrSigner);
     }
 
     function rtMrDaoUpsert() public broadcastKey(deployerKey) {
         bytes memory rtmr3 =
             hex"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-        MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).addRtmr(rtmr3);
+        MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).addRtmr(rtmr3);
         rtmr3 = hex"fdffca0c05726ea6eba61e774ed78725a20e8aab0ab6ed8f68f86bb4a61e6e2562a81845b12395cd5e15fbf3ee5a7e57";
-        MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).addRtmr(rtmr3);
+        MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).addRtmr(rtmr3);
     }
 
     function mrDaoDelete() public broadcastKey(deployerKey) {
         bytes32 mrEnclave = 0x9713d804412ee6c21ea8f9ac1aaacfa8f82910be7636372e7bc70fba9f0eec0a;
 
-        MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).deleteMrEnclave(mrEnclave);
+        MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).deleteMrEnclave(mrEnclave);
 
         mrEnclave = 0x0dbc8f6a755750926b68d18f12a6eb6340b9cf328c306dc727baf3454ac7c7b1;
 
-        MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).deleteMrEnclave(mrEnclave);
+        MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).deleteMrEnclave(mrEnclave);
     }
 
     function rtMrDaoDelete() public broadcastKey(deployerKey) {
         bytes memory rtmr3 =
             hex"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-        MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).deleteRtmr(rtmr3);
+        MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).deleteRtmr(rtmr3);
         rtmr3 = hex"fdffca0c05726ea6eba61e774ed78725a20e8aab0ab6ed8f68f86bb4a61e6e2562a81845b12395cd5e15fbf3ee5a7e57";
-        MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).deleteRtmr(rtmr3);
+        MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).deleteRtmr(rtmr3);
     }
 
     function operate(string calldata option, bytes calldata measurement) public broadcastKey(deployerKey) {
         if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("mrDaoUpsert"))) {
             bytes32 mrEnclave = bytes32(measurement[0:32]);
             bytes32 mrSigner = bytes32(measurement[32:64]);
-            MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).addMrEnclave(mrEnclave, mrSigner);
+            MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).addMrEnclave(mrEnclave, mrSigner);
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("mrDaoDelete"))) {
             bytes32 mrEnclave = bytes32(measurement);
-            MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).deleteMrEnclave(mrEnclave);
+            MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).deleteMrEnclave(mrEnclave);
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("rtMrDaoUpsert"))) {
-            MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).addRtmr(measurement);
+            MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).addRtmr(measurement);
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("rtMrDaoDelete"))) {
-            MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).deleteRtmr(measurement);
+            MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).deleteRtmr(measurement);
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("rtMrClear"))) {
-            MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).clearRtmr();
+            MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).clearRtmr();
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("mrClear"))) {
-            MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).clearMrEnclave();
+            MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).clearMrEnclave();
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("akClear"))) {
             TEECacheVerifier(vm.envAddress("CACHE_VERIFIER")).clearCache();
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("akDelete"))) {
             TEECacheVerifier(vm.envAddress("CACHE_VERIFIER")).deleteKey(measurement);
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("mrtdDaoUpsert"))) {
-            MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).addMrtd(measurement);
+            MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).addMrtd(measurement);
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("mrtdDaoDelete"))) {
-            MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).deleteMrtd(measurement);
+            MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).deleteMrtd(measurement);
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("mrtdClear"))) {
-            MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).clearMrtd();
+            MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).clearMrtd();
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("cacheOptionDisable"))) {
             bool toVerifyMr = DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).toVerifyMr();
             DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).setConfig(
@@ -259,13 +259,13 @@ contract UpsertAll is Script {
             bool cacheOption = DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).cacheOption();
             DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).enableVerifyMrtd();
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("getAllMrKey"))) {
-            bytes32[] memory mrEnclaveList = MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).getMrEnclave();
+            bytes32[] memory mrEnclaveList = MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).getMrEnclave();
             console.log("All mrEnclave Keys:");
             for (uint256 i = 0; i < mrEnclaveList.length; i++) {
                 console.logBytes32(mrEnclaveList[i]);
             }
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("getAllRtMrKey"))) {
-            bytes[] memory rtMrList = MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).getRtmr();
+            bytes[] memory rtMrList = MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).getRtmr();
             console.log("All rtMr3 Keys:");
             for (uint256 i = 0; i < rtMrList.length; i++) {
                 console.logBytes(rtMrList[i]);
@@ -277,7 +277,7 @@ contract UpsertAll is Script {
                 console.logBytes(akList[i]);
             }
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("getAllMrtdKey"))) {
-            bytes[] memory mrtdList = MeasurementDao(vm.envAddress("MEASUREMENT_DAO")).getMrtd();
+            bytes[] memory mrtdList = MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).getMrtd();
             console.log("All mrtd Keys:");
             for (uint256 i = 0; i < mrtdList.length; i++) {
                 console.logBytes(mrtdList[i]);
@@ -359,7 +359,7 @@ contract UpsertAll is Script {
 
         address TEE_PROXY = vm.envAddress("TEE_PROXY");
 
-        TEEVerifierProxy proxy = TEEVerifierProxy(TEE_PROXY);
+        TEEVerifierForwarder proxy = TEEVerifierForwarder(TEE_PROXY);
 
         (uint32 success, bytes32 output) = proxy.verifyProof(sampleQuote);
         if (success == 1) {

@@ -4,7 +4,7 @@ pragma solidity 0.8.27;
 import {AccessControl} from "./AccessControl.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
-import {MeasurementDao} from "./MeasurementDao.sol";
+import {MeasurementRegistry} from "./MeasurementRegistry.sol";
 import {AutomataDcapAttestationFee} from "dcap-attestation/AutomataDcapAttestationFee.sol";
 import {BELE} from "dcap-attestation/utils/BELE.sol";
 import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
@@ -35,8 +35,8 @@ contract DcapAttestationRouter is AccessControl {
     /// @notice Address of the DCAP attestation contract
     address public dcapAttestation;
 
-    /// @notice Address of the measurement DAO contract for verifying measurements
-    address public measurementDao;
+    /// @notice Address of the measurement registry contract for verifying measurements
+    address public measurementRegistry;
    
     /// @notice Flag indicating whether to verify measurement registers
     bool public toVerifyMr;
@@ -56,7 +56,7 @@ contract DcapAttestationRouter is AccessControl {
     /// @notice Event emitted when configuration is updated
     event ConfigUpdated(
         address indexed dcapAttestation,
-        address indexed measurementDao,
+        address indexed measurementRegistry,
         bool toVerifyMr,
         address indexed cacheVerifierAddr,
         bool cacheOption
@@ -68,27 +68,27 @@ contract DcapAttestationRouter is AccessControl {
     /// @notice Event emitted when MRTD verification is disabled
     event VerifyMRTDDisabled();
 
-    constructor(address _dcapAttestation, address _measurementDao, address _cacheVerifierAddr) {
+    constructor(address _dcapAttestation, address _measurementRegistry, address _cacheVerifierAddr) {
         _initializeOwner(msg.sender);
-        _setConfig(_dcapAttestation, _measurementDao, true, _cacheVerifierAddr, true);
+        _setConfig(_dcapAttestation, _measurementRegistry, true, _cacheVerifierAddr, true);
     }
 
     /**
      * @notice Set the configuration for the attestation router
      * @param _dcapAttestation Address of the DCAP attestation contract
-     * @param _measurementDao Address of the measurement DAO contract
+     * @param _measurementRegistry Address of the measurement registry contract
      * @param _toVerifyMr Flag indicating whether to verify measurement registers
      * @param _cacheVerifierAddr Address of the TEE cache verifier contract
      * @param _cacheOption Flag indicating whether to use cache-based verification
      */
     function setConfig(
         address _dcapAttestation,
-        address _measurementDao,
+        address _measurementRegistry,
         bool _toVerifyMr,
         address _cacheVerifierAddr,
         bool _cacheOption
     ) external onlyOwner {
-        _setConfig(_dcapAttestation, _measurementDao, _toVerifyMr, _cacheVerifierAddr, _cacheOption);
+        _setConfig(_dcapAttestation, _measurementRegistry, _toVerifyMr, _cacheVerifierAddr, _cacheOption);
     }
 
     /**
@@ -108,27 +108,27 @@ contract DcapAttestationRouter is AccessControl {
     /**
      * @notice Internal function to set the configuration for the attestation router
      * @param _dcapAttestation Address of the DCAP attestation contract
-     * @param _measurementDao Address of the measurement DAO contract
+     * @param _measurementRegistry Address of the measurement registry contract
      * @param _toVerifyMr Flag indicating whether to verify measurement registers
      * @param _cacheVerifierAddr Address of the TEE cache verifier contract
      * @param _cacheOption Flag indicating whether to use cache-based verification
      */
     function _setConfig(
         address _dcapAttestation,
-        address _measurementDao,
+        address _measurementRegistry,
         bool _toVerifyMr,
         address _cacheVerifierAddr,
         bool _cacheOption
     ) private {
         require(_dcapAttestation != address(0), InvalidAddress());
-        require(_measurementDao != address(0), InvalidAddress());
+        require(_measurementRegistry != address(0), InvalidAddress());
         require(_cacheVerifierAddr != address(0), InvalidAddress());
         dcapAttestation = _dcapAttestation;
-        measurementDao = _measurementDao;
+        measurementRegistry = _measurementRegistry;
         toVerifyMr = _toVerifyMr;
         cacheVerifierAddr = _cacheVerifierAddr;
         cacheOption = _cacheOption;
-        emit ConfigUpdated(_dcapAttestation, _measurementDao, _toVerifyMr, _cacheVerifierAddr, _cacheOption);
+        emit ConfigUpdated(_dcapAttestation, _measurementRegistry, _toVerifyMr, _cacheVerifierAddr, _cacheOption);
     }
 
     /**
@@ -160,12 +160,12 @@ contract DcapAttestationRouter is AccessControl {
         } 
         bytes4 teeType = bytes4(quote.substring(4, 4));
         if (teeType == SGX_TEE) {
-            return MeasurementDao(measurementDao).verifyMeasurementSGX(quote, quoteVersion);
+            return MeasurementRegistry(measurementRegistry).verifyMeasurementSGX(quote, quoteVersion);
         } else if(teeType == TDX_TEE) {
             if (toVerifyMrtd) {
-                require(MeasurementDao(measurementDao).verifyMRTD(quote, quoteVersion), MRTDValidationFailed());
+                require(MeasurementRegistry(measurementRegistry).verifyMRTD(quote, quoteVersion), MRTDValidationFailed());
             }
-            return MeasurementDao(measurementDao).verifyMeasurementTDX(quote, quoteVersion);
+            return MeasurementRegistry(measurementRegistry).verifyMeasurementTDX(quote, quoteVersion);
         } else {
             return false;
         }

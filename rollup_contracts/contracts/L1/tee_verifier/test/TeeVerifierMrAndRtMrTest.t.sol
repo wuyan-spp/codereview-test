@@ -9,11 +9,11 @@ import {V5QuoteVerifier} from "dcap-attestation/verifiers/V5QuoteVerifier.sol";
 
 import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
 import "../src/DcapAttestationRouter.sol";
-import "../src/TEEVerifierProxy.sol";
+import "../src/TEEVerifierForwarder.sol";
 import "../src/TEECacheVerifier.sol";
 import "../script/utils/DaimoP256Verifier.sol";
 import "./utils/Constants.sol";
-import "../src/MeasurementDao.sol";
+import "../src/MeasurementRegistry.sol";
 
 library BytesArrayUtils {
     function contains(bytes[] memory self, bytes memory target) external pure returns (bool) {
@@ -43,8 +43,8 @@ contract TEEVerifyTest is PCCSSetupBase {
     AutomataDcapAttestationFee attestation;
     PCCSRouter pccsRouter;
     DcapAttestationRouter router;
-    MeasurementDao mrDao;
-    TEEVerifierProxy proxy;
+    MeasurementRegistry mrDao;
+    TEEVerifierForwarder proxy;
     DaimoP256Verifier p256verifier;
     TEECacheVerifier cacheVerifier;
 
@@ -65,7 +65,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         // DCAP Contract Deployment
         attestation = new AutomataDcapAttestationFee(admin);
 
-        mrDao = new MeasurementDao();
+        mrDao = new MeasurementRegistry();
 
         //TEECacheVerifier Deployment
         p256verifier = new DaimoP256Verifier();
@@ -74,7 +74,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         router = new DcapAttestationRouter(address(attestation), address(mrDao), address(cacheVerifier));
         router.setConfig(address(attestation), address(mrDao), false, address(cacheVerifier), true);
 
-        proxy = new TEEVerifierProxy(address(router));
+        proxy = new TEEVerifierForwarder(address(router));
 
         vm.stopPrank();
     }
@@ -201,7 +201,7 @@ contract TEEVerifyTest is PCCSSetupBase {
 
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierProxy(address(router));
+        proxy = new TEEVerifierForwarder(address(router));
         router.setAuthorized(address(proxy), true);
         vm.expectRevert(abi.encodeWithSelector(DcapAttestationRouter.MrValidationFailed.selector));
         (uint32 success,) = proxy.verifyProof(sampleQuote3_1);
@@ -215,7 +215,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         router.setConfig(address(attestation), address(mrDao), true, address(cacheVerifier), true);
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierProxy(address(router));
+        proxy = new TEEVerifierForwarder(address(router));
         router.setAuthorized(address(proxy), true);
         vm.expectRevert(abi.encodeWithSelector(DcapAttestationRouter.MrValidationFailed.selector));
         (uint32 success,) = proxy.verifyProof(sampleQuote3_2);
@@ -227,7 +227,7 @@ contract TEEVerifyTest is PCCSSetupBase {
     //     mrDao.clearMrEnclave();
     //     mrDao.addMrEnclave(mrEnclave_1, mrSigner_1);
     //     router.setConfig(address(attestation), address(mrDao), true, address(cacheVerifier),true);
-    //     proxy = new TEEVerifierProxy(address(router));
+    //     proxy = new TEEVerifierForwarder(address(router));
     //     vm.expectRevert("mr validation fail");
     //     (uint32 success,) = proxy.verifyProof(sampleQuote3_2);
     //     vm.stopPrank();
@@ -237,7 +237,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.startPrank(admin);
         mrDao.clearMrEnclave();
         mrDao.addMrEnclave(mrEnclave_1, mrSigner_1);
-        vm.expectRevert(abi.encodeWithSelector(MeasurementDao.NotExists.selector));
+        vm.expectRevert(abi.encodeWithSelector(MeasurementRegistry.NotExists.selector));
         mrDao.deleteMrEnclave(mrEnclave_2);
         vm.stopPrank();
     }
@@ -248,7 +248,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         router.setConfig(address(attestation), address(mrDao), true, address(cacheVerifier), true);
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierProxy(address(router));
+        proxy = new TEEVerifierForwarder(address(router));
         router.setAuthorized(address(proxy), true);
         vm.expectRevert(abi.encodeWithSelector(DcapAttestationRouter.MrValidationFailed.selector));
         (uint32 success,) = proxy.verifyProof(sampleQuote5_1);
@@ -262,7 +262,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         router.setConfig(address(attestation), address(mrDao), true, address(cacheVerifier), true);
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierProxy(address(router));
+        proxy = new TEEVerifierForwarder(address(router));
         router.setAuthorized(address(proxy), true);
         vm.expectRevert(abi.encodeWithSelector(DcapAttestationRouter.MrValidationFailed.selector));
         (uint32 success,) = proxy.verifyProof(sampleQuote5_2);
@@ -274,7 +274,7 @@ contract TEEVerifyTest is PCCSSetupBase {
     //     mrDao.clearRtmr();
     //     mrDao.addRtmr(rtmr3_1);
     //     router.setConfig(address(attestation), address(mrDao), true, address(cacheVerifier),true);
-    //     proxy = new TEEVerifierProxy(address(router));
+    //     proxy = new TEEVerifierForwarder(address(router));
     //     vm.expectRevert("mr validation fail");
     //     (uint32 success,) = proxy.verifyProof(sampleQuote5_2);
     //     vm.stopPrank();
@@ -284,7 +284,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.startPrank(admin);
         mrDao.clearRtmr();
         mrDao.addRtmr(rtmr3_1);
-        vm.expectRevert(abi.encodeWithSelector(MeasurementDao.NotExists.selector));
+        vm.expectRevert(abi.encodeWithSelector(MeasurementRegistry.NotExists.selector));
         mrDao.deleteRtmr(rtmr3_2);
         vm.stopPrank();
     }
@@ -299,7 +299,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         router.enableVerifyMrtd();
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierProxy(address(router));
+        proxy = new TEEVerifierForwarder(address(router));
         router.setAuthorized(address(proxy), true);
         vm.expectRevert(abi.encodeWithSelector(DcapAttestationRouter.MRTDValidationFailed.selector));
         (uint32 success,) = proxy.verifyProof(sampleQuote5_1);
@@ -317,7 +317,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         router.enableVerifyMrtd();
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierProxy(address(router));
+        proxy = new TEEVerifierForwarder(address(router));
         router.setAuthorized(address(proxy), true);
         vm.expectRevert(abi.encodeWithSelector(DcapAttestationRouter.MRTDValidationFailed.selector));
         (uint32 success,) = proxy.verifyProof(sampleQuote5_1);

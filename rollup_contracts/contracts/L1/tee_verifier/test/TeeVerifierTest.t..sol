@@ -127,9 +127,9 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.startPrank(admin);
         bytes memory rtmr3_1 =
             hex"";
-        mrDao.addRtMr(rtmr3_1);
+        mrDao.addRtmr(rtmr3_1);
         bytes memory rtmr3_2 = hex"";
-        mrDao.addRtMr(rtmr3_2);
+        mrDao.addRtmr(rtmr3_2);
         // bytes[] memory rtMrList = mrDao.get_rtMr();
         // assertEq(rtMrList.contains(rtmr3_1), true);
     }

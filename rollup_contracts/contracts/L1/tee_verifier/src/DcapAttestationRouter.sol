@@ -237,7 +237,7 @@ contract DcapAttestationRouter is Ownable {
         bool success;
         bytes memory output;
         TEECacheVerifier CacheAttestation = TEECacheVerifier(cacheVerifierAddr);
-        bool cacheEnabled = CacheOption;
+        bool cacheEnabled = cacheOption;
         
         if (cacheEnabled) {
             (ecdsa256BitSignature, ecdsaAttestationKey) = CacheAttestation.parseAttestationKey(aggrProof, quoteVersion);

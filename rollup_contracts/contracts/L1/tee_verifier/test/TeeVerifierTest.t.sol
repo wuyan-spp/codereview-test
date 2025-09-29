@@ -9,7 +9,7 @@ import {V5QuoteVerifier} from "dcap-attestation/verifiers/V5QuoteVerifier.sol";
 
 import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
 import "../src/DCAPAttestationRouter.sol";
-import "../src/TEEVerifierForwarder.sol";
+
 import "../src/TEECacheVerifier.sol";
 import "../script/utils/DaimoP256Verifier.sol";
 
@@ -38,7 +38,6 @@ contract TEEVerifyTest is PCCSSetupBase {
     PCCSRouter pccsRouter;
     DCAPAttestationRouter router;
     MeasurementRegistry mrDao;
-    TEEVerifierForwarder proxy;
     DaimoP256Verifier p256verifier;
     TEECacheVerifier cacheVerifier;
 
@@ -70,9 +69,6 @@ contract TEEVerifyTest is PCCSSetupBase {
 
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierForwarder(address(router));
-        router.setAuthorized(address(proxy), true);
-
         vm.stopPrank();
     }
 
@@ -102,7 +98,7 @@ contract TEEVerifyTest is PCCSSetupBase {
 
         // vm.prank(admin);
 
-        (uint32 success,) = proxy.verifyProof(sampleQuote5_3);
+        (uint32 success,) = router.verifyProof(sampleQuote5_3);
 
         assertEq(success, 0);
 

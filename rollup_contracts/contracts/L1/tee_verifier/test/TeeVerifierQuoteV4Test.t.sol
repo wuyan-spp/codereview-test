@@ -7,7 +7,7 @@ import {AutomataDcapAttestationFee} from "dcap-attestation/AutomataDcapAttestati
 import {V4QuoteVerifier} from "dcap-attestation/verifiers/V4QuoteVerifier.sol";
 import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
 import "../src/DCAPAttestationRouter.sol";
-import "../src/TEEVerifierForwarder.sol";
+
 import "../src/TEECacheVerifier.sol";
 import "../script/utils/DaimoP256Verifier.sol";
 
@@ -19,7 +19,6 @@ contract AutomataDcapOnChainAttestationTest is PCCSSetupBaseV4 {
     DCAPAttestationRouter router;
     MeasurementRegistry mrDao;
     TEECacheVerifier cacheVerifier;
-    TEEVerifierForwarder proxy;
 
     bytes constant platformCrlDer = hex"";
 
@@ -62,9 +61,6 @@ contract AutomataDcapOnChainAttestationTest is PCCSSetupBaseV4 {
 
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierForwarder(address(router));
-        router.setAuthorized(address(proxy), true);
-
         // collateral upserts
         string memory tcbInfoPath = "/script/assets/0624/tcbinfov3_00806f050000.json";
         string memory qeIdPath = "/script/assets/0624/qeidentityv2_apiv4.json";
@@ -84,7 +80,7 @@ contract AutomataDcapOnChainAttestationTest is PCCSSetupBaseV4 {
         // expecting a revert due to CRL expiration,because there is no overlap in expire date between platformCrlDer and cbInfo
         vm.expectRevert(abi.encodeWithSelector(PCCSRouter.CrlExpiredOrNotFound.selector, CA.PLATFORM));
 
-        (uint32 success,) = proxy.verifyProof(sampleQuote);
+        (uint32 success,) = router.verifyProof(sampleQuote);
 
         assertEq(success, 0);
     }
@@ -109,9 +105,6 @@ contract AutomataDcapOnChainAttestationTest is PCCSSetupBaseV4 {
 
         cacheVerifier.setAuthorized(address(router), true);
 
-        proxy = new TEEVerifierForwarder(address(router));
-        router.setAuthorized(address(proxy), true);
-
         // collateral upserts
         string memory tcbInfoPath = "/script/assets/0624/tcbinfov3_00806f050000.json";
         string memory qeIdPath = "/script/assets/0624/qeidentityv2_apiv4.json";
@@ -128,7 +121,7 @@ contract AutomataDcapOnChainAttestationTest is PCCSSetupBaseV4 {
         // verify the quote
         vm.prank(admin);
         vm.expectRevert(abi.encodeWithSelector(PCCSRouter.CrlExpiredOrNotFound.selector, CA.PLATFORM));
-        (uint32 success,) = proxy.verifyProof(sampleQuote);
+        (uint32 success,) = router.verifyProof(sampleQuote);
         assertEq(success, 0);
 
         bytes memory ecdsaAttestationKey;

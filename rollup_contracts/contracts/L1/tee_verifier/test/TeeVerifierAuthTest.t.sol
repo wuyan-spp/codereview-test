@@ -9,7 +9,7 @@ import {V5QuoteVerifier} from "dcap-attestation/verifiers/V5QuoteVerifier.sol";
 
 import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
 import "../src/DCAPAttestationRouter.sol";
-import "../src/TEEVerifierForwarder.sol";
+
 import "../src/TEECacheVerifier.sol";
 import "../src/AccessControl.sol";
 import "../script/utils/DaimoP256Verifier.sol";
@@ -39,7 +39,6 @@ contract TEEVerifyTest is PCCSSetupBase {
     PCCSRouter pccsRouter;
     DCAPAttestationRouter router;
     MeasurementRegistry mrDao;
-    TEEVerifierForwarder proxy;
     DaimoP256Verifier p256verifier;
     TEECacheVerifier cacheVerifier;
 
@@ -69,9 +68,6 @@ contract TEEVerifyTest is PCCSSetupBase {
         router = new DCAPAttestationRouter(address(attestation), address(mrDao), address(cacheVerifier));
         router.setConfig(address(attestation), address(mrDao), false, address(cacheVerifier), true);
 
-        proxy = new TEEVerifierForwarder(address(router));
-        router.setAuthorized(address(proxy), true);
-
         cacheVerifier.setAuthorized(address(router), true);
 
         vm.stopPrank();
@@ -95,102 +91,6 @@ contract TEEVerifyTest is PCCSSetupBase {
 
     bytes constant platformCrlDer =
         hex"";
-
-    /**
-     * TEEVerifierForwarder Auth
-     */
-    function testProxyEnableCallerRestrictionAuthWithRevert() public {
-        // pinned June 15th,2024 Midnight UTC
-        // bypassing expiry errors
-        vm.warp(1749112940);
-
-        vm.prank(user);
-
-        vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        proxy.enableCallerRestriction();
-    }
-
-    function testProxydisableCallerRestrictionAuthWithRevert() public {
-        // pinned June 15th,2024 Midnight UTC
-        // bypassing expiry errors
-        vm.warp(1749112940);
-
-        vm.prank(user);
-
-        vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        proxy.disableCallerRestriction();
-    }
-
-    function testProxySetConfigAuthWithRevert() public {
-        // pinned June 15th,2024 Midnight UTC
-        // bypassing expiry errors
-        vm.warp(1749112940);
-
-        vm.prank(user);
-
-        vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        proxy.setConfig(address(router));
-    }
-
-    function testProxySetAuthorizedAuthWithRevert() public {
-        // pinned June 15th,2024 Midnight UTC
-        // bypassing expiry errors
-        vm.warp(1749112940);
-
-        vm.prank(user);
-
-        vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        proxy.setAuthorized(address(router), true);
-    }
-
-    function testProxyVerifyAuthWithRevert() public {
-        // pinned June 15th,2024 Midnight UTC
-        // bypassing expiry errors
-        vm.warp(1749112940);
-
-        vm.startPrank(admin);
-        proxy.enableCallerRestriction();
-        vm.stopPrank();
-
-        vm.prank(user);
-        vm.expectRevert(abi.encodeWithSelector(AccessControl.Forbidden.selector));
-        (uint32 success,) = proxy.verifyProof(sampleQuote5_3);
-    }
-
-    function testProxyVerifyAuthWithRevert_user_unauthorized() public {
-        // pinned June 15th,2024 Midnight UTC
-        // bypassing expiry errors
-        vm.warp(1749112940);
-
-        vm.startPrank(admin);
-        proxy.enableCallerRestriction();
-
-        proxy.setAuthorized(user, false);
-        vm.stopPrank();
-
-        vm.prank(user);
-        vm.expectRevert(abi.encodeWithSelector(AccessControl.Forbidden.selector));
-        (uint32 success,) = proxy.verifyProof(sampleQuote5_3);
-    }
-
-    function testProxyVerifyAuth() public {
-        pcsDao.upsertPckCrl(CA.PLATFORM, platformCrlDer);
-
-        // pinned June 15th,2024 Midnight UTC
-        // bypassing expiry errors
-        vm.warp(1749112940);
-
-        vm.startPrank(admin);
-        proxy.enableCallerRestriction();
-
-        proxy.setAuthorized(user, true);
-        cacheVerifier.setAuthorized(address(router), true);
-        vm.stopPrank();
-
-        vm.prank(user);
-        (uint32 success,) = proxy.verifyProof(sampleQuote5_3);
-        assertEq(success, 0);
-    }
 
     /**
      * DCAPAttestationRouter Auth
@@ -237,7 +137,7 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.prank(user);
 
         vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
-        router.setAuthorized(address(proxy), true);
+        router.setAuthorized(address(user), true);
     }
 
     function testRouterVerifyAuthWithRevert_user_unauthorized() public {
@@ -246,14 +146,14 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.warp(1749112940);
 
         vm.startPrank(admin);
-        proxy.enableCallerRestriction();
+        router.enableCallerRestriction();
 
-        proxy.setAuthorized(address(proxy), false);
+        router.setAuthorized(address(user), false);
         vm.stopPrank();
 
         vm.prank(user);
         vm.expectRevert(abi.encodeWithSelector(AccessControl.Forbidden.selector));
-        (uint32 success,) = proxy.verifyProof(sampleQuote5_3);
+        (uint32 success,) = router.verifyProof(sampleQuote5_3);
     }
 
     function testRouterVerifyAuth() public {
@@ -264,13 +164,13 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.warp(1749112940);
 
         vm.startPrank(admin);
-        proxy.enableCallerRestriction();
+        router.enableCallerRestriction();
 
-        proxy.setAuthorized(user, true);
+        router.setAuthorized(user, true);
         vm.stopPrank();
 
         vm.prank(user);
-        (uint32 success,) = proxy.verifyProof(sampleQuote5_3);
+        (uint32 success,) = router.verifyProof(sampleQuote5_3);
         assertEq(success, 0);
     }
 
@@ -426,9 +326,9 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.warp(1749112940);
 
         vm.startPrank(admin);
-        proxy.enableCallerRestriction();
+        router.enableCallerRestriction();
 
-        proxy.setAuthorized(address(user), false);
+        router.setAuthorized(address(user), false);
         vm.stopPrank();
 
         vm.prank(user);
@@ -445,9 +345,9 @@ contract TEEVerifyTest is PCCSSetupBase {
         vm.warp(1749112940);
 
         vm.startPrank(admin);
-        proxy.enableCallerRestriction();
+        router.enableCallerRestriction();
 
-        proxy.setAuthorized(address(user), false);
+        router.setAuthorized(address(user), false);
         vm.stopPrank();
 
         vm.prank(user);

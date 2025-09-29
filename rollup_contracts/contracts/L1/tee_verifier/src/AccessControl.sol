@@ -9,9 +9,18 @@ import {Ownable} from "solady/auth/Ownable.sol";
  * @dev This contract can be inherited by other contracts to avoid duplicating access control logic
  */
 contract AccessControl is Ownable {
+    /// @notice Event emitted when authorization status is changed
+    event AuthorizationSet(address indexed caller, bool authorized);
+
+    /// @notice Event emitted when caller restriction is enabled
+    event CallerRestrictionEnabled();
+
+    /// @notice Event emitted when caller restriction is disabled
+    event CallerRestrictionDisabled();
+
     /// @notice Mapping of authorized callers
     mapping(address => bool) private _authorized;
-    
+
     /// @notice Flag indicating whether caller restriction is enabled
     bool private _isCallerRestricted = true;
 
@@ -43,6 +52,7 @@ contract AccessControl is Ownable {
     function setAuthorized(address caller, bool authorized) external onlyOwner {
         if (caller == address(0)) revert InvalidAddress();
         _authorized[caller] = authorized;
+        emit AuthorizationSet(caller, authorized);
     }
 
     /**
@@ -50,6 +60,7 @@ contract AccessControl is Ownable {
      */
     function enableCallerRestriction() external onlyOwner {
         _isCallerRestricted = true;
+        emit CallerRestrictionEnabled();
     }
 
     /**
@@ -57,6 +68,7 @@ contract AccessControl is Ownable {
      */
     function disableCallerRestriction() external onlyOwner {
         _isCallerRestricted = false;
+        emit CallerRestrictionDisabled();
     }
 
     /**

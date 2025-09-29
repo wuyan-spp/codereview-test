@@ -36,7 +36,7 @@ contract DcapAttestationRouter is Ownable {
     address public cacheVerifierAddr;
    
     /// @notice Flag indicating whether to use cache-based verification
-    bool public CacheOption;
+    bool public cacheOption;
     
     /// @notice Mapping of authorized callers
     mapping(address => bool) private _authorized;
@@ -70,16 +70,16 @@ contract DcapAttestationRouter is Ownable {
      * @param _measurementDao Address of the measurement DAO contract
      * @param _toVerifyMr Flag indicating whether to verify measurement registers
      * @param _cacheVerifierAddr Address of the TEE cache verifier contract
-     * @param _CacheOption Flag indicating whether to use cache-based verification
+     * @param _cacheOption Flag indicating whether to use cache-based verification
      */
     function setConfig(
         address _dcapAttestation,
         address _measurementDao,
         bool _toVerifyMr,
         address _cacheVerifierAddr,
-        bool _CacheOption
+        bool _cacheOption
     ) external onlyOwner {
-        _setConfig(_dcapAttestation, _measurementDao, _toVerifyMr, _cacheVerifierAddr, _CacheOption);
+        _setConfig(_dcapAttestation, _measurementDao, _toVerifyMr, _cacheVerifierAddr, _cacheOption);
     }
 
     /**
@@ -127,14 +127,14 @@ contract DcapAttestationRouter is Ownable {
      * @param _measurementDao Address of the measurement DAO contract
      * @param _toVerifyMr Flag indicating whether to verify measurement registers
      * @param _cacheVerifierAddr Address of the TEE cache verifier contract
-     * @param _CacheOption Flag indicating whether to use cache-based verification
+     * @param _cacheOption Flag indicating whether to use cache-based verification
      */
     function _setConfig(
         address _dcapAttestation,
         address _measurementDao,
         bool _toVerifyMr,
         address _cacheVerifierAddr,
-        bool _CacheOption
+        bool _cacheOption
     ) private {
         if (_dcapAttestation == address(0)) revert InvalidAddress();
         if (_measurementDao == address(0)) revert InvalidAddress();
@@ -143,20 +143,20 @@ contract DcapAttestationRouter is Ownable {
         measurementDao = _measurementDao;
         toVerifyMr = _toVerifyMr;
         cacheVerifierAddr = _cacheVerifierAddr;
-        CacheOption = _CacheOption;
+        cacheOption = _cacheOption;
     }
 
     /**
      * @notice Enable MRTD verification for TDX quotes
      */
-    function enableVerifyMRTD() external onlyOwner {
+    function enableVerifyMrtd() external onlyOwner {
         toVerifyMrtd = true;
     }
 
     /**
      * @notice Disable MRTD verification for TDX quotes
      */
-    function disableVerifyMRTD() external onlyOwner {
+    function disableVerifyMrtd() external onlyOwner {
         toVerifyMrtd = false;
     }
 
@@ -167,6 +167,10 @@ contract DcapAttestationRouter is Ownable {
      * @return True if the measurement is valid, false otherwise
      */
     function _verifyMeasurement(bytes calldata quote, uint16 quoteVersion) private view returns (bool) {
+        // Check if the quote is long enough to extract the TEE type
+        if (quote.length <= 8) {
+            return false;
+        } 
         bytes4 teeType = bytes4(quote.substring(4, 4));
         if (teeType == SGX_TEE) {
             return MeasurementDao(measurementDao).verifyMeasurementSGX(quote, quoteVersion);
@@ -199,7 +203,7 @@ contract DcapAttestationRouter is Ownable {
         bytes memory output;
         TEECacheVerifier CacheAttestation = TEECacheVerifier(cacheVerifierAddr);
         (ecdsa256BitSignature, ecdsaAttestationKey) = CacheAttestation.parseAttestationKey(aggrProof, quoteVersion);
-        if (CacheOption && CacheAttestation.isInitialized(ecdsaAttestationKey)) {
+        if (cacheOption && CacheAttestation.contains(ecdsaAttestationKey)) {
             (_error_code, commitment) = CacheAttestation.verifyAndAttestOnChain(
                 aggrProof, ecdsa256BitSignature, ecdsaAttestationKey, quoteVersion
             );
@@ -208,7 +212,7 @@ contract DcapAttestationRouter is Ownable {
             (success, output) = attestation.verifyAndAttestOnChain(aggrProof);
 
             if (success) {
-                if (CacheOption) CacheAttestation.initializeCache(ecdsaAttestationKey);
+                if (cacheOption) CacheAttestation.addKey(ecdsaAttestationKey);
                 _error_code = 0;
                 uint256 offset;
                 if (quoteVersion == 3) {

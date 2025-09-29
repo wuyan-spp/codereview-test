@@ -13,11 +13,11 @@ import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
 contract MeasurementDao is Ownable {
     using BytesUtils for bytes;
 
-    mapping(bytes32 => bytes32) private mr;
+    mapping(bytes32 => bytes32) private mrMap;
     bytes32[] private mrEnclaveList;
     mapping(bytes32 => uint256) private mrEnclaveIndex;
 
-    mapping(bytes => bool) private rtmr;
+    mapping(bytes => bool) private rtmrMap;
     bytes[] private rtmrList;
     mapping(bytes => uint256) private rtmrIndex;
 
@@ -42,10 +42,10 @@ contract MeasurementDao is Ownable {
      * @param _mrEnclave The measurement register of the enclave (32 bytes)
      * @param _mrSigner The measurement register of the signer (32 bytes)
      */
-    function add_mr_enclave(bytes32 _mrEnclave, bytes32 _mrSigner) external onlyOwner {
+    function addMrEnclave(bytes32 _mrEnclave, bytes32 _mrSigner) external onlyOwner {
         if (_mrSigner == bytes32(0)) revert ZeroValue();
-        if (mr[_mrEnclave] != bytes32(0)) revert AlreadyExists();
-        mr[_mrEnclave] = _mrSigner;
+        if (mrMap[_mrEnclave] != bytes32(0)) revert AlreadyExists();
+        mrMap[_mrEnclave] = _mrSigner;
         mrEnclaveList.push(_mrEnclave);
         mrEnclaveIndex[_mrEnclave] = mrEnclaveList.length;
     }
@@ -54,9 +54,9 @@ contract MeasurementDao is Ownable {
      * @notice Delete an MR_ENCLAVE and its corresponding MR_SIGNER
      * @param _mrEnclave The measurement register of the enclave to delete
      */
-    function delete_mr_enclave(bytes32 _mrEnclave) external onlyOwner {
-        if (mr[_mrEnclave] == bytes32(0)) revert NotExists();
-        delete mr[_mrEnclave];
+    function deleteMrEnclave(bytes32 _mrEnclave) external onlyOwner {
+        if (mrMap[_mrEnclave] == bytes32(0)) revert NotExists();
+        delete mrMap[_mrEnclave];
 
         uint256 index = mrEnclaveIndex[_mrEnclave];
         require(index > 0 && index <= mrEnclaveList.length, "Invalid index");
@@ -72,16 +72,16 @@ contract MeasurementDao is Ownable {
      * @notice Get all registered MR_ENCLAVE values
      * @return Array of all MR_ENCLAVE values
      */
-    function get_mr_enclave() external view returns (bytes32[] memory) {
+    function getMrEnclave() external view returns (bytes32[] memory) {
         return mrEnclaveList;
     }
 
     /**
      * @notice Clear all MR_ENCLAVE and MR_SIGNER mappings
      */
-    function clearup_mr_enclave() external onlyOwner {
+    function clearMrEnclave() external onlyOwner {
         for (uint256 i = 0; i < mrEnclaveList.length; ++i) {
-            delete mr[mrEnclaveList[i]];
+            delete mrMap[mrEnclaveList[i]];
             delete mrEnclaveIndex[mrEnclaveList[i]];
         }
         delete mrEnclaveList;
@@ -91,10 +91,10 @@ contract MeasurementDao is Ownable {
      * @notice Add a new RTMR (Runtime Measurement Register) value for TDX verification
      * @param rtmr3 The RTMR3 value to add (48 bytes for TDX)
      */
-    function add_rtMr(bytes calldata rtmr3) external onlyOwner {
+    function addRtmr(bytes calldata rtmr3) external onlyOwner {
         if (rtmr3.length != 48) revert InvalidLength();
-        if (rtmr[rtmr3]) revert AlreadyExists();
-        rtmr[rtmr3] = true;
+        if (rtmrMap[rtmr3]) revert AlreadyExists();
+        rtmrMap[rtmr3] = true;
         rtmrList.push(rtmr3);
         rtmrIndex[rtmr3] = rtmrList.length;
     }
@@ -103,9 +103,9 @@ contract MeasurementDao is Ownable {
      * @notice Delete an RTMR value from the registry
      * @param rtmr3 The RTMR3 value to delete
      */
-    function delete_rtMr(bytes calldata rtmr3) external onlyOwner {
-        if (!rtmr[rtmr3]) revert NotExists();
-        delete rtmr[rtmr3];
+    function deleteRtmr(bytes calldata rtmr3) external onlyOwner {
+        if (!rtmrMap[rtmr3]) revert NotExists();
+        delete rtmrMap[rtmr3];
         uint256 index = rtmrIndex[rtmr3];
         require(index > 0 && index <= rtmrList.length, "Invalid index");
         bytes memory lastElement = rtmrList[rtmrList.length - 1];
@@ -119,16 +119,16 @@ contract MeasurementDao is Ownable {
      * @notice Get all registered RTMR values
      * @return Array of all RTMR values
      */
-    function get_rtMr() external view returns (bytes[] memory) {
+    function getRtmr() external view returns (bytes[] memory) {
         return rtmrList;
     }
 
     /**
      * @notice Clear all RTMR mappings and lists
      */
-    function clearup_rtMr() external onlyOwner {
+    function clearRtmr() external onlyOwner {
         for (uint256 i = 0; i < rtmrList.length; ++i) {
-            delete rtmr[rtmrList[i]];
+            delete rtmrMap[rtmrList[i]];
             delete rtmrIndex[rtmrList[i]];
         }
         delete rtmrList;
@@ -138,7 +138,7 @@ contract MeasurementDao is Ownable {
      * @notice Add a new MRTD (Measurement Register for TD) value for TDX verification
      * @param mrtd The MRTD value to add (48 bytes for TDX)
      */
-    function add_mrtd(bytes calldata mrtd) external onlyOwner {
+    function addMrtd(bytes calldata mrtd) external onlyOwner {
         if (mrtd.length != 48) revert InvalidLength();
         if (mrtdMap[mrtd]) revert AlreadyExists();
         mrtdMap[mrtd] = true;
@@ -150,7 +150,7 @@ contract MeasurementDao is Ownable {
      * @notice Delete an MRTD value from the registry
      * @param mrtd The MRTD value to delete
      */
-    function delete_mrtd(bytes calldata mrtd) external onlyOwner {
+    function deleteMrtd(bytes calldata mrtd) external onlyOwner {
         if (!mrtdMap[mrtd]) revert NotExists();
         delete mrtdMap[mrtd];
 
@@ -167,14 +167,14 @@ contract MeasurementDao is Ownable {
      * @notice Get all registered MRTD values
      * @return Array of all MRTD values
      */
-    function get_mrtd() external view returns (bytes[] memory) {
+    function getMrtd() external view returns (bytes[] memory) {
         return mrtdList;
     }
 
     /**
      * @notice Clear all MRTD mappings and lists
      */
-    function clearup_mrtd() external onlyOwner {
+    function clearMrtd() external onlyOwner {
         for (uint256 i = 0; i < mrtdList.length; ++i) {
             delete mrtdMap[mrtdList[i]];
             delete mrtdIndex[mrtdList[i]];
@@ -203,9 +203,13 @@ contract MeasurementDao is Ownable {
             return false;
         }
 
+        // Check if the quote is long enough to extract the required data
+        if (quote.length <= mrEnclaveOffset + 32 || quote.length <= mrSignerOffset + 32) {
+            return false;
+        }
         bytes32 mrEnclave = bytes32(quote.substring(mrEnclaveOffset, 32));
         bytes32 mrSigner = bytes32(quote.substring(mrSignerOffset, 32));
-        return mrSigner != bytes32(0) && mr[mrEnclave] == mrSigner; //mrSigner not zero
+        return mrSigner != bytes32(0) && mrMap[mrEnclave] == mrSigner; //mrSigner not zero
     }
 
     /**
@@ -227,8 +231,12 @@ contract MeasurementDao is Ownable {
             return false;
         }
 
+        // Check if the quote is long enough to extract the required data
+        if (quote.length <= rtmr3Offset + 48) {
+            return false;
+        }
         bytes memory rtmr3 = quote.substring(rtmr3Offset, 48);
-        return rtmr[rtmr3];
+        return rtmrMap[rtmr3];
     }
 
     /**
@@ -250,6 +258,10 @@ contract MeasurementDao is Ownable {
             return false;
         }
 
+        // Check if the quote is long enough to extract the required data
+        if (quote.length <= mrtdOffset + 48) {
+            return false;
+        }
         bytes memory mrtd = quote.substring(mrtdOffset, 48);
         return mrtdMap[mrtd];
     }

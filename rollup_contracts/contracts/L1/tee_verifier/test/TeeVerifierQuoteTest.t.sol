@@ -143,7 +143,7 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
 
         assertEq(success, 0);
 
-        assert(cacheVerifier.isInitialized(v3QuoteKey));
+        assert(cacheVerifier.contains(v3QuoteKey));
         (success,) = proxy.verifyProof(sampleQuoteV3);
 
         assertEq(success, 0);
@@ -181,7 +181,7 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
 
         assertEq(success, 0);
 
-        assert(cacheVerifier.isInitialized(v5QuoteKey));
+        assert(cacheVerifier.contains(v5QuoteKey));
         (success,) = proxy.verifyProof(sampleQuoteV5);
         vm.stopPrank();
 
@@ -214,9 +214,9 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
         (uint32 success,) = proxy.verifyProof(sampleQuoteV3);
         assertEq(success, 0);
 
-        assert(cacheVerifier.isInitialized(v3QuoteKey));
+        assert(cacheVerifier.contains(v3QuoteKey));
         cacheVerifier.deleteKey(v3QuoteKey);
-        assert(!cacheVerifier.isInitialized(v3QuoteKey));
+        assert(!cacheVerifier.contains(v3QuoteKey));
 
         vm.stopPrank();
     }
@@ -224,7 +224,7 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
     function testClearupAllCache() public {
         // Test admin can clear all cache
         vm.startPrank(admin);
-        cacheVerifier.clearupAllKey();
+        cacheVerifier.clearCache();
         vm.stopPrank();
     }
 
@@ -235,15 +235,15 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
 
         vm.startPrank(admin);
 
-        mrDao.clearup_rtMr();
-        mrDao.clearup_mrtd();
-        mrDao.add_rtMr(rtmr3_1);
-        mrDao.add_mrtd(mrtd_1);
+        mrDao.clearRtmr();
+        mrDao.clearMrtd();
+        mrDao.addRtmr(rtmr3_1);
+        mrDao.addMrtd(mrtd_1);
 
         router = new DcapAttestationRouter(address(attestation), address(mrDao), address(cacheVerifier));
         router.setConfig(address(attestation), address(mrDao), true, address(cacheVerifier), false);
 
-        router.enableVerifyMRTD();
+        router.enableVerifyMrtd();
 
         cacheVerifier.setAuthorized(address(router), true);
 

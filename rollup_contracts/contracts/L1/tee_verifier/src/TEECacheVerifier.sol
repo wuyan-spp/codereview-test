@@ -58,22 +58,23 @@ contract TEECacheVerifier is P256Verifier, Ownable {
     }
 
     /**
-     * @notice Check if a verification key has been initialized in the cache
+     * @notice Check if a verification key exists in the cache
      * @param key The verification key to check
-     * @return True if the key is initialized, false otherwise
+     * @return True if the key exists, false otherwise
      */
-    function isInitialized(bytes calldata key) external view returns (bool) {
+    function contains(bytes calldata key) external view returns (bool) {
         return _verificationCache[key];
     }
 
     /**
-     * @notice Initialize a verification key in the cache
-     * @param key The verification key to initialize
+     * @notice Add a verification key to the cache
+     * @param key The verification key to add
      */
-    function initializeCache(bytes calldata key) external onlyAuthorized {
+    function addKey(bytes calldata key) external onlyAuthorized {
         if (key.length != 64) revert InvalidKeyLength();
         // Limit the number of iterations to prevent malicious injection and gas exhaustion
         if (_initializedKeys.length >= 10000) revert ListTooLong();
+        if (_verificationCache[key]) return;
         _verificationCache[key] = true;
         _initializedKeys.push(key);
         _keyIndex[key] = _initializedKeys.length;
@@ -101,7 +102,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
     /**
      * @notice Clear all verification keys from the cache
      */
-    function clearupAllKey() external onlyOwner {
+    function clearCache() external onlyOwner {
         for (uint256 i = 0; i < _initializedKeys.length; ++i) {
             delete _verificationCache[_initializedKeys[i]];
             delete _keyIndex[_initializedKeys[i]];
@@ -113,7 +114,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
      * @notice Get all initialized verification keys
      * @return Array of all verification keys
      */
-    function getAllKey() external view returns (bytes[] memory) {
+    function getCache() external view returns (bytes[] memory) {
         return _initializedKeys;
     }
 

@@ -12,5 +12,5 @@ remappings = [
 ]
 
 [dependencies]
-openzeppelin-contracts = "OpenZeppelin/openzeppelin-contracts@v5.1.0"
+openzeppelin-contracts = "OpenZeppelin/openzeppelin-contracts@v5.4.0"
 forge-std = "foundry-rs/forge-std@1.10.0"

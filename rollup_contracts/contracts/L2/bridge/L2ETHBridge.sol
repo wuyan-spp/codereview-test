@@ -18,10 +18,6 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
      * @param gasLimit_ gas limit
      * @param msg_ data
      */
-<<<<<<< HEAD
-    function withdraw(address to_, uint256 amount_, uint256 gasLimit_, bytes memory msg_) external payable override nonReentrant whenNotPaused {
-        require(to_ != address(0), "L2ETHBridge: to is zero address");
-=======
     function withdraw(address to_, uint256 amount_, uint256 gasLimit_, bytes memory msg_)
         external
         payable
@@ -29,7 +25,7 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
         nonReentrant
         whenNotPaused
     {
->>>>>>> 0554ed0 (fix sequencer N015, Inconsistent Code Formatting)
+        require(to_ != address(0), "L2ETHBridge: to is zero address");
         require(msg.value > 0, "withdraw zero eth");
         require(amount_ > 0, "withdraw zero amount");
 
@@ -50,16 +46,6 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
      * @param amount_ transfer amount
      * @param msg_ data
      */
-<<<<<<< HEAD
-    function finalizeDeposit(address sender_, address to_, uint256 amount_, bytes calldata msg_) external payable override nonReentrant onlyMailBox whenNotPaused {
-        require(to_ != address(0), "L2ETHBridge: to is zero address");
-        require(msg.value == amount_, "msg.value mismatch");
-        balance += amount_;
-
-        uint256 post_call_reserve_gas = 5000 + 8 * msg_.length;
-        require(gasleft() > post_call_reserve_gas, "L2ETHBridge.finalizeDeposit: not enough gas");
-        (bool success_,) = to_.call{value : amount_, gas : gasleft() - post_call_reserve_gas}("");
-=======
     function finalizeDeposit(address sender_, address to_, uint256 amount_, bytes calldata msg_)
         external
         payable
@@ -68,11 +54,16 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
         onlyMailBox
         whenNotPaused
     {
+        require(to_ != address(0), "L2ETHBridge: to is zero address");
         require(msg.value == amount_, "msg.value mismatch");
         balance += amount_;
 
-        (bool success_,) = to_.call{value: amount_, gas: gasleft() / 2}("");
->>>>>>> 0554ed0 (fix sequencer N015, Inconsistent Code Formatting)
+        // Base gas reserved for operations after the external call
+        uint256 BASE_POST_CALL_GAS = 5000;
+        // Each byte in calldata costs 8 gas for event emission (G_txdatanonzero = 8)
+        uint256 post_call_reserve_gas = BASE_POST_CALL_GAS + 8 * msg_.length;
+        require(gasleft() > post_call_reserve_gas, "L2ETHBridge.finalizeDeposit: not enough gas");
+        (bool success_,) = to_.call{value : amount_, gas : gasleft() - post_call_reserve_gas}("");
         require(success_, "ETH transfer failed");
         // TODO : add call msg with deposit
         //        _doCallback(to_, msg_);

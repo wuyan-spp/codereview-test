@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 import "forge-std/Test.sol";
-import "../artifact_src/solidity/permission_control.sol";
+import {PermissionControl} from "../artifact_src/solidity/PermissionControl.sol";
+
 contract PermissionControlTest is Test {
     PermissionControl public permissionControl;
     address public owner;

@@ -3,7 +3,7 @@ pragma solidity 0.8.30;
 
 import {IRollup} from "../interfaces/IRollup.sol";
 import {BatchHeaderCodec} from "../libraries/codec/BatchHeaderCodec.sol";
-import {ITeeRollupVerifier} from "../libraries/verifier/ITeeRollupVerifier.sol";
+import {ITEERollupVerifier} from "../libraries/verifier/ITEERollupVerifier.sol";
 import {IZkRollupVerifier} from "../libraries/verifier/IZkRollupVerifier.sol";
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";

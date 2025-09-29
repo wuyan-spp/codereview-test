@@ -177,8 +177,8 @@ contract DcapAttestationRouter is Ownable {
         measurementDao = _measurementDao;
         toVerifyMr = _toVerifyMr;
         cacheVerifierAddr = _cacheVerifierAddr;
-        CacheOption = _CacheOption;
-        emit ConfigUpdated(_dcapAttestation, _measurementDao, _toVerifyMr, _cacheVerifierAddr, _CacheOption);
+        cacheOption = _cacheOption;
+        emit ConfigUpdated(_dcapAttestation, _measurementDao, _toVerifyMr, _cacheVerifierAddr, _cacheOption);
     }
 
     /**

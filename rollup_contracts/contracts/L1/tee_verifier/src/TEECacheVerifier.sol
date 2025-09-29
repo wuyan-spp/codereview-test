@@ -65,14 +65,6 @@ contract TEECacheVerifier is P256Verifier, Ownable {
     }
 
     /**
-     * @notice Enable caller restriction (only authorized callers can call functions)
-     */
-    function enableCallerRestriction() external onlyOwner {
-        _isCallerRestricted = true;
-        emit CallerRestrictionEnabled();
-    }
-
-    /**
      * @notice Check if a verification key exists in the cache
      * @param key The verification key to check
      * @return True if the key exists, false otherwise
@@ -85,7 +77,7 @@ contract TEECacheVerifier is P256Verifier, Ownable {
      * @notice Add a verification key to the cache
      * @param key The verification key to add
      */
-    function initializeCache(bytes calldata key) external onlyAuthorized {
+    function addKey(bytes calldata key) external onlyAuthorized {
         require(key.length == 64, InvalidKeyLength());
         require(key.length != 0 && keccak256(key) != keccak256(bytes("")), ZeroKey());
         // Limit the number of iterations to prevent malicious injection and gas exhaustion

@@ -5,10 +5,10 @@
 ## Module
 The TEE verifier Contract is responsible for verifying the credibility of the TEE quote received from the rollup contract. Upon successful validation, the commitment contained within the quote is extracted and returned to the rollup contract. The rollup contract then compares this commitment with its locally computed hash value.
 
-The TEE attestation contract architecture consists of** 7 components:** TeeVerifierProxy, MeasurementDAO, DcapAttestationRouter, TEECacheVerifier，AutomataDcap (as libraries) and AutomataPCCS (as libraries), and the P256Verifier (as libraries) contract.
+The TEE attestation contract architecture consists of** 7 components:** TeeVerifierProxy, MeasurementDAO, DCAPAttestationRouter, TEECacheVerifier，AutomataDcap (as libraries) and AutomataPCCS (as libraries), and the P256Verifier (as libraries) contract.
 
-+ **TeeVerifierProxy**: Implements the ITeeRollupVerifier interface. In the verifyProof function, the request is forwarded to the DcapAttestationRouter contract.  
-+ **DcapAttestationRouter**: Stores the address of the AutomataDcap contract, and provides an interface to update this address—accessible exclusively to the owner. Upon receiving the verification result, the commitment is extracted from the return value.  
++ **TeeVerifierProxy**: Implements the ITeeRollupVerifier interface. In the verifyProof function, the request is forwarded to the DCAPAttestationRouter contract.  
++ **DCAPAttestationRouter**: Stores the address of the AutomataDcap contract, and provides an interface to update this address—accessible exclusively to the owner. Upon receiving the verification result, the commitment is extracted from the return value.  
 + **TEECacheVerifier:** Implements caching, updating, deletion, clearing, and verification of the TEE AK (cedsaAttestationKey) based on the cached key.
 + **MeasurementDAO**: Maintains the MRSigner, MREnclave，RTMREnclave，MRTD values of the TEE Prover.  
 + **AutomataDcap (Library)**: Provides a set of functions to validate the certificate chain, tcbinfo, enclave identity, and other attributes within the quote. Upon successful verification, a serialized structure is returned, containing the user data—specifically, the commitment.  
@@ -22,7 +22,7 @@ The TEE attestation contract architecture consists of** 7 components:** TeeVerif
 contracts/L1/tee_verifier
 
 + **TeeVerifierProxy**: contracts/L1/tee_verifier/src/TEEVerifierProxy.sol
-+ **DcapAttestationRouter**: contracts/L1/tee_verifier/src/DcapAttestationRouter.sol
++ **DCAPAttestationRouter**: contracts/L1/tee_verifier/src/DCAPAttestationRouter.sol
 + **TEECacheVerifier:** contracts/L1/tee_verifier/src/TEECacheVerifier.sol
 + **MeasurementDAO**: contracts/L1/tee_verifier/src/MeasurementDao.sol
 + **AutomataDcap (Library)**: contracts/L1/tee_verifier/sh/patch
@@ -43,7 +43,7 @@ _The following code bases __**DO NOT**__ need to be audited:_
 | Directory | Code Module | Loc(sol) | Priority |
 | --- | --- | --- | --- |
 | src<br/> | TEEVerifierProxy | 64 | P0 |
-| | DcapAttestationRouter | 170 | P0 |
+| | DCAPAttestationRouter | 170 | P0 |
 | | TEECacheVerifier | 273 | P0 |
 | | MeasurementDao | 190 | P0 |
 | | interfaces | 12 | P1 |
@@ -57,7 +57,7 @@ _The following code bases __**DO NOT**__ need to be audited:_
 | Component | Code Module | Loc(sol) | Priority |
 | --- | --- | --- | --- |
 | TEEverifier | src/TEEVerifierProxy | 64 | P0 |
-| | src/DcapAttestationRouter | 170 | P0 |
+| | src/DCAPAttestationRouter | 170 | P0 |
 | | src/TEECacheVerifier | 273 | P0 |
 | | src/MeasurementDao | 190 | P0 |
 | | src/interfaces | 12 | P1 |

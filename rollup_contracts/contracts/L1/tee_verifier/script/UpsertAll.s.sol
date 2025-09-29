@@ -9,7 +9,7 @@ import "solady/utils/LibString.sol";
 
 import {console2} from "forge-std/console2.sol";
 import "dcap-attestation/AutomataDcapAttestationFee.sol";
-import "../src/DcapAttestationRouter.sol";
+import "../src/DCAPAttestationRouter.sol";
 import "../src/TEEVerifierForwarder.sol";
 import {AutomataPcsDao} from "on-chain-pccs/automata_pccs/AutomataPcsDao.sol";
 import {CA} from "on-chain-pccs/Common.sol";
@@ -217,8 +217,8 @@ contract UpsertAll is Script {
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("mrtdClear"))) {
             MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).clearMrtd();
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("cacheOptionDisable"))) {
-            bool toVerifyMr = DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).toVerifyMr();
-            DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).setConfig(
+            bool toVerifyMr = DCAPAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).toVerifyMr();
+            DCAPAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).setConfig(
                 vm.envAddress("DCAP_ATTESTATION"),
                 vm.envAddress("MEASUREMENT_DAO"),
                 toVerifyMr,
@@ -226,8 +226,8 @@ contract UpsertAll is Script {
                 false
             );
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("cacheOptionEnable"))) {
-            bool toVerifyMr = DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).toVerifyMr();
-            DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).setConfig(
+            bool toVerifyMr = DCAPAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).toVerifyMr();
+            DCAPAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).setConfig(
                 vm.envAddress("DCAP_ATTESTATION"),
                 vm.envAddress("MEASUREMENT_DAO"),
                 toVerifyMr,
@@ -235,8 +235,8 @@ contract UpsertAll is Script {
                 true
             );
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("verifyMrDisable"))) {
-            bool cacheOption = DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).cacheOption();
-            DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).setConfig(
+            bool cacheOption = DCAPAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).cacheOption();
+            DCAPAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).setConfig(
                 vm.envAddress("DCAP_ATTESTATION"),
                 vm.envAddress("MEASUREMENT_DAO"),
                 false,
@@ -244,8 +244,8 @@ contract UpsertAll is Script {
                 cacheOption
             );
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("verifyMrEnable"))) {
-            bool cacheOption = DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).cacheOption();
-            DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).setConfig(
+            bool cacheOption = DCAPAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).cacheOption();
+            DCAPAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).setConfig(
                 vm.envAddress("DCAP_ATTESTATION"),
                 vm.envAddress("MEASUREMENT_DAO"),
                 true,
@@ -253,11 +253,11 @@ contract UpsertAll is Script {
                 cacheOption
             );
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("verifyMrtdDisable"))) {
-            bool cacheOption = DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).cacheOption();
-            DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).disableVerifyMrtd();
+            bool cacheOption = DCAPAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).cacheOption();
+            DCAPAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).disableVerifyMrtd();
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("verifyMrtdEnable"))) {
-            bool cacheOption = DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).cacheOption();
-            DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).enableVerifyMrtd();
+            bool cacheOption = DCAPAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).cacheOption();
+            DCAPAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).enableVerifyMrtd();
         } else if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked("getAllMrKey"))) {
             bytes32[] memory mrEnclaveList = MeasurementRegistry(vm.envAddress("MEASUREMENT_DAO")).getMrEnclave();
             console.log("All mrEnclave Keys:");
@@ -286,7 +286,7 @@ contract UpsertAll is Script {
     }
 
     function cacheOptionDisable() public broadcastKey(deployerKey) {
-        DcapAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).setConfig(
+        DCAPAttestationRouter(vm.envAddress("DCAP_ATTESTATION_ROUTER")).setConfig(
             vm.envAddress("DCAP_ATTESTATION"),
             vm.envAddress("MEASUREMENT_DAO"),
             false,
@@ -327,7 +327,7 @@ contract UpsertAll is Script {
 
         address DCAP_ATTESTATION_ROUTER = vm.envAddress("DCAP_ATTESTATION_ROUTER");
 
-        DcapAttestationRouter router = DcapAttestationRouter(DCAP_ATTESTATION_ROUTER);
+        DCAPAttestationRouter router = DCAPAttestationRouter(DCAP_ATTESTATION_ROUTER);
 
         (uint32 success, bytes32 output) = router.verifyProof(sampleQuote);
         if (success == 1) {

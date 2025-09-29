@@ -8,7 +8,7 @@ import {AutomataDcapAttestationFee} from "dcap-attestation/AutomataDcapAttestati
 import {V3QuoteVerifier} from "dcap-attestation/verifiers/V3QuoteVerifier.sol";
 import {V5QuoteVerifier} from "dcap-attestation/verifiers/V5QuoteVerifier.sol";
 import {BytesUtils} from "dcap-attestation/utils/BytesUtils.sol";
-import "../src/DcapAttestationRouter.sol";
+import "../src/DCAPAttestationRouter.sol";
 import "../src/TEEVerifierForwarder.sol";
 import "../src/TEECacheVerifier.sol";
 import "../script/utils/DaimoP256Verifier.sol";
@@ -18,7 +18,7 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
 
     AutomataDcapAttestationFee attestation;
     PCCSRouter pccsRouter;
-    DcapAttestationRouter router;
+    DCAPAttestationRouter router;
     MeasurementRegistry mrDao;
     TEECacheVerifier cacheVerifier;
     TEEVerifierForwarder proxy;
@@ -55,7 +55,7 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
         V3QuoteVerifier quoteVerifier;
 
         vm.startPrank(admin);
-        router = new DcapAttestationRouter(address(attestation), address(mrDao), address(cacheVerifier));
+        router = new DCAPAttestationRouter(address(attestation), address(mrDao), address(cacheVerifier));
         router.setConfig(address(attestation), address(mrDao), false, address(cacheVerifier), false);
 
         cacheVerifier.setAuthorized(address(router), true);
@@ -88,7 +88,7 @@ contract TEEQuoteVerifyTest is PCCSSetupBase {
         V3QuoteVerifier quoteVerifier;
 
         vm.startPrank(admin);
-        router = new DcapAttestationRouter(address(attestation), address(mrDao), address(cacheVerifier));
+        router = new DCAPAttestationRouter(address(attestation), address(mrDao), address(cacheVerifier));
         router.setConfig(address(attestation), address(mrDao), false, address(cacheVerifier), false);
 
         cacheVerifier.setAuthorized(address(router), true);

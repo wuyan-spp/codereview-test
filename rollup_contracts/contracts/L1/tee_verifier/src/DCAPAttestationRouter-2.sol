@@ -12,12 +12,12 @@ import {TEECacheVerifier} from "./TEECacheVerifier.sol";
 import "dcap-attestation/types/Constants.sol";
 
 /**
- * @title DcapAttestationRouter
+ * @title DCAPAttestationRouter
  * @notice Contract for verifying TEE attestation quotes from rollup using Intel DCAP attestation
  * @dev This contract acts as a router to verify TEE quotes and optionally verify measurements
  * @custom:security-contact mintian.hym@antgroup.com
  */
-contract DcapAttestationRouter is AccessControl {
+contract DCAPAttestationRouter is AccessControl {
     using BytesUtils for bytes;
 
      /// @dev Offset to extract user data from SGX quote v3 output

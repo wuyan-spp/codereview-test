@@ -25,10 +25,6 @@ contract TEECacheVerifier is P256Verifier, AccessControl {
     error InvalidKeyLength();
     error ZeroKey();
 
-    /// @notice Event emitted when authorization status is changed
-    event AuthorizationSet(address indexed caller, bool authorized);
-    
-    
     /// @notice Event emitted when a verification key is initialized in the cache
     event CacheInitialized(bytes indexed key);
     

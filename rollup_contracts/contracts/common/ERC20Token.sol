@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20CappedUpgradeable.sol";
@@ -21,7 +21,6 @@ contract ERC20Token is
     //roles
     bytes32 public constant MINTER_ROLE = keccak256(abi.encodePacked("MINTER_ROLE"));
     bytes32 public constant BURNER_ROLE = keccak256(abi.encodePacked("BURNER_ROLE"));
-    bytes32 public constant TRANSFER_ROLE = keccak256(abi.encodePacked("TRANSFER_ROLE"));
 
     constructor() {
         _disableInitializers();
@@ -40,11 +39,8 @@ contract ERC20Token is
 
         require(admin_ != address(0), "ERC20Token: admin is zero address");
 
-        require(admin_ != address(0), "ERC20Token: admin is zero address");
-
         _setRoleAdmin(MINTER_ROLE, DEFAULT_ADMIN_ROLE);
         _setRoleAdmin(BURNER_ROLE, DEFAULT_ADMIN_ROLE);
-        _setRoleAdmin(TRANSFER_ROLE, DEFAULT_ADMIN_ROLE);
         _grantRole(DEFAULT_ADMIN_ROLE, admin_);
     }
 
@@ -75,21 +71,7 @@ contract ERC20Token is
     /**
      * @dev require BURNER_ROLE=keccak256(abi.encodePacked("BURNER_ROLE"))
      */
-    function burn(uint256 amount) public override onlyRole(BURNER_ROLE) {
-        super.burn(amount);
-    }
-
-    /**
-     * @dev require BURNER_ROLE=keccak256(abi.encodePacked("BURNER_ROLE"))
-     */
     function burn(address account, uint256 amount) public override onlyRole(BURNER_ROLE) {
         _burn(account, amount);
-    }
-
-    /**
-     * @dev require BURNER_ROLE=keccak256(abi.encodePacked("BURNER_ROLE"))
-     */
-    function burnFrom(address account, uint256 amount) public override onlyRole(BURNER_ROLE) {
-        super.burnFrom(account, amount);
     }
 }

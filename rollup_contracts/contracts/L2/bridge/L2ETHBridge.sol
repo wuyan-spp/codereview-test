@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
-import "../../L1/bridge/interfaces/IL1ETHBridge.sol";
-import "../../common/BridgeBase.sol";
-import "../interfaces/IL2Mailbox.sol";
-import "./interfaces/IL2ETHBridge.sol";
-import "solidity-bytes-utils/contracts/BytesLib.sol";
-import {L2Mailbox} from "../core/L2Mailbox.sol";
+import {IL1ETHBridge} from "../../L1/bridge/interfaces/IL1ETHBridge.sol";
+import {BridgeBase} from "../../common/BridgeBase.sol";
+import {IL2Mailbox, IMailBoxBase} from "../interfaces/IL2Mailbox.sol";
+import {IL2ETHBridge} from "./interfaces/IL2ETHBridge.sol";
+import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 
+/// @custom:security-contact enxi.zys@antgroup.com
 contract L2ETHBridge is BridgeBase, IL2ETHBridge {
     uint256 public balance;
+
+    event DepositClaimed(address indexed target, uint256 amount, bytes32 depositHash);
+    event DepositClaimedWithRefund(address indexed newRefundAddress, uint256 amount, bytes32 depositHash);
 
     /**
      * The sender account transfers to tokenbridge to lock the assets;
@@ -65,8 +68,6 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
         require(gasleft() > post_call_reserve_gas, "L2ETHBridge.finalizeDeposit: not enough gas");
         (bool success_,) = to_.call{value : amount_, gas : gasleft() - post_call_reserve_gas}("");
         require(success_, "ETH transfer failed");
-        // TODO : add call msg with deposit
-        //        _doCallback(to_, msg_);
 
         emit FinalizeDepositETH(sender_, to_, amount_, msg_);
     }
@@ -79,7 +80,8 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
             abi.decode(newDepositMsg, (address, address, uint256, bytes));
         bytes32 depositHash = keccak256(msg_);
         balance += amount;
-        IL2Mailbox(mailBox).claimETH(target, amount, nonce,depositHash);
+        IL2Mailbox(mailBox).claimETH(target, amount, nonce, depositHash);
+        emit DepositClaimed(target, amount, depositHash);
     }
 
     function claimDeposit(bytes calldata msg_, address new_refund_address_)
@@ -97,5 +99,6 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
         balance += amount;
         require(msg.sender == sender, "claimDeposit change refund must called by origin sender");
         IL2Mailbox(mailBox).claimETH(new_refund_address_, amount, nonce, depositHash);
+        emit DepositClaimedWithRefund(new_refund_address_, amount, depositHash);
     }
 }

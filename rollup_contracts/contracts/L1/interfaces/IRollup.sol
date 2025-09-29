@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 /// @title IRollup
 /// @notice The interface for Rollup_ols.sol.

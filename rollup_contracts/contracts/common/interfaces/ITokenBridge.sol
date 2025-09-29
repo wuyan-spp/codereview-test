@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 interface ITokenBridge {
     event TokenMappingChanged(address indexed token, address indexed tokenTo);

@@ -1,13 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 interface IL1MailQueue {
     event PopMsgs(uint256 finalizeMsgIndex);
-
-    /**
-     * @notice Returns next message index
-     */
-    function nextMsgIndex() external view returns (uint256);
 
     /**
      * @dev Returns the message at the given index.

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 // solhint-disable no-inline-assembly
 /// @dev Below is the encoding for `Chunk`, total 40*n+1+m bytes.
@@ -38,7 +38,7 @@ pragma solidity 0.8.28;
 /// ```
 library BatchHeaderCodec {
     /// @dev The length of fixed parts of the batch header.
-    uint256 internal constant BATCH_HEADER_FIXED_LENGTH = 105;
+    uint256 internal constant BATCH_HEADER_FIXED_LENGTH = 128; // 105 used, aligned to 128
 
     /// @notice Load batch header in calldata to memory.
     /// @param _batchHeader The encoded batch header bytes in calldata.
@@ -52,7 +52,7 @@ library BatchHeaderCodec {
         assembly {
             batchPtr := mload(0x40)
             calldatacopy(batchPtr, _batchHeader.offset, length)
-            mstore(0x40, add(batchPtr, length))
+            mstore(0x40, add(batchPtr, BATCH_HEADER_FIXED_LENGTH))
         }
     }
 

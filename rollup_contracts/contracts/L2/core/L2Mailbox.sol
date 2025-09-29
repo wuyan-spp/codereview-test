@@ -1,16 +1,20 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {AppendOnlyMerkleTree} from "../libraries/common/AppendOnlyMerkleTree.sol";
-import "../interfaces/IL2Mailbox.sol";
-import "../interfaces/IL2MailQueue.sol";
-import "../../common/MailBoxBase.sol";
+import {IL2Mailbox} from "../interfaces/IL2Mailbox.sol";
+import {IL2MailQueue} from "../interfaces/IL2MailQueue.sol";
+import {MailBoxBase} from "../../common/MailBoxBase.sol";
 
+/// @custom:security-contact enxi.zys@antgroup.com
 contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueue {
     /// @notice The address of L1MailBox contract.
     address public l1MailBox;
 
-    mapping(bytes32 => bool) public receiveMsgStatus;
+    event Initialize(address indexed l1MailBox, address indexed owner, uint256 baseFee);
+    event SetL1MailBox(address indexed oldL1MailBox, address indexed newL1MailBox);
+
+    mapping(bytes32 msgHash => bool status) public receiveMsgStatus;
 
     constructor() {
         _disableInitializers();
@@ -33,11 +37,14 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         baseFee = baseFee_;
         _transferOwnership(owner_);
         _initializeMerkleTree();
+        emit Initialize(l1MailBox_, owner_, baseFee_);
     }
 
     function setL1MailBox(address l1MailBox_) external whenPaused onlyOwner {
         require(l1MailBox_ != address(0), "Invalid address");
+        address oldL1MailBox = l1MailBox;
         l1MailBox = l1MailBox_;
+        emit SetL1MailBox(oldL1MailBox, l1MailBox_);
     }
 
     function sendMsg(address target_, uint256 value_, bytes calldata msg_, uint256 gasLimit_, address refundAddress_)

@@ -172,8 +172,8 @@ abstract contract PCCSSetupBase is Test {
     }
 
     function _deployP256() private {
-        // TODO: fill for test
-        bytes memory txdata = hex"";
+        bytes memory txdata =
+            hex"";
         (bool succ,) = address(0x4e59b44847b379578588920cA78FbF26c0B4956C).call(txdata);
         require(succ, "Failed to deploy P256");
 

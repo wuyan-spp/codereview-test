@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 abstract contract AppendOnlyMerkleTree {
     /// @dev The maximum height of the withdraw merkle tree.
@@ -19,18 +19,21 @@ abstract contract AppendOnlyMerkleTree {
     /// @notice The list of minimum merkle proofs needed to compute next root.
     /// @dev Only first `n` elements are used, where `n` is the minimum value that `2^{n-1} >= currentMaxNonce + 1`.
     /// It means we only use `currentMaxNonce + 1` leaf nodes to construct the merkle tree.
-    bytes32[MAX_TREE_HEIGHT] public _branches;
+    bytes32[MAX_TREE_HEIGHT] public branches;
 
     function _initializeMerkleTree() internal {
+        // Initialize zero hash for height 0
+        _zeroHashes[0] = bytes32(0);
+        
         // Compute hashes in empty sparse Merkle tree
-        for (uint256 height = 0; height + 1 < MAX_TREE_HEIGHT; height++) {
+        for (uint256 height = 0; height + 1 < MAX_TREE_HEIGHT; ++height) {
             _zeroHashes[height + 1] = _efficientHash(_zeroHashes[height], _zeroHashes[height]);
         }
     }
 
     function _appendMsgHash(bytes32 msgHash) internal returns (uint256, bytes32) {
         // can called only after initialize
-        // require(_zeroHashes[1] != bytes32(0), "call before initialization");
+        require(_zeroHashes[1] != bytes32(0), "call before initialization");
 
         uint256 currentMsgIndex = _nextMsgIndex;
         bytes32 hash = msgHash;
@@ -39,12 +42,12 @@ abstract contract AppendOnlyMerkleTree {
         while (currentMsgIndex != 0) {
             if (currentMsgIndex % 2 == 0) {
                 // it may be used in next round.
-                _branches[height] = hash;
+                branches[height] = hash;
                 // it's a left child, the right child must be null
                 hash = _efficientHash(hash, _zeroHashes[height]);
             } else {
                 // it's a right child, use previously computed hash
-                hash = _efficientHash(_branches[height], hash);
+                hash = _efficientHash(branches[height], hash);
             }
             unchecked {
                 height += 1;
@@ -52,7 +55,7 @@ abstract contract AppendOnlyMerkleTree {
             currentMsgIndex >>= 1;
         }
 
-        _branches[height] = hash;
+        branches[height] = hash;
         _msgRoot = hash;
 
         currentMsgIndex = _nextMsgIndex;

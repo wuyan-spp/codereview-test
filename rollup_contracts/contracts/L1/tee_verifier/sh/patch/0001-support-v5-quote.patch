@@ -100,7 +100,7 @@ index 0000000..7af143f
 +
 +import {LibString} from "solady/utils/LibString.sol";
 +
-+import {FetchedCollateralsAndStatuses} from "./V4QuoteVerifier.sol"; // TODO abstract
++import {FetchedCollateralsAndStatuses} from "./V4QuoteVerifier.sol";
 +import "../bases/QuoteVerifierBase.sol";
 +import "../bases/TDXModuleBase.sol";
 +import "../bases/tcb/TCBInfoV3Base.sol";

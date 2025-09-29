@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
-import "./BridgeBase.sol";
-import "./interfaces/ITokenBridge.sol";
+import {BridgeBase} from "./BridgeBase.sol";
+import {ITokenBridge} from "./interfaces/ITokenBridge.sol";
 
 abstract contract TokenBridge is BridgeBase, ITokenBridge {
-    mapping(address => address) public tokenMapping;
+    mapping(address token => address toToken) public tokenMapping;
 
-    mapping(address => uint256) public balanceOf;
+    mapping(address token => uint256 balance) public balanceOf;
 
     function setTokenMapping(address token_, address tokenTo_) public payable virtual override whenNotPaused {
         tokenMapping[token_] = tokenTo_;

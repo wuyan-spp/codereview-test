@@ -1,18 +1,34 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
-import "../interfaces/IRollup.sol";
-import "../libraries/codec/BatchHeaderCodec.sol";
-import "../libraries/verifier/ITEERollupVerifier.sol";
-import "../libraries/verifier/IZkRollupVerifier.sol";
+import {IRollup} from "../interfaces/IRollup.sol";
+import {BatchHeaderCodec} from "../libraries/codec/BatchHeaderCodec.sol";
+import {ITeeRollupVerifier} from "../libraries/verifier/ITeeRollupVerifier.sol";
+import {IZkRollupVerifier} from "../libraries/verifier/IZkRollupVerifier.sol";
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import {IL1MailQueue} from "../interfaces/IL1MailQueue.sol";
 
+/// @custom:security-contact enxi.zys@antgroup.com
 contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     error NotSupportZkProof();
+
+    event RollupInitialized(uint64 chainId, address zkVerifier, address teeVerifier, address l1MailBox, 
+                      uint32 maxTxsInChunk, uint32 maxBlockInChunk, uint32 maxCallDataInChunk, 
+                      uint32 maxZkCircleInChunk, uint32 l1BlobNumberLimit, uint64 rollupTimeLimit);
+    event BatchesReverted(uint256 newLastBatchIndex);
+    event RelayerAdded(address indexed relayer);
+    event RelayerRemoved(address indexed relayer);
+    event MaxTxsInChunkChanged(uint32 oldValue, uint32 newValue);
+    event MaxBlockInChunkChanged(uint32 oldValue, uint32 newValue);
+    event MaxCallDataInChunkChanged(uint32 oldValue, uint32 newValue);
+    event L1BlobNumberLimitChanged(uint32 oldValue, uint32 newValue);
+    event RollupTimeLimitChanged(uint64 oldValue, uint64 newValue);
+    event L2ChainIdChanged(uint64 oldValue, uint64 newValue);
+    event TeeVerifierChanged(address oldVerifier, address newVerifier);
+    event ZkVerifierChanged(address oldVerifier, address newVerifier);
 
     /// @notice The max number of txs in a chunk, fill by bytes32(0) if not enough.
     uint32 public maxTxsInChunk;
@@ -45,23 +61,25 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     uint256 public lastTeeVerifiedBatch;
 
     // Record the batchhash corresponding to the batch
-    mapping(uint256 => bytes32) public committedBatches;
+    mapping(uint256 batchIndex => bytes32 batchHash) public committedBatches;
 
     // Record the stateroot corresponding to each batch of L2 and the stateroot of the last block of the batch
-    mapping(uint256 => bytes32) public finalizedStateRoots;
+    mapping(uint256 batchIndex => bytes32 stateRoot) public finalizedStateRoots;
 
     // batchindex corresponds to the root of the L2withroot message tree; it is used to verify L2 transactions;
-    mapping(uint256 => bytes32) public l2MsgRoots;
+    mapping(uint256 batchIndex => bytes32 msgCount) public l2MsgRoots;
 
     // total pop l1msg of batch;
-    mapping(uint256 => uint256) public l1MsgCount;
+    mapping(uint256 batchIndex => uint256 msgCount) public l1MsgCount;
 
     address public zk_verifier; // zk_verifier contract address, compatibility operations such as upgrades are handled by the verifier contract
     address public tee_verifier; // tee_verifier contract address, compatibility operations such as upgrades are handled by the verifier contract
     address public l1_mail_box; // mail box address; L1 Msg Rolling hash storage in it
 
     /// @notice Whether an account is a relayer.
-    mapping(address => bool) public isRelayer;
+    mapping(address relayerAddress => bool) public isRelayer;
+
+    uint256 internal constant REVERT_BATCH_LIMIT = 100;
 
     /**
      *
@@ -95,7 +113,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         uint32 _maxCallDataInChunk,
         uint32 _maxZkCircleInChunk,
         uint32 _l1BlobNumberLimit,
-        uint32 _rollupTimeLimit
+        uint64 _rollupTimeLimit
     ) public initializer {
         OwnableUpgradeable.__Ownable_init();
         PausableUpgradeable.__Pausable_init();
@@ -114,6 +132,10 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         maxZkCircleInChunk = _maxZkCircleInChunk;
         l1BlobNumberLimit = _l1BlobNumberLimit;
         rollupTimeLimit = _rollupTimeLimit;
+        
+        emit RollupInitialized(_chainId, _zk_verifier, _tee_verifier, _l1_mail_box, 
+                        _maxTxsInChunk, _maxBlockInChunk, _maxCallDataInChunk, 
+                        _maxZkCircleInChunk, _l1BlobNumberLimit, _rollupTimeLimit);
     }
 
     /**
@@ -252,7 +274,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
             "INVALID_PARAMETER : revert lastCommitBatchIndex must smaller than current"
         );
         require(
-            lastCommittedBatch - _newLastBatchIndex <= 100,
+            lastCommittedBatch - _newLastBatchIndex <= REVERT_BATCH_LIMIT,
             "INVALID_PARAMETER : revert block number must smaller than 100 for gas limit"
         );
         require(
@@ -269,8 +291,10 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
             committedBatches[_batchIndex] = bytes32(0);
         }
         lastCommittedBatch = _newLastBatchIndex;
+        emit BatchesReverted(_newLastBatchIndex);
     }
 
+    /// @dev Relayer use this, so we will not remove it even l2MsgRoots has getter
     function getL2MsgRoot(uint256 batch_index) external view override returns (bytes32) {
         return l2MsgRoots[batch_index];
     }
@@ -336,14 +360,22 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         // @note Currently many external services rely on EOA sequencer to decode metadata directly from tx.calldata.
         // So we explicitly make sure the account is EOA.
         require(_account.code.length == 0, "INVALID_PERMISSION : relayer account must be a eoa");
+        require(_account != address(0), "invalid address");
 
-        isRelayer[_account] = true;
+        if (!isRelayer[_account]) {
+            isRelayer[_account] = true;
+            emit RelayerAdded(_account);
+        }
     }
 
     /// @notice Remove an account from the relayer list.
     /// @param _account The address of account to remove.
     function removeRelayer(address _account) external onlyOwner {
-        isRelayer[_account] = false;
+        require(_account != address(0), "invalid address");
+        if (isRelayer[_account]) {
+            isRelayer[_account] = false;
+            emit RelayerRemoved(_account);
+        }
     }
 
     /// @notice Pause the contract
@@ -359,44 +391,58 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     /// @notice Set maxTxsInChunk of tx size in a chunk.
     /// @param _maxTxsInChunk The number of tx size in a chunk.
     function setMaxTxsInChunk(uint32 _maxTxsInChunk) external onlyOwner {
+        uint32 oldValue = maxTxsInChunk;
         maxTxsInChunk = _maxTxsInChunk;
+        emit MaxTxsInChunkChanged(oldValue, _maxTxsInChunk);
     }
 
     /// @notice Set maxBlockInChunk of block size in a chunk.
     /// @param _maxBlockInChunk The number of block size in a chunk.
     function setMaxBlockInChunk(uint32 _maxBlockInChunk) external onlyOwner {
+        uint32 oldValue = maxBlockInChunk;
         maxBlockInChunk = _maxBlockInChunk;
+        emit MaxBlockInChunkChanged(oldValue, _maxBlockInChunk);
     }
 
     /// @notice Set maxCallDataInChunk of tx data size in a chunk.
     /// @param _maxCallDataInChunk The number of tx data size in a chunk.
     function setMaxCallDataInChunk(uint32 _maxCallDataInChunk) external onlyOwner {
+        uint32 oldValue = maxCallDataInChunk;
         maxCallDataInChunk = _maxCallDataInChunk;
+        emit MaxCallDataInChunkChanged(oldValue, _maxCallDataInChunk);
     }
 
     /// @notice Set l1BlobNumberLimit of the limit of l1 tx data size.
     /// @param _l1BlobNumberLimit The limit of L1 tx data size.
     function setL1BlobNumberLimit(uint32 _l1BlobNumberLimit) external onlyOwner {
+        uint32 oldValue = l1BlobNumberLimit;
         l1BlobNumberLimit = _l1BlobNumberLimit;
+        emit L1BlobNumberLimitChanged(oldValue, _l1BlobNumberLimit);
     }
 
     /// @notice Set rollupTimeLimit of the limit of l1 tx data size.
     /// @param _rollupTimeLimit The limit of L1 tx data size.
-    function setRollupTimeLimit(uint32 _rollupTimeLimit) external onlyOwner {
+    function setRollupTimeLimit(uint64 _rollupTimeLimit) external onlyOwner {
+        uint64 oldValue = rollupTimeLimit;
         rollupTimeLimit = _rollupTimeLimit;
+        emit RollupTimeLimitChanged(oldValue, _rollupTimeLimit);
     }
 
     /// @notice Set tee_verifier
     /// @param _teeVerifierAddress The verifier address of tee.
     function setTeeVerifierAddress(address _teeVerifierAddress) external onlyOwner whenPaused {
         require(_teeVerifierAddress != address(0), "INVALID_PARAMETER : must specify one verifier address");
+        address oldVerifier = tee_verifier;
         tee_verifier = _teeVerifierAddress;
+        emit TeeVerifierChanged(oldVerifier, _teeVerifierAddress);
     }
 
     /// @notice Set zk_verifier
-    /// @param _zkVerifierAddress The verifier address of tee.
+    /// @param _zkVerifierAddress The verifier address of zk.
     function setZkVerifierAddress(address _zkVerifierAddress) external onlyOwner whenPaused {
         require(_zkVerifierAddress != address(0), "INVALID_PARAMETER : must specify one verifier address");
+        address oldVerifier = zk_verifier;
         zk_verifier = _zkVerifierAddress;
+        emit ZkVerifierChanged(oldVerifier, _zkVerifierAddress);
     }
 }

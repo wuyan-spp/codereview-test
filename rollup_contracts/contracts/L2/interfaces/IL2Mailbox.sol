@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
-import "../../common/interfaces/IMailBoxBase.sol";
+import {IMailBoxBase} from "../../common/interfaces/IMailBoxBase.sol";
 
 interface IL2Mailbox is IMailBoxBase {
     /**

@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.28;
-
-import "./IL1BridgeProof.sol";
+pragma solidity 0.8.30;
 
 interface IL1ETHBridge {
     /**

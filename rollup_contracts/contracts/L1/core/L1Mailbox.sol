@@ -1,19 +1,26 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
-import "../interfaces/IL1Mailbox.sol";
-import "../interfaces/IRollup.sol";
-import "../../common/MailBoxBase.sol";
-import "../libraries/verifier/WithdrawTrieVerifier.sol";
-import "../interfaces/IL1MailQueue.sol";
-import "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
+import {IL1Mailbox} from "../interfaces/IL1Mailbox.sol";
+import {IRollup} from "../interfaces/IRollup.sol";
+import {MailBoxBase, IBridge} from "../../common/MailBoxBase.sol";
+import {WithdrawTrieVerifier} from "../libraries/verifier/WithdrawTrieVerifier.sol";
+import {IL1MailQueue} from "../interfaces/IL1MailQueue.sol";
+import {DoubleEndedQueue} from "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 
+/// @custom:security-contact enxi.zys@antgroup.com
 contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
 
     event SetL2GasLimit(uint256 oldGasLimit, uint256 newGasLimit);
 
     event SetL2FinalizeDepositGasUsed(uint256 oldL2FinalizeDepositGasUsed, uint256 newL2FinalizeDepositGasUsed);
+
+    event Initialized(address indexed rollup, address indexed owner, uint256 baseFee, uint256 l2GasLimit, uint256 l2FinalizeDepositGasUsed);
+    event RollupChanged(address indexed oldRollup, address indexed newRollup);
+    event WithdrawerChanged(address indexed oldWithdrawer, address indexed newWithdrawer);
+    event DepositFeeWithdrawn(address indexed target, uint256 amount);
+    event LastQueueIndexSet(uint256 indexed lastestQueueIndex);
 
     // double ended msg queue
     // begin is next finalize msg
@@ -83,16 +90,22 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         l2GasLimit = _l2GasLimit;
         l2FinalizeDepositGasUsed = _l2FinalizeDepositGasUsed;
         _transferOwnership(owner_);
+        
+        emit Initialized(rollup_, owner_, baseFee_, _l2GasLimit, _l2FinalizeDepositGasUsed);
     }
 
     function setRollup(address rollup_) external whenPaused onlyOwner {
         require(rollup_ != address(0), "Invalid rollup address");
+        address oldRollup = rollup;
         rollup = rollup_;
+        emit RollupChanged(oldRollup, rollup_);
     }
 
     function setWithdrawer(address _withdrawer) external onlyOwner {
         require(_withdrawer != address(0), "Invalid withdrawer address");
+        address oldWithdrawer = withdrawer;
         withdrawer = _withdrawer;
+        emit WithdrawerChanged(oldWithdrawer, _withdrawer);
     }
 
     function sendMsg(
@@ -104,7 +117,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
     ) external payable override onlyBridge whenNotPaused nonReentrant {
         require(target_ != address(0), "L1Mailbox: target is zero address");
         // compute the actual cross domain message calldata.
-        uint256 nonce_ = nextMsgIndex();
+        uint256 nonce_ = pendingQueueIndex;
         bytes memory data_ = _encodeCall(_msgSender(), target_, value_, nonce_, msg_);
 
         // Calculate the fee and leave it in the MailBox contract
@@ -151,9 +164,9 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         address target_,
         uint256 value_,
         uint256 nonce_,
-        bytes memory msg_,
-        L2MsgProof memory proof_
-    ) external payable whenNotPaused nonReentrant {
+        bytes calldata msg_,
+        L2MsgProof calldata proof_
+    ) external whenNotPaused nonReentrant {
         require(target_ != address(0), "L1Mailbox: target is zero address");
         require(sender_ == IBridge(target_).toBridge(), "Invalid sender");
         bytes32 hash_ = keccak256(_encodeCall(sender_, target_, value_, nonce_, msg_));
@@ -176,6 +189,7 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         feeBalance -= _amount;
         (bool success,) = _target.call{value: _amount}("");
         require(success, "INTERNAL_ERROR : withdraw fee Failed");
+        emit DepositFeeWithdrawn(_target, _amount);
     }
 
     /**
@@ -203,13 +217,6 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
     }
 
     /**
-     * @notice Returns next message index
-     */
-    function nextMsgIndex() public view override returns (uint256) {
-        return pendingQueueIndex;
-    }
-
-    /**
      * @notice Returns message at index
      */
     function getMsg(uint256 _l1MsgCount) external view override returns (bytes32) {
@@ -229,7 +236,9 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
      * @notice set lastest queue index  called when pause
      */
     function setLastQueueIndex() external whenPaused onlyOwner {
+        uint256 oldLastestQueueIndex = lastestQueueIndex;
         lastestQueueIndex = nextFinalizeQueueIndex;
+        emit LastQueueIndexSet(lastestQueueIndex);
     }
 
     /**

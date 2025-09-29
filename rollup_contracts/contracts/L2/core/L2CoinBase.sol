@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
-import "../bridge/interfaces/IL2ETHBridge.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {IL2ETHBridge} from "../bridge/interfaces/IL2ETHBridge.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
+/// @custom:security-contact enxi.zys@antgroup.com
 contract L2CoinBase is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     address public l2EthBridge;
 
@@ -18,14 +19,17 @@ contract L2CoinBase is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardU
     function initialize(address _l2EthBridge) external initializer {
         require(_l2EthBridge != address(0), "L2CoinBase: l2EthBridge is zero address");
         OwnableUpgradeable.__Ownable_init();
+        PausableUpgradeable.__Pausable_init();
+        ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
         l2EthBridge = _l2EthBridge;
+        emit Initliazed(_l2EthBridge);
     }
 
     // Withdrawal permission account
-    mapping(address => bool) public isWithdrawer;
+    mapping(address withdrawerAddress => bool) public isWithdrawer;
 
     // Whitelisted accounts on L1, to which withdrawals can be made
-    mapping(address => bool) public whiteListOnL1;
+    mapping(address whiteAddress => bool) public whiteListOnL1;
 
     modifier onlyWithdrawer() {
         // @note In the decentralized mode, it should be only called by a list of validator.
@@ -52,6 +56,8 @@ contract L2CoinBase is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardU
     event RemoveWhiteAddress(address indexed whiteAddress);
 
     event CoinBaseWithdraw(address indexed _target, uint256 indexed amount);
+
+    event Initliazed(address indexed l2EthBridge);
 
     function setL2EthBridge(address _newL2EthBridge) external whenPaused onlyOwner {
         require(_newL2EthBridge != address(0), "L2CoinBase: newL2EthBridge is zero address");
@@ -96,7 +102,7 @@ contract L2CoinBase is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardU
         emit CoinBaseWithdraw(_target, _amount);
     }
 
-    function withdrawAll(address _target) external onlyWithdrawer {
-        withdraw(_target, address(this).balance);
+    function withdrawAll(address _target) external {
+        withdraw(_target,address(this).balance);
     }
 }

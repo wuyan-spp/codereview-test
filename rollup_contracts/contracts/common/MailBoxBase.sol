@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-
-import "./interfaces/IMailBoxBase.sol";
-import "./interfaces/IGasPriceOracle.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {IMailBoxBase} from "./interfaces/IMailBoxBase.sol";
+import {IGasPriceOracle} from "./interfaces/IGasPriceOracle.sol";
 
 interface IRelay {
     function relayMsg(address sender_, address target_, uint256 value_, uint256 msgNonce_, bytes calldata msg_)
@@ -26,14 +25,14 @@ abstract contract MailBoxBase is
 {
     bytes32 public rollingHash;
 
-    mapping(bytes32 => bool) public sendMsgMap;
+    mapping(bytes32 msgHash => bool) public sendMsgMap;
 
-    mapping(bytes32 => bool) public receiveMsgMap;
+    mapping(bytes32 msgHash => bool) public receiveMsgMap;
 
     uint256 public baseFee;
 
     /// @notice The address of Bridge contract.
-    mapping(address => bool) public isBridge;
+    mapping(address bridgeAddress => bool) public isBridge;
 
     modifier onlyBridge() {
         require(isBridge[_msgSender()], "INVALID_PERMISSION : sender is not bridge");
@@ -57,6 +56,9 @@ abstract contract MailBoxBase is
     function estimateMsgFee(uint256 gasLimit_) public view override returns (uint256) {
         return gasLimit_ * baseFee;
     }
+
+    event BridgeAdded(address indexed bridge);
+    event BridgeRemoved(address indexed bridge);
 
     function setBaseFee(uint256 _newBaseFee) external onlyOwner {
         uint256 oldBaseFee = baseFee;
@@ -98,13 +100,21 @@ abstract contract MailBoxBase is
     /// @notice Add an account to the bridge list.
     /// @param _bridge The address of bridge to add.
     function addBridge(address _bridge) external onlyOwner {
-        isBridge[_bridge] = true;
+        require(_bridge != address(0), "invalid address");
+        if (!isBridge[_bridge]) {
+            isBridge[_bridge] = true;
+            emit BridgeAdded(_bridge);
+        }
     }
 
     /// @notice Remove an account from the bridge list.
     /// @param _bridge The address of account to remove.
     function removeBridge(address _bridge) external onlyOwner {
-        isBridge[_bridge] = false;
+        require(_bridge != address(0), "invalid address");
+        if (isBridge[_bridge]) {
+            isBridge[_bridge] = false;
+            emit BridgeRemoved(_bridge);
+        }
     }
 
     function _getRollingHash(bytes32 msgHash) internal returns (bytes32 newRollingHash) {

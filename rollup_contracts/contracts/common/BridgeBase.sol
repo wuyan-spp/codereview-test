@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import {AddressUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 
-import "./interfaces/IBridgeBase.sol";
+import {IBridgeBase} from "./interfaces/IBridgeBase.sol";
 
 abstract contract BridgeBase is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable, IBridgeBase {
+    event SetMailBox(address indexed oldMailBox, address indexed newMailBox);
+    event SetToBridge(address indexed oldToBridge, address indexed newToBridge);
     using AddressUpgradeable for address;
 
     address public mailBox;
@@ -43,12 +45,16 @@ abstract contract BridgeBase is OwnableUpgradeable, PausableUpgradeable, Reentra
 
     function setMailBox(address mailBox_) external whenPaused onlyOwner {
         require(mailBox_ != address(0), "mailBox cannot be set to 0");
+        address oldMailBox = mailBox;
         mailBox = mailBox_;
+        emit SetMailBox(oldMailBox, mailBox_);
     }
 
     function setToBridge(address toBridge_) external whenPaused onlyOwner {
         require(toBridge_ != address(0), "toBridge cannot be set to 0");
+        address oldToBridge = toBridge;
         toBridge = toBridge_;
+        emit SetToBridge(oldToBridge, toBridge_);
     }
 
     function pause() external onlyOwner {

@@ -43,10 +43,12 @@ abstract contract PCCSSetupBaseV4 is Test {
 
     address internal constant admin = address(1);
 
-    // TODO: fill for test
-    bytes constant tcbDer = hex"";
-    bytes constant rootCaDer = hex"";
-    bytes constant platformDer = hex"";
+    bytes constant tcbDer =
+        hex"";
+    bytes constant rootCaDer =
+        hex"";
+    bytes constant platformDer =
+        hex"";
 
     bytes constant rootCrlDer = hex"";
 

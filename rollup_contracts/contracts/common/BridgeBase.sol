@@ -30,7 +30,11 @@ abstract contract BridgeBase is OwnableUpgradeable, PausableUpgradeable, Reentra
     }
 
     function initialize(address mailBox_, address toBridge_, address owner) external initializer {
-        OwnableUpgradeable.__Ownable_init();
+        // We deliberately omit `OwnableUpgradeable.__Ownable_init()` because we're using OpenZeppelin v4.x.
+        // In OpenZeppelin v4.x, `OwnableUpgradeable.__Ownable_init()` calls `_transferOwnership(msg.sender)`,
+        // which would emit `OwnershipTransferred`. Since ownership is already being transferred elsewhere
+        // during initialization, calling it here would emit `OwnershipTransferred` twice — so we skip it.
+
         PausableUpgradeable.__Pausable_init();
         ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
 

@@ -38,7 +38,9 @@ pragma solidity 0.8.30;
 /// ```
 library BatchHeaderCodec {
     /// @dev The length of fixed parts of the batch header.
-    uint256 internal constant BATCH_HEADER_FIXED_LENGTH = 128; // 105 used, aligned to 128
+    uint256 internal constant BATCH_HEADER_FIXED_LENGTH = 105;
+    /// @dev batch header in evm memory aligned to 128 bytes
+    uint256 internal constant BATCH_HEADER_MEMORY_USED = 128;
 
     /// @notice Load batch header in calldata to memory.
     /// @param _batchHeader The encoded batch header bytes in calldata.
@@ -52,7 +54,7 @@ library BatchHeaderCodec {
         assembly {
             batchPtr := mload(0x40)
             calldatacopy(batchPtr, _batchHeader.offset, length)
-            mstore(0x40, add(batchPtr, BATCH_HEADER_FIXED_LENGTH))
+            mstore(0x40, add(batchPtr, BATCH_HEADER_MEMORY_USED))
         }
     }
 

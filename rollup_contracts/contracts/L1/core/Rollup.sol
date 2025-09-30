@@ -190,12 +190,12 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
     {
         require(_batchIndex == lastCommittedBatch + 1, "INVALID_PARAMETER : commit batch one by one");
 
-        uint256 BATCH_HEADER_LENGTH = BatchHeaderCodec.BATCH_HEADER_FIXED_LENGTH;
+        uint256 BATCH_HEADER_MEMORY_USED = BatchHeaderCodec.BATCH_HEADER_MEMORY_USED;
         // init empty batch
         uint256 batchPtr;
         assembly {
             batchPtr := mload(0x40)
-            mstore(0x40, add(batchPtr, BATCH_HEADER_LENGTH))
+            mstore(0x40, add(batchPtr, BATCH_HEADER_MEMORY_USED))
         }
 
         BatchHeaderCodec.storeVersion(batchPtr, _version);

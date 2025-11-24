@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.27;
+pragma solidity 0.8.30;
 
 /// @title ChainCfg
 /// @author Jovay Network
@@ -40,6 +40,9 @@ contract ChainCfg {
     address public constant SYS_STAKING = 0x4100000000000000000000000000000000000000;
     /// @notice A special system address with owner-like privileges.
     address public constant INTRINSIC_SYS = 0x1111111111111111111111111111111111111111;
+
+    /// @notice Transparent upgradeable proxy admin slot
+    bytes32 private constant ADMIN_SLOT = 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
 
     /// @notice Error returned when a function is called by an address that is not the owner.
     error NotOwner();
@@ -262,5 +265,32 @@ contract ChainCfg {
         }
 
         return newConfigs;
+    }
+
+    /// @notice Internal function to update the old version data in the `SysChainCfg` contract.
+    function updateOldVersionData() public {
+        require(msg.sender == _getProxyAdmin(), "Invalid upgrade caller");
+        require(configCps.length == 3, "Invalid configCps length");
+
+        for (uint256 i = 2; i >= 0; i--) {
+            if (configCps[i].effectiveBlockNum <= block.number) {
+                configCps[0] = configCps[i];
+
+                while (configCps.length > 1) {
+                    configCps.pop();
+                }
+
+                return;
+            }
+        }
+
+        revert("No effective chain config found");
+    }
+
+    /// @notice Get transparent upgradeable contract proxy admin
+    function _getProxyAdmin() internal view returns (address admin) {
+        assembly {
+            admin := sload(ADMIN_SLOT)
+        }
     }
 }

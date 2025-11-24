@@ -6,13 +6,49 @@ import {BridgeBase} from "../../common/BridgeBase.sol";
 import {IL2Mailbox, IMailBoxBase} from "../interfaces/IL2Mailbox.sol";
 import {IL2ETHBridge} from "./interfaces/IL2ETHBridge.sol";
 import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
+import {IL2RuleManager} from "../rule/interface/IL2RuleManager.sol";
+import {AddressUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 
 /// @custom:security-contact enxi.zys@antgroup.com
 contract L2ETHBridge is BridgeBase, IL2ETHBridge {
+    using AddressUpgradeable for address;
+
     uint256 public balance;
+
+    address public ruleManager;
+
+    bool public isRuleCheck;
+
+    event RuleCheckSwitched(bool);
+    event SetRuleManager(address);
 
     event DepositClaimed(address indexed target, uint256 amount, bytes32 depositHash);
     event DepositClaimedWithRefund(address indexed newRefundAddress, uint256 amount, bytes32 depositHash);
+
+    function setRuleManager(address ruleManager_) external onlyOwner {
+        require(ruleManager_ != address(0), "ruleManager should not be zero address");
+        ruleManager = ruleManager_;
+        emit SetRuleManager(ruleManager_);
+    }
+
+    function switchRuleCheck() external onlyOwner {
+        if(isRuleCheck) {
+            isRuleCheck = false;
+        } else {
+            isRuleCheck = true;
+        }
+        emit RuleCheckSwitched(isRuleCheck);
+    }
+
+    function registerRules(string calldata rule_, address[] calldata cas_) external onlyOwner {
+        require(ruleManager != address(0), "ruleManager is not set");
+        IL2RuleManager(ruleManager).registerRules(rule_, cas_);
+    }
+
+    function unregisterRules(string calldata rule_, address[] calldata cas_) external onlyOwner {
+        require(ruleManager != address(0), "ruleManager is not set");
+        IL2RuleManager(ruleManager).unregisterRules(rule_, cas_);
+    }
 
     /**
      * The sender account transfers to tokenbridge to lock the assets;
@@ -35,6 +71,11 @@ contract L2ETHBridge is BridgeBase, IL2ETHBridge {
         require(balance >= amount_, "insufficient balance");
 
         address sender_ = _msgSender();
+
+        if(isRuleCheck) {
+            require(ruleManager != address(0), "ruleManager is not set");
+            ruleManager.functionCall(abi.encodeCall(IL2RuleManager.canWithdraw, (sender_, to_, amount_, gasLimit_, msg_)), "rule manager withdraw check failed");
+        }
 
         bytes memory message_ = abi.encodeCall(IL1ETHBridge.finalizeWithdraw, (sender_, to_, amount_, msg_));
         balance -= amount_;

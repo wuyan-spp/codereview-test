@@ -13,8 +13,7 @@ interface IERC20Token is IERC20Upgradeable {
 
     /**
      * @dev burn token
-     * @param account burn address
      * @param amount count
      */
-    function burn(address account, uint256 amount) external;
+    function burn(uint256 amount) external;
 }

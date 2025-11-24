@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.30;
 
+import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {IL2ERC20Bridge} from "./interfaces/IL2ERC20Bridge.sol";
 import {IL2Mailbox} from "../interfaces/IL2Mailbox.sol";
 import {IMailBoxBase} from "../../common/interfaces/IMailBoxBase.sol";
@@ -11,6 +13,7 @@ import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 
 /// @custom:security-contact enxi.zys@antgroup.com
 contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
+    using SafeERC20Upgradeable for IERC20Upgradeable;
     /**
      * Set token mapping relationship
      * @param token_ Current chain asset contract address
@@ -44,7 +47,8 @@ contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
         address sender_ = _msgSender();
 
         // 2. Burn token.
-        IERC20Token(token_).burn(sender_, amount_);
+        IERC20Upgradeable(token_).safeTransferFrom(sender_,address(this), amount_);
+        IERC20Token(token_).burn( amount_);
 
         // 3. Generate message passed to IL1ERC20Bridge.
         bytes memory message_ =
@@ -82,12 +86,11 @@ contract L2ERC20Bridge is TokenBridge, IL2ERC20Bridge {
         (address l1bridge, address l2bridge, uint256 value, uint256 nonce, bytes memory depositMsg) = abi.decode(msg_[4:], (address, address, uint256, uint256, bytes));
         bytes memory newDepositMsg = BytesLib.slice(depositMsg, 4, depositMsg.length-4);
         (address l1Token_, address l2Token_, address sender_, address to_, uint256 amount_, bytes memory extraMsg_) = abi.decode(newDepositMsg, (address, address, address, address, uint256, bytes));
-        require(msg.sender == sender_, "claimDeposit change refund must called by origin sender");
         bytes32 depositHash = keccak256(msg_);
         IL2Mailbox(mailBox).claimERC20(nonce, depositHash);
         _finalizeDeposit(l1Token_, l2Token_, sender_, to_, amount_, extraMsg_);
     }
-    
+
     function _finalizeDeposit(
         address l1Token_,
         address l2Token_,

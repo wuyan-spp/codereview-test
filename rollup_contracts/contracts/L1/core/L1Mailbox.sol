@@ -172,7 +172,10 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         bytes32 hash_ = keccak256(_encodeCall(sender_, target_, value_, nonce_, msg_));
 
         bytes32 msgRoot_ = IRollup(rollup).getL2MsgRoot(proof_.batchIndex);
-        require(WithdrawTrieVerifier.verifyMerkleProof(msgRoot_, hash_, nonce_, proof_.merkleProof), "Invalid proof");
+        require(
+            WithdrawTrieVerifier.verifyMerkleProof(msgRoot_, hash_, nonce_, proof_.merkleProof),
+            "Invalid proof"
+        );
 
         (bool success,) = target_.call{value: value_}(msg_);
         require(success, "RelayMsg Failed");
@@ -258,10 +261,6 @@ contract L1Mailbox is MailBoxBase, IL1Mailbox, IL1MailQueue {
         require(_l1MsgCount < pendingQueueIndex + 1, "finalize index must smaller than pendingQueueIndex");
         require(_l1MsgCount >= nextFinalizeQueueIndex, "finalize index must smaller than or equal to l1MsgCount");
         nextFinalizeQueueIndex = _l1MsgCount;
-        //        while (nextFinalizeQueueIndex < _l1MsgCount) {
-        //            stableRollingHash = msgQueue.popFront();
-        //            nextFinalizeQueueIndex++;
-        //        }
         emit PopMsgs(nextFinalizeQueueIndex);
     }
 }

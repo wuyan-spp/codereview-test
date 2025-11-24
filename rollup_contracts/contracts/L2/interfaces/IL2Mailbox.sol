@@ -14,6 +14,13 @@ interface IL2Mailbox is IMailBoxBase {
      */
     function relayMsg(address sender_, address target_, uint256 value_, uint256 nonce_, bytes calldata msg_) external;
 
+    /**
+     * Check deposit eth claim msg is valid or not
+     * @param refundAddress the refund address for claim amount
+     * @param amount native token deposit failed
+     * @param nonce_ message nonce value
+     * @param msgHash_ message hash or deposit message
+     */
     function claimETH(
         address refundAddress,
         uint256 amount,
@@ -21,8 +28,23 @@ interface IL2Mailbox is IMailBoxBase {
         bytes32 msgHash_
     ) external;
 
+    /**
+     * Check deposit erc20 claim msg is valid or not
+     * @param nonce_ deposit message nonce value
+     * @param msgHash_ message hash or deposit message
+     */
     function claimERC20(
         uint256 nonce_,
         bytes32 msgHash_
+    ) external;
+
+    function setMsgOracle(address msgOracle_) external;
+
+    function approveMsg(
+        address sender_,
+        address target_,
+        uint256 value_,
+        uint256 nonce_,
+        bytes calldata msg_
     ) external;
 }

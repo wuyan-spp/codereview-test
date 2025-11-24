@@ -122,6 +122,11 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
             _zk_verifier != address(0) || _tee_verifier != address(0),
             "INVALID_PARAMETER : must specify one verifier address"
         );
+        require(
+            _l1_mail_box != address(0),
+            "Rollup: l1_mail_box is zero address"
+        );
+
         layer2ChainId = _chainId;
         zk_verifier = _zk_verifier;
         tee_verifier = _tee_verifier;
@@ -189,7 +194,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         whenNotPaused
     {
         require(_batchIndex == lastCommittedBatch + 1, "INVALID_PARAMETER : commit batch one by one");
-
+        require(_totalL1MessagePopped >= l1MsgCount[lastCommittedBatch], "INVALID_PARAMETER : L1 msg count must be bigger than before");
         uint256 BATCH_HEADER_MEMORY_USED = BatchHeaderCodec.BATCH_HEADER_MEMORY_USED;
         // init empty batch
         uint256 batchPtr;
@@ -289,6 +294,7 @@ contract Rollup is IRollup, OwnableUpgradeable, PausableUpgradeable {
         // actual revert
         for (uint256 _batchIndex = lastCommittedBatch; _batchIndex > _newLastBatchIndex; --_batchIndex) {
             committedBatches[_batchIndex] = bytes32(0);
+            l1MsgCount[_batchIndex] = 0;
         }
         lastCommittedBatch = _newLastBatchIndex;
         emit BatchesReverted(_newLastBatchIndex);

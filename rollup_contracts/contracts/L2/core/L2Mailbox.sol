@@ -11,12 +11,40 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
     /// @notice The address of L1MailBox contract.
     address public l1MailBox;
 
-    event Initialize(address indexed l1MailBox, address indexed owner, uint256 baseFee);
-    event SetL1MailBox(address indexed oldL1MailBox, address indexed newL1MailBox);
-
     mapping(bytes32 msgHash => bool status) public receiveMsgStatus;
+    mapping(bytes32 => bool) public pendingMsgMap;
+    address public msgOracle;
 
-    constructor() {
+    uint256 public finalizeL1MsgNonce;
+    uint256 public version;
+    uint256 internal constant ORACLE_VERSION = 1;
+    /**
+     * Errors
+     */
+    error NotSupportOracle();
+
+    error NotSupportDownGrade();
+
+    error ErrorL1MsgNonce();
+
+    /**
+     * Events
+     */
+    event Initialized(address indexed l1MailBox, address indexed owner, uint256 baseFee);
+
+    event SetMsgOracle(address indexed _msgOracle);
+
+    event PendingMsg(
+        address indexed _sender,
+        address indexed _target,
+        uint256 _value,
+        uint256 _nonce,
+        bytes _msg
+    );
+
+    event SetFinalizeL1MsgNonce(uint256 _finalizeL1MsgNonce);
+
+    constructor(){
         _disableInitializers();
     }
 
@@ -37,14 +65,15 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         baseFee = baseFee_;
         _transferOwnership(owner_);
         _initializeMerkleTree();
-        emit Initialize(l1MailBox_, owner_, baseFee_);
+        emit Initialized(l1MailBox_, owner_, baseFee_);
     }
 
-    function setL1MailBox(address l1MailBox_) external whenPaused onlyOwner {
-        require(l1MailBox_ != address(0), "Invalid address");
-        address oldL1MailBox = l1MailBox;
-        l1MailBox = l1MailBox_;
-        emit SetL1MailBox(oldL1MailBox, l1MailBox_);
+
+    function setMsgOracle(address msgOracle_) external onlyOwner {
+        require(msgOracle_ != address(0), "msgOracle must not zero");
+        require(msgOracle_.code.length != 0, "msgOracle must be contract");
+        msgOracle = msgOracle_;
+        emit SetMsgOracle(msgOracle_);
     }
 
     function sendMsg(address target_, uint256 value_, bytes calldata msg_, uint256 gasLimit_, address refundAddress_)
@@ -98,20 +127,57 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
     {
         // here l1MailBox will be set as L2Relayer 0x5100000000000000000000000000000000000000
         require(_msgSender() == l1MailBox, "Caller is not L1Mailbox");
-
         bytes32 hash_ = keccak256(_encodeCall(sender_, target_, value_, nonce_, msg_));
-        bytes32 rollinghash = _getRollingHash(hash_);
-        emit RollingHash(rollinghash);
         _receiveMsgCheck(hash_);
-        (bool success,) = target_.call{value: value_}(msg_);
-        if (success) {
-            _receiveMsgSuccess(hash_);
-            emit RelayMsgSuccess(hash_, nonce_);
+
+        if (version < ORACLE_VERSION) {
+            bytes32 rollinghash = _getRollingHash(hash_);
+            emit RollingHash(rollinghash);
+            (bool success,) = target_.call{value: value_}(msg_);
+            if (success) {
+                _receiveMsgSuccess(hash_);
+                emit RelayMsgSuccess(hash_, nonce_);
+            } else {
+                _receiveMsgFailed(hash_);
+                emit RelayMsgFailed(hash_, nonce_);
+            }
+            emit RelayedMsg(hash_, nonce_);
         } else {
-            _receiveMsgFailed(hash_);
-            emit RelayMsgFailed(hash_, nonce_);
+            pendingMsgMap[hash_] = true;
+            emit PendingMsg(sender_, target_, value_, nonce_, msg_);
         }
-        emit RelayedMsg(hash_, nonce_);
+    }
+
+    function approveMsg(
+        address sender_,
+        address target_,
+        uint256 value_,
+        uint256 nonce_,
+        bytes calldata msg_
+    ) external override whenNotPaused nonReentrant {
+        if (version >= ORACLE_VERSION) {
+            require(_msgSender() == msgOracle, "Caller is not msgOracle");
+            if (finalizeL1MsgNonce != nonce_) {
+                revert ErrorL1MsgNonce();
+            }
+            bytes32 hash_ = keccak256(_encodeCall(sender_, target_, value_, nonce_, msg_));
+            require(pendingMsgMap[hash_], "msg is not in pending stage");
+            delete pendingMsgMap[hash_];
+            bytes32 rollinghash = _getRollingHash(hash_);
+            emit RollingHash(rollinghash);
+            ++finalizeL1MsgNonce;
+            (bool success,) = target_.call{value : value_}(msg_);
+            if (success) {
+                _receiveMsgSuccess(hash_);
+                emit RelayMsgSuccess(hash_, nonce_);
+            } else {
+                _receiveMsgFailed(hash_);
+                emit RelayMsgFailed(hash_, nonce_);
+            }
+            emit RelayedMsg(hash_, nonce_);
+        } else {
+            revert NotSupportOracle();
+        }
     }
 
     function claimETH(
@@ -134,6 +200,16 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
     ) external override onlyBridge whenNotPaused nonReentrant {
         _checkMsgClaimValid(msgHash_);
         emit ClaimMsg(msgHash_, nonce_);
+    }
+
+    function setFinalizeL1MsgNonce(uint256 _finalizeL1MsgNonce) external onlyOwner whenPaused {
+        finalizeL1MsgNonce = _finalizeL1MsgNonce;
+        if (version > ORACLE_VERSION) {
+            revert NotSupportDownGrade();
+        } else {
+            version = ORACLE_VERSION;
+        }
+        emit SetFinalizeL1MsgNonce(_finalizeL1MsgNonce);
     }
 
     /**
@@ -162,11 +238,4 @@ contract L2Mailbox is AppendOnlyMerkleTree, MailBoxBase, IL2Mailbox, IL2MailQueu
         require(!receiveMsgStatus[hash_], "ClaimMsg : L2 msg must exec failed before");
         receiveMsgStatus[hash_] = true;
     }
-
-    // function _finalizeClaimMsg(bytes32 hash_) internal {
-    //     _msgExistCheck(hash_);
-    //     require(!receiveMsgStatus[hash_], "ClaimMsg : L2 msg must exec failed before");
-    //     receiveMsgStatus[hash_] = true;
-    // }
-
 }

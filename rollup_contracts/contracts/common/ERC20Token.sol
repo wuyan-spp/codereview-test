@@ -71,7 +71,12 @@ contract ERC20Token is
     /**
      * @dev require BURNER_ROLE=keccak256(abi.encodePacked("BURNER_ROLE"))
      */
-    function burn(address account, uint256 amount) public override onlyRole(BURNER_ROLE) {
+    function burn(uint256 amount) public override(IERC20Token, ERC20BurnableUpgradeable) onlyRole(BURNER_ROLE) {
+        _burn(_msgSender(),amount);
+    }
+
+    function burnFrom(address account, uint256 amount) public override(ERC20BurnableUpgradeable) onlyRole(BURNER_ROLE)  {
+        _spendAllowance(account, _msgSender(), amount);
         _burn(account, amount);
     }
 }

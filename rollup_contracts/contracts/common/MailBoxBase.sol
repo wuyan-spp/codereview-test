@@ -95,8 +95,6 @@ abstract contract MailBoxBase is
         return abi.encodeCall(IRelay.relayMsg, (sender_, target_, value_, msgNonce_, msg_));
     }
 
-    
-
     /// @notice Add an account to the bridge list.
     /// @param _bridge The address of bridge to add.
     function addBridge(address _bridge) external onlyOwner {

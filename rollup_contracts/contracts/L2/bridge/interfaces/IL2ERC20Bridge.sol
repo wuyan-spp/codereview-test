@@ -51,5 +51,9 @@ interface IL2ERC20Bridge {
      */
     function finalizeDeposit(address l1Token_, address l2Token_, address sender_, address to_, uint256 amount_, bytes calldata msg_) external payable;
 
+    /**
+     * Claim failed deposit erc20 assert
+     * @param msg_ deposit data
+     */
     function claimDeposit(bytes calldata msg_) external;
 }

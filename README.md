@@ -25,10 +25,10 @@ A convenience script is provided to compile all contracts in the repository.
     ./compile.sh
     ```
 
-This will compile the `rollup_contracts`, the nested `tee_verifier` contract, and the `sequencer_contracts`.
+This will compile the `contracts`, the nested `tee_verifier` contract, and the `sequencer_contracts`.
 
 ### Artifacts Location
 
--   **Rollup Contracts:** The compiled artifacts will be located in the `rollup_contracts/out/` directory.
--   **TEE Verifier Contract:** The compiled artifacts will be located in the `rollup_contracts/contracts/L1/tee_verifier/out/` directory.
--   **Sequencer Contracts:** The compiled artifacts will be located in the `sequencer_contracts/sys_contract/artifact/` directory. The output for each contract (e.g., `erc_20.sol`) will be a JSON file (`erc_20.json`) containing the ABI, bytecode, and other metadata.
+-   **Rollup Contracts:** The compiled artifacts will be located in the `contracts/out/` directory.
+-   **TEE Verifier Contract:** The compiled artifacts will be located in the `contracts/src/L1/tee_verifier/out/` directory.
+-   **Sequencer Contracts:** The compiled artifacts will be located in the `contracts/src/L2/sys/out/` directory. The output for each contract (e.g., `erc_20.sol`) will be a JSON file (`erc_20.json`) containing the ABI, bytecode, and other metadata.

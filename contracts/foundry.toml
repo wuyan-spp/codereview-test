@@ -1,10 +1,13 @@
 [profile.default]
-src = "contracts"
+src = "src"
 out = "out"
 libs = ["lib", "node_modules"]
 script = 'scripts'                                      # the script directory
-skip = ["contracts/L1/tee_verifier/*"]
+skip = ["src/L1/tee_verifier/*"]
 solc_version = '0.8.30'
+via_ir = true 
+optimizer = true
+optimizer_runs = 200
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
 [dependencies] # <= Dependencies will be added under this config

@@ -1,5 +1,3 @@
-sequencer_contracts/sys_contract/artifact/
-sequencer_contracts/sys_contract/cache/
-rollup_contracts/cache/
-rollup_contracts/out/
-rollup_contracts/node_modules/
+contracts/cache/
+contracts/out/
+contracts/node_modules/

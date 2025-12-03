@@ -18,10 +18,10 @@ https://github.com/jovaynetwork/jovay-contracts/
 
 ```
 
-You must `bash ./compile.sh` first to install patches in `rollup_contracts/contracts/L1/tee_verifier/sh`
+You must `bash ./compile.sh` first to install patches in `contracts/src/L1/tee_verifier/sh`
 
 .
-├── rollup_contracts/contracts
+├── contracts/src
 │ ├── common
 │ │ ├── BridgeBase.sol
 │ │ ├── ERC20Token.sol

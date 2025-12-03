@@ -4,14 +4,28 @@ set -e # Exit on error
 # Navigate to the project root (tee_verifier)
 cd "$(dirname "$0")/.."
 
-# Install dependencies
-forge install --no-commit --no-git vectorized/solady@v0.1.24
-forge install --no-commit --no-git foundry-rs/forge-std
-forge install --no-commit --no-git automata-network/automata-dcap-attestation@evm-v1.0.0
+# Clean up existing lib directory to avoid conflicts
+rm -rf lib
+mkdir -p lib
 
-cd sh
-cp patch/0001-support-v5-quote.patch ../lib/automata-dcap-attestation
-cp patch/0001-bugfix-collaterals-expiration-check.patch ../lib/automata-dcap-attestation
-cd ../lib/automata-dcap-attestation
-git apply 0001-support-v5-quote.patch
-git apply 0001-bugfix-collaterals-expiration-check.patch
+# Install dependencies using git clone to avoid forge install issues
+echo "Installing solady..."
+git clone --depth 1 --branch v0.1.24 https://github.com/vectorized/solady.git lib/solady
+
+echo "Installing forge-std..."
+git clone --depth 1 https://github.com/foundry-rs/forge-std.git lib/forge-std
+
+echo "Installing automata-dcap-attestation..."
+git clone --depth 1 --branch v1.0.0 https://github.com/automata-network/automata-dcap-attestation.git lib/automata-dcap-attestation
+
+# Initialize submodules for automata-dcap-attestation
+echo "Initializing automata-dcap-attestation submodules..."
+cd lib/automata-dcap-attestation
+git submodule update --init --recursive
+
+# Apply patches
+echo "Applying patches..."
+git apply ../../sh/patch/0001-support-v5-quote.patch
+git apply ../../sh/patch/0001-bugfix-collaterals-expiration-check.patch
+
+echo "Dependencies installed successfully!"

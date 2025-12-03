@@ -1,5 +1,5 @@
 ## About automata-dcap-attestation dependency
-The contracts in the tee_verifier directory use the [automata-dcap-attestation](https://github.com/automata-network/automata-dcap-attestation/releases/tag/evm-v1.0.0) dependency. Two modifications have been made on top of the base library:
+The contracts in the tee_verifier directory use the [automata-dcap-attestation](https://github.com/automata-network/automata-dcap-attestation/releases/tag/v1.0.0) dependency. Two modifications have been made on top of the base library:
 
 - Added support for quote v5 verification.
 - Fixed a bug in the `PCCSRouter` contract.

@@ -1,0 +1,57 @@
+name: Unit Tests
+
+on:
+  push:
+  pull_request:
+
+env:
+  FOUNDRY_PROFILE: ci
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: contracts/package-lock.json
+      
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+      
+      - name: Install npm dependencies
+        working-directory: contracts
+        run: npm install
+      
+      - name: Setup tee_verifier dependencies
+        working-directory: contracts/src/L1/tee_verifier/sh
+        run: |
+          chmod +x ./install_deps.sh
+          ./install_deps.sh
+
+      - name: Run Forge build
+        working-directory: contracts
+        run: forge build
+
+      - name: Build tee_verifier
+        working-directory: contracts/src/L1/tee_verifier
+        run: forge build
+      
+      - name: Run Forge tests
+        working-directory: contracts
+        run: forge test -vv
+      
+      # The tee_verifier test cases cannot be run at the moment because no test private key is provided
+      # - name: Run tee_verifier tests
+      #   working-directory: contracts/src/L1/tee_verifier
+      #   run: forge test -vv

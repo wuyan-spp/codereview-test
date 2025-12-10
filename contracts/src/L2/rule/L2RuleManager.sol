@@ -22,6 +22,9 @@ contract L2RuleManager is OwnableUpgradeable, IL2RuleManager {
     event RuleRegisterd(address bizContract, string rule, address[] cas);
     event RuleUnregisterd(address bizContract, string rule, address[] cas);
 
+    error EmptyRuleContracts();
+    error NotSupportRule();
+
     constructor() {
         _disableInitializers();
     }
@@ -45,7 +48,7 @@ contract L2RuleManager is OwnableUpgradeable, IL2RuleManager {
 
     // add rules
     function addRules(string[] calldata rules_) external onlyOwner {
-        for(uint i = 0; i < rules_.length; ++i) {
+        for (uint i = 0; i < rules_.length; ++i) {
             rules.add(stringToHash(rules_[i]));
         }
         emit RuleAdded(rules_);
@@ -53,7 +56,7 @@ contract L2RuleManager is OwnableUpgradeable, IL2RuleManager {
 
     // remove rules
     function removeRules(string[] calldata rules_) external onlyOwner {
-        for(uint i = 0; i < rules_.length; ++i) {
+        for (uint i = 0; i < rules_.length; ++i) {
             require(ruleToBizContract[rules_[i]].length() == 0, "rule is in use");
             rules.remove(stringToHash(rules_[i]));
         }
@@ -62,9 +65,9 @@ contract L2RuleManager is OwnableUpgradeable, IL2RuleManager {
 
     // contract regists rules
     function registerRules(string calldata rule_, address[] calldata cas_) external onlyContract {
-        require(supportRule(rule_), "invalid rule_");
+        _checkRules(rule_, cas_);
         ruleToBizContract[rule_].add(msg.sender);
-        for(uint i = 0; i < cas_.length; ++i) {
+        for (uint i = 0; i < cas_.length; ++i) {
             bizContractToRuleCA[msg.sender][rule_].add(cas_[i]);
         }
         emit RuleRegisterd(msg.sender, rule_, cas_);
@@ -72,12 +75,13 @@ contract L2RuleManager is OwnableUpgradeable, IL2RuleManager {
 
     // contract unregists rules
     function unregisterRules(string calldata rule_, address[] calldata cas_) external onlyContract {
+        _checkRules(rule_, cas_);
         require(bizContractToRuleCA[msg.sender][rule_].length() > 0, "no rule contracts");
-        for(uint i = 0; i < cas_.length; ++i) {
+        for (uint i = 0; i < cas_.length; ++i) {
             bizContractToRuleCA[msg.sender][rule_].remove(cas_[i]);
         }
 
-        if(bizContractToRuleCA[msg.sender][rule_].length() == 0) {
+        if (bizContractToRuleCA[msg.sender][rule_].length() == 0) {
             ruleToBizContract[rule_].remove(msg.sender);
         }
         emit RuleUnregisterd(msg.sender, rule_, cas_);
@@ -87,7 +91,7 @@ contract L2RuleManager is OwnableUpgradeable, IL2RuleManager {
         return rules.contains(stringToHash(rule_));
     }
 
-    function isRuleUsedByBizContract(address bizContract_, string calldata rule_, address ca_) external view returns(bool) {
+    function isRuleUsedByBizContract(address bizContract_, string calldata rule_, address ca_) external view returns (bool) {
         return bizContractToRuleCA[bizContract_][rule_].contains(ca_);
     }
 
@@ -105,5 +109,14 @@ contract L2RuleManager is OwnableUpgradeable, IL2RuleManager {
 
     function stringToHash(string calldata str) internal pure returns (bytes32) {
         return keccak256(bytes(str));
+    }
+
+    function _checkRules(string calldata rule_, address[] calldata cas_) internal {
+        if (!supportRule(rule_)) {
+            revert NotSupportRule();
+        }
+        if (cas_.length == 0) {
+            revert EmptyRuleContracts();
+        }
     }
 }

@@ -3,7 +3,7 @@ pragma solidity 0.8.30;
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {IRule} from "./interface/IRule.sol";
-import {EnumerableSet} from "../../../node_modules/@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 contract L2WithdrawLimitation is OwnableUpgradeable, IRule {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -27,8 +27,10 @@ contract L2WithdrawLimitation is OwnableUpgradeable, IRule {
     event WhitelistAdded(address[] newWhitelistAddresses_);
     event WhitelistRemoved(address[] removedWhitelistAddresses_);
 
+    error InvalidTimeCycle();
+
     constructor() {
-         _disableInitializers();
+        _disableInitializers();
     }
 
     modifier onlyL2RuleManager() {
@@ -37,6 +39,7 @@ contract L2WithdrawLimitation is OwnableUpgradeable, IRule {
     }
 
     function initialize(uint256 cycleETHWithdrawLimit_, uint256 timeCycle_, address bindBizContract_, address l2RuleManager_) external initializer {
+        _checkTimeCycle(timeCycle_);
         __Ownable_init();
         anchorTime = block.timestamp;
         timeCycle = timeCycle_;
@@ -56,6 +59,7 @@ contract L2WithdrawLimitation is OwnableUpgradeable, IRule {
     }
 
     function setTimeCycle(uint256 timeCycle_) external onlyOwner {
+        _checkTimeCycle(timeCycle_);
         timeCycle = timeCycle_;
         anchorTime = block.timestamp;
         cycleFromAnchorTime = 0;
@@ -92,11 +96,11 @@ contract L2WithdrawLimitation is OwnableUpgradeable, IRule {
         require(block.timestamp >= cycleFromAnchorTime * timeCycle_ + anchorTime_, "Block executed at expiration time");
 
         // if current time is in next cycle, update cycle info
-        if(block.timestamp >= (cycleFromAnchorTime+1) * timeCycle_ + anchorTime_) {
+        if (block.timestamp >= (cycleFromAnchorTime + 1) * timeCycle_ + anchorTime_) {
             updateCycleInfo(timeCycle_, anchorTime_);
         }
         // check current time is not in next cycle
-        require(block.timestamp < (cycleFromAnchorTime+1) * timeCycle_ + anchorTime_ , "previous cycle time update not enough");
+        require(block.timestamp < (cycleFromAnchorTime + 1) * timeCycle_ + anchorTime_, "previous cycle time update not enough");
 
         require(amount_ <= cycleRemainQuota, "current cycle remain quota not enough");
         cycleRemainQuota -= amount_;
@@ -129,7 +133,7 @@ contract L2WithdrawLimitation is OwnableUpgradeable, IRule {
         uint256 cycleETHWithdrawLimit_ = cycleETHWithdrawLimit;
 
         // if current time is in next cycle, return new cycle limit info
-        if(block.timestamp >= (cycleFromAnchorTime+1) * timeCycle + anchorTime) {
+        if (block.timestamp >= (cycleFromAnchorTime + 1) * timeCycle + anchorTime) {
             return (cycleETHWithdrawLimit_, cycleETHWithdrawLimit_);
         } else {
             return (cycleRemainQuota, cycleETHWithdrawLimit_);
@@ -143,8 +147,8 @@ contract L2WithdrawLimitation is OwnableUpgradeable, IRule {
         uint256 inWhitelistCount = 0;
         uint256 notInWhitelistCount = 0;
 
-        for(uint256 i = 0; i < addresses_.length; ++i) {
-            if(whitelist.contains(addresses_[i])) {
+        for (uint256 i = 0; i < addresses_.length; ++i) {
+            if (whitelist.contains(addresses_[i])) {
                 inWhitelist[inWhitelistCount] = addresses_[i];
                 ++inWhitelistCount;
             } else {
@@ -179,4 +183,11 @@ contract L2WithdrawLimitation is OwnableUpgradeable, IRule {
         }
         emit WhitelistRemoved(addresses_);
     }
+
+    function _checkTimeCycle(uint256 timeCycle_) internal {
+        if (timeCycle_ == 0) {
+            revert InvalidTimeCycle();
+        }
+    }
+
 }

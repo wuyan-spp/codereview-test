@@ -269,25 +269,6 @@ contract ChainCfg {
         return newConfigs;
     }
 
-    /// @notice Internal function to update the old version data in the `SysChainCfg` contract.
-    function updateOldVersionData() public {
-        require(msg.sender == _getProxyAdmin(), "Invalid upgrade caller");
-
-        for (uint256 i = 2; i >= 0; i--) {
-            if (configCps[i].effectiveBlockNum <= block.number) {
-                configCps[0] = configCps[i];
-
-                while (configCps.length > 1) {
-                    configCps.pop();
-                }
-
-                return;
-            }
-        }
-
-        revert("No effective chain config found");
-    }
-
     /// @notice Internal function to check for duplicate keys in the keys array.
     /// @param keys The array of keys to check for duplicates.
     function _checkDuplicateKeys(string[] calldata keys) private pure returns (bool) {

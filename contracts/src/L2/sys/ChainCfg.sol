@@ -170,6 +170,9 @@ contract ChainCfg {
     /// @param values An array of corresponding values.
     function set_config(string[] calldata keys, string[] calldata values) external onlyOwner {
         if (keys.length != values.length) revert KeysAndValuesLengthMismatch();
+
+        require(_checkDuplicateKeys(keys), "KEYS_DUPLICATE");
+
         // Config will be inited in genesis block and will be effective at block 0, so this if block
         // will not be entered. This block is write for Defensive Programming.
         if (configCps.length == 0) {
@@ -203,7 +206,6 @@ contract ChainCfg {
         // Have both effective and pending configs
         ConfigCheckpoint storage latestCp = configCps[1];
         // Build merged configuration using helper function
-        Config[] memory baseConfigs = latestCp.configs;
         Config[] memory mergedConfigs = _buildMergedConfig(latestCp.configs, keys, values);
         
         if (block.number >= latestCp.effectiveBlockNum) {
@@ -270,7 +272,6 @@ contract ChainCfg {
     /// @notice Internal function to update the old version data in the `SysChainCfg` contract.
     function updateOldVersionData() public {
         require(msg.sender == _getProxyAdmin(), "Invalid upgrade caller");
-        require(configCps.length == 3, "Invalid configCps length");
 
         for (uint256 i = 2; i >= 0; i--) {
             if (configCps[i].effectiveBlockNum <= block.number) {
@@ -285,6 +286,23 @@ contract ChainCfg {
         }
 
         revert("No effective chain config found");
+    }
+
+    /// @notice Internal function to check for duplicate keys in the keys array.
+    /// @param keys The array of keys to check for duplicates.
+    function _checkDuplicateKeys(string[] calldata keys) private pure returns (bool) {
+        for (uint256 i = 0; i < keys.length; i++) {
+            for (uint256 j = i + 1; j < keys.length; j++) {
+                if (
+                    keccak256(abi.encodePacked(keys[i])) ==
+                    keccak256(abi.encodePacked(keys[j]))
+                ) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /// @notice Get transparent upgradeable contract proxy admin

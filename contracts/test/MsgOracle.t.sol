@@ -36,7 +36,23 @@ contract MsgOracleTest is Test {
         
         // Deploy implementation
         MsgOracle implementation = new MsgOracle();
-        
+
+
+        //Test small threshold
+        bytes memory initData_with_small_threshold = abi.encodeWithSelector(
+            MsgOracle.initialize.selector,
+            voters,
+            1,
+            address(mockMailbox),
+            0
+        );
+        vm.expectRevert("Invalid threshold");
+        ERC1967Proxy proxy = new ERC1967Proxy(
+            address(implementation),
+            initData_with_small_threshold
+        );
+
+
         // Prepare initialization data
         bytes memory initData = abi.encodeWithSelector(
             MsgOracle.initialize.selector,
@@ -47,7 +63,7 @@ contract MsgOracleTest is Test {
         );
         
         // Deploy proxy
-        ERC1967Proxy proxy = new ERC1967Proxy(
+        proxy = new ERC1967Proxy(
             address(implementation),
             initData
         );
@@ -507,9 +523,13 @@ contract MsgOracleTest is Test {
 
     // test: owner functions
     function testAddVoter() public {
+        oracle.removeVoter(VOTER3);
         address newVoter = address(0x5);
         oracle.addVoter(newVoter);
         assertTrue(oracle.isVoter(newVoter));
+        newVoter = address(0x6);
+        vm.expectRevert("Invalid threshold");
+        oracle.addVoter(newVoter);
     }
 
     function testRemoveVoter() public {
@@ -518,9 +538,35 @@ contract MsgOracleTest is Test {
     }
 
     function testSetThreshold() public {
-        uint256 newThreshold = 1;
+        uint256 newThreshold = 3;
         oracle.setThreshold(newThreshold);
         assertEq(oracle.threshold(), newThreshold);
+    }
+
+    function testSetSmallThreshold() public {
+        uint256 newThreshold = 1;
+        vm.expectRevert("Invalid threshold");
+        oracle.setThreshold(newThreshold);
+    }
+
+    function testNonOwnerCannotSetThreshold() public {
+        uint256 newThreshold = 1;
+        vm.expectRevert();
+        vm.prank(NON_VOTER);
+        oracle.setThreshold(newThreshold);
+    }
+
+    function testSetNextApproveNonce() public {
+        uint256 newNextApproveNonce = 100;
+        oracle.setNextApproveNonce(newNextApproveNonce);
+        assertEq(oracle.nextApproveNonce(), newNextApproveNonce);
+    }
+
+    function testNonOwnerCannotSetNextApproveNonce() public {
+        uint256 newNextApproveNonce = 100;
+        vm.expectRevert();
+        vm.prank(NON_VOTER);
+        oracle.setNextApproveNonce(newNextApproveNonce);
     }
 
     function testNonOwnerCannotAddVoter() public {
@@ -588,3 +634,4 @@ contract MsgOracleTest is Test {
         oracle.unpause();
     }
 }
+

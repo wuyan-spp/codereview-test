@@ -16,6 +16,7 @@ interface IMsgOracle {
     event VoterAdded(address indexed voter);
     event VoterRemoved(address indexed voter);
     event ThresholdUpdated(uint256 newThreshold);
+    event NextApproveNonceUpdated(uint256 newNextApproveNonce);
 
     function getVoters() external view returns (address[] memory);
     function isVoter(address account_) external view returns (bool);
@@ -27,4 +28,5 @@ interface IMsgOracle {
     function addVoter(address voter_) external;
     function removeVoter(address voter_) external;
     function setThreshold(uint256 threshold_) external;
+    function setNextApproveNonce(uint256 nextApproveNonce_) external;
 }

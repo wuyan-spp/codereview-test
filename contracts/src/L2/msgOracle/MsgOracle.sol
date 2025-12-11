@@ -42,7 +42,9 @@ contract MsgOracle is Initializable, OwnableUpgradeable, PausableUpgradeable, IM
             voters.add(voters_[i]);
         }
 
-        require(threshold_ > 0 && threshold_ <= voters.length(), "Invalid threshold");
+        uint256 voters_length = voters.length();
+        require(threshold_ > voters_length / 2 && threshold_ <= voters_length, "Invalid threshold");
+
         threshold = threshold_;
         require(l2Mailbox_ != address(0) && l2Mailbox_.code.length > 0, "Invalid L2Mailbox address");
         l2Mailbox = IL2Mailbox(l2Mailbox_);
@@ -128,6 +130,9 @@ contract MsgOracle is Initializable, OwnableUpgradeable, PausableUpgradeable, IM
     function addVoter(address voter_) external onlyOwner {
         require(voter_ != address(0), "Invalid voter address");
         require(!voters.contains(voter_), "Already a voter");
+        uint256 voters_length = voters.length() + 1;
+        uint256 threshold_ = threshold;
+        require(threshold_ > voters_length / 2 && threshold_ <= voters_length, "Invalid threshold");
         voters.add(voter_);
         emit VoterAdded(voter_);
     }
@@ -141,9 +146,15 @@ contract MsgOracle is Initializable, OwnableUpgradeable, PausableUpgradeable, IM
     }
 
     function setThreshold(uint256 threshold_) external onlyOwner {
-        require(threshold_ > 0 && threshold_ <= voters.length(), "Invalid threshold");
+        uint256 voters_length = voters.length();
+        require(threshold_ > voters_length / 2 && threshold_ <= voters_length, "Invalid threshold");
         threshold = threshold_;
         emit ThresholdUpdated(threshold_);
+    }
+
+    function setNextApproveNonce(uint256 nextApproveNonce_) external onlyOwner {
+        nextApproveNonce = nextApproveNonce_;
+        emit NextApproveNonceUpdated(nextApproveNonce_);
     }
 
     // Pausable functions

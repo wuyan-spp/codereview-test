@@ -1,6 +1,6 @@
 # Jovay Contracts
 
-This repository contains the smart contracts for the Jovay Network, a Layer 2 scaling solution.
+This repository contains the smart contracts for the Jovay Network, a Layer 2 scaling solution. These contracts have been audited by third-party security firms. For audit reports, see [Audit Reports](https://docs.jovay.io/resources/audit-reports).
 
 ## Overview
 

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
 import {IL1ETHBridge} from "../../L1/bridge/interfaces/IL1ETHBridge.sol";

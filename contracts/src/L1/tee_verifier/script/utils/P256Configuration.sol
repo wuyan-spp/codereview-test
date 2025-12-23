@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 
 import "dcap-attestation/utils/BytesUtils.sol";
 import "forge-std/Script.sol";

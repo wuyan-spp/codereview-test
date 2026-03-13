@@ -1,0 +1,76 @@
+name: Claude Code Review
+
+# Trigger on new / updated PRs and on @claude mentions in comments.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  # ── Job 1: Automatic review on every PR open / push ─────────────────────────
+  claude-pr-review:
+    name: Automatic PR Review
+    # Only run on pull_request events; skip draft PRs
+    if: >
+      github.event_name == 'pull_request' &&
+      !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # full history for richer context
+
+      - name: Run Claude Code Review
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Instruct Claude to follow the project's review guidelines.
+          # CLAUDE.md supplies general coding standards;
+          # REVIEW.md supplies review-specific priorities.
+          direct_prompt: |
+            You are performing a code review for this pull request.
+
+            Follow the review guidelines defined in REVIEW.md (if present) and
+            adhere to the coding standards in CLAUDE.md (if present).
+
+            For every file changed:
+            1. Check for 🔴 blocking issues first (security, CEI violations,
+               missing access control, msg.value mismatches, zero-address gaps).
+            2. Then flag 🟡 nits (deprecated patterns, unbounded loops, missing
+               events, magic numbers).
+            3. Confirm correct SPDX comment format and pragma ordering.
+            4. Skip files listed in the "What to Skip" section of REVIEW.md.
+
+            Post inline review comments on specific lines where issues are found.
+            Summarise your findings in the top-level review body.
+
+  # ── Job 2: Respond to @claude mentions in PR / issue comments ───────────────
+  claude-on-mention:
+    name: Respond to @claude Mention
+    # Trigger when someone writes "@claude" in a PR comment or review comment
+    if: >
+      (github.event_name == 'issue_comment' ||
+       github.event_name == 'pull_request_review_comment') &&
+      contains(github.event.comment.body, '@claude')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code Action
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Let Claude read the comment and decide what to do;
+          # no direct_prompt here so it operates interactively.

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
-
 import "dcap-attestation/utils/BytesUtils.sol";
 import "forge-std/Script.sol";
+
+pragma solidity ^0.8.0;
 
 contract P256Configuration is Script {
     using BytesUtils for bytes;

@@ -9,11 +9,10 @@ on:
   pull_request_review_comment:
     types: [created]
 
+# Default minimal permissions; each job overrides with only what it needs
+# (principle of least privilege).
 permissions:
   contents: read
-  pull-requests: write
-  issues: write
-  id-token: write      # required by anthropics/claude-code-action to obtain OIDC token
 
 jobs:
   # ── Job 1: Automatic review on every PR open / push ─────────────────────────
@@ -24,16 +23,23 @@ jobs:
       github.event_name == 'pull_request' &&
       !github.event.pull_request.draft
     runs-on: ubuntu-latest
+    timeout-minutes: 15        # prevent runaway jobs from consuming runner quota
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write          # required by anthropics/claude-code-action for OIDC token
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0          # full history for richer context
+          fetch-depth: 1       # shallow clone is sufficient for direct_prompt review mode
 
       - name: Run Claude Code Review
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ github.token }}
           # Instruct Claude to follow the project's review guidelines.
           # CLAUDE.md supplies general coding standards;
           # REVIEW.md supplies review-specific priorities.
@@ -63,15 +69,23 @@ jobs:
        github.event_name == 'pull_request_review_comment') &&
       contains(github.event.comment.body, '@claude')
     runs-on: ubuntu-latest
+    timeout-minutes: 15        # prevent runaway jobs from consuming runner quota
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      # Note: id-token is intentionally omitted here; @claude mention mode
+      # does not require OIDC authentication.
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Run Claude Code Action
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ github.token }}
           # Let Claude read the comment and decide what to do;
           # no direct_prompt here so it operates interactively.

@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-import {BridgeBase} from "../../common/BridgeBase.sol";
-import {IL1Mailbox} from "../interfaces/IL1Mailbox.sol";
-import {IL1BridgeProof} from "./interfaces/IL1BridgeProof.sol";
 
 /// @custom:security-contact enxi.zys@antgroup.com
 contract L1BridgeProof is BridgeBase, IL1BridgeProof {

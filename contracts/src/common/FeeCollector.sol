@@ -11,9 +11,12 @@ import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/
 /// @custom:security-contact enxi.zys@antgroup.com
 contract FeeCollector is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable {
 
+    /// @dev 10 000 basis points = 100 %.
+    uint256 private constant BP_DIVISOR = 10_000;
+
     struct Recipient {
         address addr;
-        uint256 basisPoints; // share out of 10000 (e.g. 5000 = 50%)
+        uint256 basisPoints; // share out of BP_DIVISOR (e.g. 5000 = 50%)
     }
 
     Recipient[] public recipients;
@@ -26,8 +29,11 @@ contract FeeCollector is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausabl
     event RecipientRemoved(uint256 indexed index);
 
     error ZeroAddress();
+    error ZeroBasisPoints();
+    error BasisPointsExceedMax();
     error NothingToDistribute();
     error InvalidIndex();
+    error TransferFailed();
 
     constructor() {
         _disableInitializers();
@@ -41,13 +47,14 @@ contract FeeCollector is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausabl
     }
 
     /// @notice Register a new fee recipient.
-    /// @param addr_        Recipient address.
-    /// @param basisPoints_ Share in basis points (1 bp = 0.01%).
+    /// @param addr_        Recipient address (must not be zero).
+    /// @param basisPoints_ Share in basis points (1 bp = 0.01%); sum across all
+    ///                     recipients must not exceed BP_DIVISOR (10 000).
     function addRecipient(address addr_, uint256 basisPoints_) external onlyOwner {
-        // Issue 1 (missing check): no validation that total basisPoints across
-        // all recipients stays <= 10000, allowing over-distribution.
+        if (addr_ == address(0)) revert ZeroAddress();
+        if (basisPoints_ == 0) revert ZeroBasisPoints();
+        if (totalBasisPoints() + basisPoints_ > BP_DIVISOR) revert BasisPointsExceedMax();
 
-        // Issue 2 (missing check): addr_ is not validated against address(0).
         recipients.push(Recipient({addr: addr_, basisPoints: basisPoints_}));
         emit RecipientAdded(addr_, basisPoints_);
     }
@@ -56,9 +63,9 @@ contract FeeCollector is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausabl
     /// @param index_ Index of the recipient to remove.
     function removeRecipient(uint256 index_) external onlyOwner {
         if (index_ >= recipients.length) revert InvalidIndex();
-        emit RecipientRemoved(index_);
         recipients[index_] = recipients[recipients.length - 1];
         recipients.pop();
+        emit RecipientRemoved(index_);
     }
 
     /// @notice Distribute the current contract balance to all recipients
@@ -69,13 +76,14 @@ contract FeeCollector is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausabl
 
         uint256 len = recipients.length;
         for (uint256 i = 0; i < len; i++) {
-            uint256 amount = balance * recipients[i].basisPoints / 10000;
+            uint256 amount = balance * recipients[i].basisPoints / BP_DIVISOR;
             if (amount == 0) continue;
 
-            // Issue 3 (anti-pattern): using .transfer() instead of .call{value}()
-            // .transfer() hard-codes a 2300 gas stipend and will revert if the
-            // recipient is a smart contract with non-trivial fallback logic.
-            payable(recipients[i].addr).transfer(amount);
+            // Use .call{value}() to avoid the 2300-gas stipend imposed by
+            // .transfer(), which would revert for contract recipients with
+            // non-trivial receive() logic (e.g. multi-sig wallets).
+            (bool ok,) = payable(recipients[i].addr).call{value: amount}("");
+            if (!ok) revert TransferFailed();
 
             emit FeeDistributed(recipients[i].addr, amount);
         }
@@ -87,7 +95,8 @@ contract FeeCollector is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausabl
     }
 
     /// @notice Returns the sum of all recipient basis points.
-    function totalBasisPoints() external view returns (uint256 total) {
+    /// @return total Sum of basis points across all registered recipients.
+    function totalBasisPoints() public view returns (uint256 total) {
         for (uint256 i = 0; i < recipients.length; i++) {
             total += recipients[i].basisPoints;
         }

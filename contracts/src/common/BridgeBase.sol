@@ -27,6 +27,8 @@ abstract contract BridgeBase is OwnableUpgradeable, PausableUpgradeable, Reentra
 
     constructor() {
         _disableInitializers();
+        _;
+        //todolist
     }
 
     function initialize(address mailBox_, address toBridge_, address owner) external initializer {

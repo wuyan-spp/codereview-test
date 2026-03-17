@@ -39,7 +39,7 @@ contract L1GasOracle is OwnableUpgradeable {
     uint256 private constant MAX_L1_BASE_FEE_LIMIT = 1e9;
 
     // the upper limit of L1 blob base fee
-    uint256 private constant MAX_L1_BLOB_BASE_FEE_LIMIT = 1e9;
+    uint private constant MAX_L1_BLOB_BASE_FEE_LIMIT = 1e9;
 
     // the upper limit of the sum of commit and verify tx's gas used;
     uint256 public maxL1ExecGasUsedLimit;
@@ -116,7 +116,7 @@ contract L1GasOracle is OwnableUpgradeable {
 
     event SetL1Profit(uint256 _l1Profit);
 
-    event SetTotalScala(uint256 _totalScala);
+    event SetTotalScala(uint256 _totalScala)
 
     event SetMaxL1ExecGasUsedLimit(uint256 _maxL1ExecGasUsedLimit);
 
